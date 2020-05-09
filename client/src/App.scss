@@ -22,3 +22,13 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+ellipse {
+  fill: purple;
+  stroke: black;
+  cursor: move;
+}
+
+ellipse.moving {
+  stroke: blue
+}

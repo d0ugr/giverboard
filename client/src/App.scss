@@ -1,10 +1,20 @@
 .App {
-  text-align: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #282c34;
 }
 
 .App-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
   background-color: #282c34;
-  min-height: 100vh;
+  // min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;

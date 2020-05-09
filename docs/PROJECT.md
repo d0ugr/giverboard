@@ -10,9 +10,9 @@ PostgreSQL 12.2 (Debian 12.2-2.pgdg100+1)
 - cloned it
 - added docs
 
-- create-react-app over the final-project directory:
-```sh
-$ npx create-react-app final-project
-```
-`README.md moved` to `README.md.old`
+**2020-05-09**
 
+```sh
+$ npx create-react-app client
+```
+- remove React boilerplate stuff

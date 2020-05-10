@@ -4,6 +4,8 @@ import * as ui from "./lib/ui";
 
 import Card from "./Card";
 
+
+
 const LEFT_BUTTON = 1;
 
 const KEY_CTRL = 17;
@@ -12,6 +14,12 @@ const CARD_WIDTH  = 30;
 const CARD_HEIGHT = 20;
 
 
+
+// SvgCanvas creates an <svg> element that can be used as
+//    an unbounded canvas that can be panned and zoomed.
+//
+// TODO: Add new child creation
+// TODO: Add pan and zoom distance limiting
 
 function SvgCanvas(props) {
 
@@ -130,12 +138,10 @@ function SvgCanvas(props) {
   // Canvas keyboard event handlers:
 
   function onKeyDown(event) {
-    // console.log(event.keyCode)
     svg.style.cursor = (event.keyCode === KEY_CTRL ? "move" : "default");
   }
 
   function onKeyUp(event) {
-    // console.log(event.keyCode)
     svg.style.cursor = (event.keyCode === KEY_CTRL ? "default" : "move");
   }
 

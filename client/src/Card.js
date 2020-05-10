@@ -22,9 +22,9 @@ function Card(props) {
 
 
   function onMouseDown(event) {
+    // Set the mouse click state in the canvas
+    //    so it can handle moving the card:
     if (cardState.setOnMouseDown) {
-      event.preventDefault();
-      event.stopPropagation();
       cardState.setOnMouseDown(svg, event, cardState, updateCardState);
     }
   }
@@ -46,8 +46,6 @@ function Card(props) {
     //   width={cardState.w}
     //   height={cardState.h}
     //   onMouseDown={onMouseDown}
-    //   onMouseUp={onMouseUp}
-    //   onMouseMove={onMouseMove}
     // >
     //   <div>yo yo yo</div>
     // </foreignObject>

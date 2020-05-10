@@ -65,6 +65,8 @@ function SvgCanvas(props) {
   //    the original click position.  This is called by the children too.
 
   function setOnMouseDown(svgCanvas, event, state, callback) {
+    event.preventDefault();
+    event.stopPropagation();
     setClickState({
       mouse:  ui.elementPoint(svgCanvas, event),
       object: { ...state, updateState: callback },

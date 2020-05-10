@@ -1,98 +1,86 @@
-import React, { useState } from "react";
+import React from "react";
+// import React, { useState } from "react";
 
 import "./App.scss";
+import SvgCanvas from "./SvgCanvas";
+
+// import {INITIAL_VALUE, ReactSVGPanZoom, TOOL_NONE} from "react-svg-pan-zoom";
 
 function App() {
 
-  const [ viewBoxState, setViewboxState ] = useState({
-    x:     0,
-    y:     0,
-    w:     100,
-    h:     100,
-    scale: 1
-  });
-  const [ clickState, setClickState ] = useState({
-    mouseDown: false,
-    x:         null,
-    y:         null,
-    vbx:       null,
-    vby:       null
-  });
+  // const [ state, setState ] = useState({tool: TOOL_NONE, value: INITIAL_VALUE});
+  // let Viewer = null;
 
-  function onMouseDown(event) {
-    // Save the position of the mouse when clicking
-    //    to calculate relative panning distance
-    //    as the mouse moves:
-    setClickState({
-      mouseDown: true,
-      x:         event.clientX,
-      y:         event.clientY,
-      vbx:       viewBoxState.x,
-      vby:       viewBoxState.y
-    });
-  }
+  // function changeTool(tool) {
+  //   setState({
+  //     ...state,
+  //     tool
+  //   });
+  // }
 
-  function onMouseUp(_event) {
-    setClickState({
-      mouseDown: false,
-      x:         null,
-      y:         null,
-      vbx:       null,
-      yvb:       null
-    });
-  }
+  // function changeValue(value) {
+  //   setState({
+  //     ...state,
+  //     value
+  //   });
+  // }
 
-  function onMouseMove(event) {
-    if (clickState.mouseDown) {
-      setViewboxState({
-        ...viewBoxState,
-        x: clickState.vbx - (event.clientX - clickState.x) / 10,
-        y: clickState.vby - (event.clientY - clickState.y) / 10
-      });
-    }
-  }
+  // function fitToViewer() {
+  //   Viewer.fitToViewer();
+  // }
 
-  function onWheel(event) {
-    // Scaling factor for the viewBox width/height:
-    let scale = 1;
-    // Scale the scroll wheel delta to something not so drastic:
-    //    It's typically +/-3 which makes for large zoom steps.
-    const wheelDelta = Math.abs(event.deltaY) / 2.75;
-    // Scrolling up (zooming in):
-    if (event.deltaY < 0) {
-      scale = viewBoxState.scale / wheelDelta;
-    // Scrolling down (zooming out):
-    } else {
-      scale = viewBoxState.scale * wheelDelta;
-    }
-    setViewboxState({
-      ...viewBoxState,
-      scale
-    });
-  }
+  // function fitSelection() {
+  //   Viewer.fitSelection(40, 40, 200, 200);
+  // }
 
-  // Prepare viewBox attribute values:
-  const viewBox = {};
-  viewBox.w = viewBoxState.w * viewBoxState.scale;
-  viewBox.h = viewBoxState.h * viewBoxState.scale;
-  viewBox.x = viewBoxState.x - viewBox.w / 2;
-  viewBox.y = viewBoxState.y - viewBox.h / 2;
+  // function zoomOnViewerCenter() {
+  //   Viewer.zoomOnViewerCenter(1.1);
+  // }
+
+  const cards = [
+    { x: 0, y: 0, w: 30, h: 20 },
+    { x: -100, y: -50, w: 30, h: 20 },
+    { x: 150, y: 60, w: 30, h: 20 }
+  ];
 
   return (
     <div className="App">
       <header className="App-header">
+        WB2020
       </header>
-      <svg
-        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
-        width={"100%"}
-        height={"100%"}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
-        onMouseMove={onMouseMove}
-        onWheel={onWheel}
-      >
-        <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
-      </svg>
+      <SvgCanvas cards={cards} />
+
+      {/* <div>
+        <button className="btn" onClick={() => zoomOnViewerCenter()}>Zoom in</button>
+        <button className="btn" onClick={() => fitSelection()}>Zoom area 200x200</button>
+        <button className="btn" onClick={() => fitToViewer()}>Fit</button>
+        <hr/>
+
+        <ReactSVGPanZoom
+          width={1000}
+          height={700}
+          ref={Vwr => Viewer = Vwr}
+          tool={state.tool}
+          onChangeTool={tool => changeTool(tool)}
+          value={state.value}
+          onChangeValue={value => changeValue(value)}
+
+          onZoom={_e => console.log("zoom")}
+          onPan={_e => console.log("pan")}
+
+          onClick={event => console.log("click", event.x, event.y, event.originalEvent)}
+        >
+          <svg width={617} height={316}>
+            <g fillOpacity=".5" strokeWidth="4">
+              <rect x="400" y="40" width="100" height="200" fill="#4286f4" stroke="#f4f142"/>
+              <circle cx="108" cy="108.5" r="100" fill="#0ff" stroke="#0ff"/>
+              <circle cx="180" cy="209.5" r="100" fill="#ff0" stroke="#ff0"/>
+              <circle cx="220" cy="109.5" r="100" fill="#f0f" stroke="#f0f"/>
+            </g>
+          </svg>
+        </ReactSVGPanZoom>
+      </div> */}
+
     </div>
   );
 }

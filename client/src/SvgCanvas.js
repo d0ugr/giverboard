@@ -4,6 +4,9 @@ import * as ui from "./lib/ui";
 
 import Card from "./Card";
 
+const CARD_WIDTH  = 30;
+const CARD_HEIGHT = 20;
+
 
 
 function SvgCanvas(props) {
@@ -103,7 +106,7 @@ function SvgCanvas(props) {
 
   const cards =
     children.map((card, index) =>
-      <Card key={index} x={card.x} y={card.y} w={card.w} h={card.h} />
+      <Card key={index} x={card.x} y={card.y} w={CARD_WIDTH} h={CARD_HEIGHT} />
     );
 
   return (

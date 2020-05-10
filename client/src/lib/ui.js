@@ -1,8 +1,8 @@
 
 
 
-export function elementPoint(event) {
-  const rect = event.target.getBoundingClientRect();
+export function elementPoint(target, event) {
+  const rect = target.getBoundingClientRect();
   return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 }
 

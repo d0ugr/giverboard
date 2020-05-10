@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import * as ui from "./lib/ui";
-
 
 
 function Card(props) {
@@ -12,14 +10,8 @@ function Card(props) {
   }, []);
 
   const [ cardState, setCardState ] = useState({ ...props });
-  const [ clickState, setClickState ] = useState({
-    x:   null,
-    y:   null,
-    vbx: null,
-    vby: null
-  });
 
-  const updatecardState = useCallback((data) => {
+  const updateCardState = useCallback((data) => {
     if (typeof data === "object") {
       setCardState({
         ...cardState,
@@ -28,44 +20,12 @@ function Card(props) {
     }
   }, [ cardState ]);
 
+
+
   function onMouseDown(event) {
-    console.log(event.target.getBBox())
-    // event.preventDefault();
-    // event.stopPropagation();
-    // Save the mouse and viewbox position when clicking
-    //    to set the viewbox position based on
-    //    relative panning distance as the mouse moves:
-    setClickState({
-      x:         event.clientX,
-      y:         event.clientY,
-      vbx:       cardState.x,
-      vby:       cardState.y
-    });
-  }
-
-  function onMouseUp(event) {
-    // event.preventDefault();
-    // event.stopPropagation();
-    setClickState({
-      x:         null,
-      y:         null,
-      vbx:       null,
-      yvb:       null
-    });
-  }
-
-  function onMouseMove(event) {
-    // console.log(screenToSvg(event.clientX, event.clientY));
-    if (event.buttons === 1) {
-      // event.preventDefault();
-      // event.stopPropagation();
-      const prevPos  = ui.screenToSvg(svg, clickState.x, clickState.y);
-      const mousePos = ui.screenToSvg(svg, event.clientX, event.clientY);
-      updatecardState({
-        x: clickState.vbx + (mousePos.x - prevPos.x),
-        y: clickState.vby + (mousePos.y - prevPos.y)
-      });
-    }
+    event.preventDefault();
+    event.stopPropagation();
+    cardState.setOnMouseDown(svg, event, cardState, updateCardState);
   }
 
   return (
@@ -75,9 +35,19 @@ function Card(props) {
       width={cardState.w}
       height={cardState.h}
       onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      onMouseMove={onMouseMove}
     ></rect>
+
+    // <foreignObject
+    //   x={cardState.x}
+    //   y={cardState.y}
+    //   width={cardState.w}
+    //   height={cardState.h}
+    //   onMouseDown={onMouseDown}
+    //   onMouseUp={onMouseUp}
+    //   onMouseMove={onMouseMove}
+    // >
+    //   <div>yo yo yo</div>
+    // </foreignObject>
   );
 
 }

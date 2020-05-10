@@ -4,6 +4,10 @@ import * as ui from "./lib/ui";
 
 import Card from "./Card";
 
+const LEFT_BUTTON = 1;
+
+const KEY_CTRL = 17;
+
 const CARD_WIDTH  = 30;
 const CARD_HEIGHT = 20;
 
@@ -11,33 +15,34 @@ const CARD_HEIGHT = 20;
 
 function SvgCanvas(props) {
 
+  // Save a reference to the <svg> element for use later
+  //    to map screen coordinates to SVG space coordinates:
   const [ svg, setSvg ] = useState(null);
   useEffect(() => {
     setSvg(document.querySelector("svg.whiteboard"));
   }, []);
 
-  const [ viewBoxState, setViewboxState ] = useState({
-    x:     0,
-    y:     0,
-    w:     100,
-    h:     100,
+  // Initialize the canvas SVG viewbox origin and dimensions:
+  //    The origin refers to the center of the viewbox
+  //    and is translated later when actually setting its position.
+  const [ canvasState, setCanvasState ] = useState({
+    x: 0, y: 0,
+    w: 300, h: 300,
   });
-  const updateViewboxState = useCallback((data) => {
+  const updatecanvasState = useCallback((data) => {
     if (typeof data === "object") {
-      setViewboxState({
-        ...viewBoxState,
+      setCanvasState({
+        ...canvasState,
         ...data
       });
     }
-  }, [ viewBoxState ]);
+  }, [ canvasState ]);
 
-  const [ clickState, setClickState ] = useState({
-    x:   null,
-    y:   null,
-    vbx: null,
-    vby: null
-  });
+  // clickState saves information at the time of a mouse click
+  //    to use while moving stuff:
+  const [ clickState, setClickState ] = useState(null);
 
+  // All the elements added to the canvas:
   const [ children ] = useState(props.cards);
 
   // useEffect(() => {
@@ -46,80 +51,123 @@ function SvgCanvas(props) {
   //   }
   // }, [ svg, children ]);
 
-  function onMouseDown(event) {
-    // Save the mouse and viewbox position when clicking
-    //    to set the viewbox position based on
-    //    relative panning distance as the mouse moves:
-    // const pt = { x: event.clientX, y: event.clientY };
-    const pt = ui.elementPoint(event);
+  // setOnMouseDown is called to save the mouse and an element's
+  //    position at the time of a click.  Then when the mouse is moved,
+  //    its position is updated with the mouse movement relative to
+  //    the original click position.  This is called by the children too.
+
+  function setOnMouseDown(svgCanvas, event, state, callback) {
     setClickState({
-      x:         pt.x,
-      y:         pt.y,
-      vbx:       viewBoxState.x,
-      vby:       viewBoxState.y
+      mouse:  ui.elementPoint(svgCanvas, event),
+      object: { ...state, updateState: callback },
     });
+  }
+
+  // Canvas mouse event handlers:
+
+  function onMouseDown(event) {
+    if (event.ctrlKey) {
+      setOnMouseDown(svg, event, canvasState, updatecanvasState);
+    }
   }
 
   function onMouseUp(_event) {
-    setClickState({
-      x:         null,
-      y:         null,
-      vbx:       null,
-      yvb:       null
-    });
+    setClickState(null);
   }
 
   function onMouseMove(event) {
-    // event.target.style.cursor = (event.ctrlKey ? "move" : "default");
-    if (event.ctrlKey && event.buttons === 1) {
-      const prevPos  = ui.screenToSvg(svg, clickState);
-      // const mousePos = ui.screenToSvg(svg, { x: event.clientX, y: event.clientY });
-      const mousePos = ui.screenToSvg(svg, ui.elementPoint(event));
-      // const bbox = svg.getBBox();
-      // console.log(Math.max(clickState.vbx - (mousePos.x - prevPos.x), bbox.x - (viewBoxState.w * viewBoxState.scale / 2)))
-      // const newPos = {
-      //   x: Math.max(clickState.vbx - (mousePos.x - prevPos.x), bbox.x - ((viewBoxState.w / 2) * viewBoxState.scale)),
-      //   y: Math.max(clickState.vby - (mousePos.y - prevPos.y), bbox.y - ((viewBoxState.h / 2) * viewBoxState.scale))
-      // };
-      updateViewboxState({
-        x: clickState.vbx - (mousePos.x - prevPos.x),
-        y: clickState.vby - (mousePos.y - prevPos.y)
-        // x: newPos.x,
-        // y: newPos.y
-      });
+    // console.log(event.target)
+    // console.log(event.clientX, event.clientY)
+
+    // Show the move cursor over the canvas if holding Ctrl:
+    svg.style.cursor = (event.ctrlKey ? "move" : "default");
+
+    // Only move stuff if the left mouse button is being held:
+    if (event.buttons === LEFT_BUTTON && clickState) {
+      const prevPos  = ui.screenToSvg(svg, clickState.mouse);
+      const mousePos = ui.screenToSvg(svg, ui.elementPoint(svg, event));
+      const mouseDelta = {
+        x: mousePos.x - prevPos.x,
+        y: mousePos.y - prevPos.y
+      }
+      // Moving an element in the canvas:
+      if (!event.ctrlKey) {
+        clickState.object.updateState({
+          x: clickState.object.x + mouseDelta.x,
+          y: clickState.object.y + mouseDelta.y
+        });
+      // Panning the canvas:
+      } else {
+        clickState.object.updateState({
+          x: clickState.object.x - mouseDelta.x,
+          y: clickState.object.y - mouseDelta.y
+        });
+
+        // Attempt to limit panning distance:
+
+        // const bbox = svg.getBBox();
+        // console.log(Math.max(clickState.vbx - (mousePos.x - prevPos.x), bbox.x - (canvasState.w * canvasState.scale / 2)))
+        // const newPos = {
+        //   x: Math.max(clickState.vbx - (mousePos.x - prevPos.x), bbox.x - ((canvasState.w / 2) * canvasState.scale)),
+        //   y: Math.max(clickState.vby - (mousePos.y - prevPos.y), bbox.y - ((canvasState.h / 2) * canvasState.scale))
+        // };
+        // clickState.object.updateState({
+        //   x: newPos.x,
+        //   y: newPos.y
+        // });
+      }
     }
   }
 
   function onWheel(event) {
     const scaleFactor = (event.deltaY < 0 ? 0.9 : 1.1);
-    updateViewboxState({
-      w: viewBoxState.w * scaleFactor,
-      h: viewBoxState.h * scaleFactor
+    updatecanvasState({
+      w: canvasState.w * scaleFactor,
+      h: canvasState.h * scaleFactor
     });
+  }
+
+  // Canvas keyboard event handlers:
+
+  function onKeyDown(event) {
+    // console.log(event.keyCode)
+    svg.style.cursor = (event.keyCode === KEY_CTRL ? "move" : "default");
+  }
+
+  function onKeyUp(event) {
+    // console.log(event.keyCode)
+    svg.style.cursor = (event.keyCode === KEY_CTRL ? "default" : "move");
   }
 
 
 
-  const viewBox = { ...viewBoxState };
-  viewBox.x = viewBoxState.x - viewBoxState.w / 2;
-  viewBox.y = viewBoxState.y - viewBoxState.h / 2;
+  // Translate the canvas position to the upper left corner that's expected:
+  const viewBox = { ...canvasState };
+  viewBox.x = canvasState.x - canvasState.w / 2;
+  viewBox.y = canvasState.y - canvasState.h / 2;
 
-  const cards =
-    children.map((card, index) =>
-      <Card key={index} x={card.x} y={card.y} w={CARD_WIDTH} h={CARD_HEIGHT} />
-    );
-
+  // Return the <svg> element to render:
   return (
     <svg
+      tabIndex="0"
       className={props.className}
       viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
       onWheel={onWheel}
+      onKeyDown={onKeyDown}
+      onKeyUp={onKeyUp}
     >
       <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
-      {cards}
+      {children.map((card, index) =>
+        <Card
+          key={index}
+          x={card.x} y={card.y}
+          w={CARD_WIDTH} h={CARD_HEIGHT}
+          setOnMouseDown={setOnMouseDown}
+        />
+      )}
     </svg>
   );
 }

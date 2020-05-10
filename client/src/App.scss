@@ -78,3 +78,9 @@ rect {
 rect.moving {
   stroke: blue
 }
+
+foreignObject div {
+  background-color: red;
+  font-size: .25rem;
+  cursor: default;
+}

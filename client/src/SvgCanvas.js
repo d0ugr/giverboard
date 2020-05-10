@@ -1,20 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import * as ui from "./lib/ui";
+
 import Card from "./Card";
-
-
-
-function elementCoords(event) {
-  const rect = event.target.getBoundingClientRect();
-  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-}
-
-function screenToSvg(svg, point) {
-  const pt  = svg.createSVGPoint();
-  pt.x = point.x;
-  pt.y = point.y;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
 
 
 
@@ -59,9 +47,9 @@ function SvgCanvas(props) {
     // Save the mouse and viewbox position when clicking
     //    to set the viewbox position based on
     //    relative panning distance as the mouse moves:
-    const pt = elementCoords(event);
+    // const pt = { x: event.clientX, y: event.clientY };
+    const pt = ui.elementPoint(event);
     setClickState({
-      mouseDown: true,
       x:         pt.x,
       y:         pt.y,
       vbx:       viewBoxState.x,
@@ -71,7 +59,6 @@ function SvgCanvas(props) {
 
   function onMouseUp(_event) {
     setClickState({
-      mouseDown: false,
       x:         null,
       y:         null,
       vbx:       null,
@@ -82,8 +69,9 @@ function SvgCanvas(props) {
   function onMouseMove(event) {
     // event.target.style.cursor = (event.ctrlKey ? "move" : "default");
     if (event.ctrlKey && event.buttons === 1) {
-      const prevPos  = screenToSvg(svg, clickState);
-      const mousePos = screenToSvg(svg, elementCoords(event));
+      const prevPos  = ui.screenToSvg(svg, clickState);
+      // const mousePos = ui.screenToSvg(svg, { x: event.clientX, y: event.clientY });
+      const mousePos = ui.screenToSvg(svg, ui.elementPoint(event));
       // const bbox = svg.getBBox();
       // console.log(Math.max(clickState.vbx - (mousePos.x - prevPos.x), bbox.x - (viewBoxState.w * viewBoxState.scale / 2)))
       // const newPos = {
@@ -100,25 +88,23 @@ function SvgCanvas(props) {
   }
 
   function onWheel(event) {
-    console.log(event.clientX, event.clientY)
-    // Scale the scroll wheel delta to something not so drastic:
-    //    It's typically +/-3 which makes for large zoom steps.
-    const wheelDelta  = Math.abs(event.deltaY) / 2.75;
-    const scaleFactor = (event.deltaY < 0 ? 1 / wheelDelta : wheelDelta);
+    const scaleFactor = (event.deltaY < 0 ? 0.9 : 1.1);
     updateViewboxState({
       w: viewBoxState.w * scaleFactor,
       h: viewBoxState.h * scaleFactor
     });
   }
 
-  const cards =
-    children.map((card, index) =>
-      <Card key={index} x={card.x} y={card.y} w={card.w} h={card.h} />
-    );
+
 
   const viewBox = { ...viewBoxState };
   viewBox.x = viewBoxState.x - viewBoxState.w / 2;
   viewBox.y = viewBoxState.y - viewBoxState.h / 2;
+
+  const cards =
+    children.map((card, index) =>
+      <Card key={index} x={card.x} y={card.y} w={card.w} h={card.h} />
+    );
 
   return (
     <svg

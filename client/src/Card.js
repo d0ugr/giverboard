@@ -1,18 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import * as ui from "./lib/ui";
+
+
+
 function Card(props) {
 
   const [ svg, setSvg ] = useState(null);
   useEffect(() => {
     setSvg(document.querySelector("svg"));
   }, []);
-
-  function screenToSvg(x, y) {
-    const pt  = svg.createSVGPoint();
-    pt.x = x;
-    pt.y = y;
-    return pt.matrixTransform(svg.getScreenCTM().inverse());
-  }
 
   const [ cardState, setCardState ] = useState({ ...props });
   const [ clickState, setClickState ] = useState({
@@ -24,7 +21,6 @@ function Card(props) {
 
   const updatecardState = useCallback((data) => {
     if (typeof data === "object") {
-      //setState((prev) =>
       setCardState({
         ...cardState,
         ...data
@@ -40,7 +36,6 @@ function Card(props) {
     //    to set the viewbox position based on
     //    relative panning distance as the mouse moves:
     setClickState({
-      mouseDown: true,
       x:         event.clientX,
       y:         event.clientY,
       vbx:       cardState.x,
@@ -52,7 +47,6 @@ function Card(props) {
     // event.preventDefault();
     // event.stopPropagation();
     setClickState({
-      mouseDown: false,
       x:         null,
       y:         null,
       vbx:       null,
@@ -65,8 +59,8 @@ function Card(props) {
     if (event.buttons === 1) {
       // event.preventDefault();
       // event.stopPropagation();
-      const prevPos  = screenToSvg(clickState.x, clickState.y);
-      const mousePos = screenToSvg(event.clientX, event.clientY);
+      const prevPos  = ui.screenToSvg(svg, clickState.x, clickState.y);
+      const mousePos = ui.screenToSvg(svg, event.clientX, event.clientY);
       updatecardState({
         x: clickState.vbx + (mousePos.x - prevPos.x),
         y: clickState.vby + (mousePos.y - prevPos.y)

@@ -10,7 +10,6 @@ function Card(props) {
   }, []);
 
   const [ cardState, setCardState ] = useState({ ...props });
-
   const updateCardState = useCallback((data) => {
     if (typeof data === "object") {
       setCardState({
@@ -23,10 +22,14 @@ function Card(props) {
 
 
   function onMouseDown(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    cardState.setOnMouseDown(svg, event, cardState, updateCardState);
+    if (cardState.setOnMouseDown) {
+      event.preventDefault();
+      event.stopPropagation();
+      cardState.setOnMouseDown(svg, event, cardState, updateCardState);
+    }
   }
+
+
 
   return (
     <rect

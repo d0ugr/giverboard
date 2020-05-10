@@ -16,3 +16,10 @@ PostgreSQL 12.2 (Debian 12.2-2.pgdg100+1)
 $ npx create-react-app client
 ```
 - remove React boilerplate stuff
+
+**2020-05-10**
+
+```sh
+$ npm init
+$ npm i dotenv express socket.io socket.io-client pg uuid
+```

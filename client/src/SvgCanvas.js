@@ -50,9 +50,6 @@ function SvgCanvas(props) {
   //    to use while moving stuff:
   const [ clickState, setClickState ] = useState(null);
 
-  // All the elements added to the canvas:
-  const [ children ] = useState(props.cards);
-
   // useEffect(() => {
   //   if (svg) {
   //     console.log(svg.getBBox());
@@ -166,7 +163,7 @@ function SvgCanvas(props) {
       onKeyUp={onKeyUp}
     >
       <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
-      {children.map((card, index) =>
+      {props.cards.map((card, index) =>
         <Card
           key={index}
           x={card.x} y={card.y}

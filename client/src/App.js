@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import "./App.scss";
 
@@ -9,21 +9,34 @@ import Card from "./Card";
 
 function App() {
 
-  const cards = [
+  // All the elements added to the canvas:
+  const [ cards, setCards ] = useState([
     { x: 0, y: 0 },
     { x: -100, y: -50 },
     { x: 150, y: 60 }
-  ];
+  ]);
+
+  function addCard(_event) {
+    setCards([
+      ...cards,
+      {
+        x: Math.floor(Math.random() * 200) - 100,
+        y: Math.floor(Math.random() * 200) - 100,
+      }
+    ])
+  }
+
+
 
   return (
     <div className="App">
       <header>
-        WB2020 - Hold Ctrl to pan the canvas
+        WB2020 -&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas, Kitties add cards</span>
       </header>
       <main>
         <div className="App-sidebar">
           <ul>
-            <li>Kitties</li>
+            <li onClick={addCard}>Kitties</li>
             <li>Chickens</li>
             <li>Kittes and chickens</li>
           </ul>

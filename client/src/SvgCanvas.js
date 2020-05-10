@@ -18,8 +18,11 @@ const CARD_HEIGHT = 20;
 // SvgCanvas creates an <svg> element that can be used as
 //    an unbounded canvas that can be panned and zoomed.
 //
-// TODO: Add new child creation
+// FIXME: Ctrl+Click on card moves it in reverse
+//
 // TODO: Add pan and zoom distance limiting
+// TODO: Zoom to mouse cursor position
+// TODO: Fit children to viewbox (svg.getBBox)
 
 function SvgCanvas(props) {
 

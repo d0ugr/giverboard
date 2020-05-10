@@ -9,11 +9,10 @@ import Card from "./Card";
 
 function App() {
 
-  // All the elements added to the canvas:
   const [ cards, setCards ] = useState([
-    { x: 0, y: 0 },
+    { x: 0,    y: 0   },
     { x: -100, y: -50 },
-    { x: 150, y: 60 }
+    { x: 150,  y: 60  }
   ]);
 
   function addCard(_event) {
@@ -41,7 +40,7 @@ function App() {
             <li>Kittes and chickens</li>
           </ul>
           <svg>
-            <Card x={0} y={0} w={100} h={100} />
+            <Card x={0} y={0} w={125} h={100} />
           </svg>
         </div>
         <SvgCanvas

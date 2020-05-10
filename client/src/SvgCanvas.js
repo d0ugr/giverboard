@@ -10,7 +10,7 @@ function SvgCanvas(props) {
 
   const [ svg, setSvg ] = useState(null);
   useEffect(() => {
-    setSvg(document.querySelector("svg"));
+    setSvg(document.querySelector("svg.whiteboard"));
   }, []);
 
   const [ viewBoxState, setViewboxState ] = useState({
@@ -108,6 +108,7 @@ function SvgCanvas(props) {
 
   return (
     <svg
+      className={props.className}
       viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}

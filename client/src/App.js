@@ -60,7 +60,10 @@ function App() {
             <Card x={0} y={0} w={100} h={100} />
           </svg>
         </div>
-        <SvgCanvas cards={cards} />
+        <SvgCanvas
+          className={"whiteboard"}
+          cards={cards}
+        />
       </main>
 
       {/* <div>

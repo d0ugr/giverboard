@@ -8,7 +8,7 @@ function Card(props) {
 
   const [ svg, setSvg ] = useState(null);
   useEffect(() => {
-    setSvg(document.querySelector("svg"));
+    setSvg(document.querySelector("svg.whiteboard"));
   }, []);
 
   const [ cardState, setCardState ] = useState({ ...props });

@@ -3,6 +3,7 @@ import React from "react";
 
 import "./App.scss";
 import SvgCanvas from "./SvgCanvas";
+import Card from "./Card";
 
 // import {INITIAL_VALUE, ReactSVGPanZoom, TOOL_NONE} from "react-svg-pan-zoom";
 
@@ -45,10 +46,22 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <header>
         WB2020
       </header>
-      <SvgCanvas cards={cards} />
+      <main>
+        <div className="App-sidebar">
+          <ul>
+            <li>Kitties</li>
+            <li>Chickens</li>
+            <li>Kittes and chickens</li>
+          </ul>
+          <svg>
+            <Card x={0} y={0} w={100} h={100} />
+          </svg>
+        </div>
+        <SvgCanvas cards={cards} />
+      </main>
 
       {/* <div>
         <button className="btn" onClick={() => zoomOnViewerCenter()}>Zoom in</button>

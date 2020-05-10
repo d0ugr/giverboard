@@ -100,14 +100,15 @@ function SvgCanvas(props) {
   }
 
   function onWheel(event) {
+    console.log(event.clientX, event.clientY)
     // Scale the scroll wheel delta to something not so drastic:
     //    It's typically +/-3 which makes for large zoom steps.
-    const wheelDelta = Math.abs(event.deltaY) / 2.75;
+    const wheelDelta  = Math.abs(event.deltaY) / 2.75;
     const scaleFactor = (event.deltaY < 0 ? 1 / wheelDelta : wheelDelta);
-    const viewBox = {};
-    viewBox.w = viewBoxState.w * scaleFactor;
-    viewBox.h = viewBoxState.h * scaleFactor;
-    updateViewboxState(viewBox);
+    updateViewboxState({
+      w: viewBoxState.w * scaleFactor,
+      h: viewBoxState.h * scaleFactor
+    });
   }
 
   const cards =

@@ -16,6 +16,7 @@ const app = {};
 
 app.exp = express();
 app.srv = http.Server(app.exp);
+// eslint-disable-next-line camelcase
 app.exp.server_name = "";
 app.exp.set("trust proxy", "loopback");
 app.exp.set("x-powered-by", false);
@@ -23,16 +24,18 @@ app.exp.set("x-powered-by", false);
 const io = require("socket.io")(app.srv);
 
 io.on("connection", socket => {
-  console.log("io.connection");
+  console.log(`io.connection: ${socket.id}`);
   socket.emit("stuff", "super fun");
 
-  socket.on("stuff", (data) => {
-    console.dir(`socket.stuff: ${data}`);
+  socket.on("disconnect", () => {
+    console.log(`socket.disconnect: ${socket.id}`);
   });
 
-  socket.on("disconnect", () => {
-    console.log("socket.disconnect");
+  socket.on("add_card", (data) => {
+    console.dir(`socket.add_card: ${JSON.stringify(data)}`);
+    socket.broadcast.emit("add_card", data);
   });
+
 });
 
 app.srv.listen(process.env.APP_PORT);

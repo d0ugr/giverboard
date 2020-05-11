@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 
 import "./App.scss";
@@ -9,12 +9,11 @@ import Card from "./Card";
 
 
 const socket = io("http://localhost:3001");
+
 socket.on("connect", function() {
   console.log("socket.connect");
 });
-socket.on("stuff", function(data) {
-  console.log("socket.stuff", data);
-});
+
 socket.on("disconnect", function() {
   console.log("socket.disconnect");
 });
@@ -24,21 +23,36 @@ socket.on("disconnect", function() {
 function App() {
 
   const [ cards, setCards ] = useState([
-    { x: 0,    y: 0   },
+    { x:    0, y:   0 },
     { x: -100, y: -50 },
-    { x: 150,  y: 60  }
+    { x:  150, y:  60 }
   ]);
 
-  function addCard(_event) {
+  const addCard = useCallback((card) => {
+    console.log("addCard")
     setCards([
       ...cards,
-      {
-        x: Math.floor(Math.random() * 200) - 100,
-        y: Math.floor(Math.random() * 200) - 100,
-      }
+      card
     ]);
-    socket.emit("stuff", "addCard");
+  }, [ cards, setCards ]);
+
+  function addRandomCard(_event) {
+    const newCard = {
+      x: Math.floor(Math.random() * 200) - 100,
+      y: Math.floor(Math.random() * 200) - 100,
+    };
+    addCard(newCard);
+    socket.emit("add_card", newCard);
   }
+
+  useEffect(() => {
+    console.log("useEffect: page load")
+    socket.on("add_card", function(card) {
+      console.log("socket.add_card", card);
+      addCard(card);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
 
@@ -50,7 +64,7 @@ function App() {
       <main>
         <div className="App-sidebar">
           <ul>
-            <li onClick={addCard}>Kitties</li>
+            <li onClick={addRandomCard}>Kitties</li>
             <li>Chickens</li>
             <li>Kittes and chickens</li>
           </ul>

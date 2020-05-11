@@ -1,9 +1,23 @@
 import React, { useState } from "react";
+import io from "socket.io-client";
 
 import "./App.scss";
 
 import SvgCanvas from "./SvgCanvas";
 import Card from "./Card";
+
+
+
+const socket = io("http://localhost:3001");
+socket.on("connect", function() {
+  console.log("socket.connect");
+});
+socket.on("stuff", function(data) {
+  console.log("socket.stuff", data);
+});
+socket.on("disconnect", function() {
+  console.log("socket.disconnect");
+});
 
 
 
@@ -22,7 +36,8 @@ function App() {
         x: Math.floor(Math.random() * 200) - 100,
         y: Math.floor(Math.random() * 200) - 100,
       }
-    ])
+    ]);
+    socket.emit("stuff", "addCard");
   }
 
 

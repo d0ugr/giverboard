@@ -10,17 +10,21 @@ import Card from "./Card";
 
 const socket = io("http://localhost:3001");
 
-socket.on("connect", function() {
-  console.log("socket.connect");
+// socket.on("connect", function() {
+//   console.log("socket.connect");
+// });
+
+// socket.on("disconnect", function() {
+//   console.log("socket.disconnect");
+// });
+
+socket.on("server_message", function(message) {
+  console.log(`socket.server_message ${message}`);
 });
 
-socket.on("disconnect", function() {
-  console.log("socket.disconnect");
-});
 
 
-
-function App() {
+function App(_props) {
 
   const [ cards, setCards ] = useState([
     { x:    0, y:   0 },
@@ -29,12 +33,11 @@ function App() {
   ]);
 
   const addCard = useCallback((card) => {
-    console.log("addCard")
-    setCards([
-      ...cards,
+    setCards((prevState) => [
+      ...prevState,
       card
     ]);
-  }, [ cards, setCards ]);
+  }, [ setCards ]);
 
   function addRandomCard(_event) {
     const newCard = {
@@ -48,7 +51,7 @@ function App() {
   useEffect(() => {
     console.log("useEffect: page load")
     socket.on("add_card", function(card) {
-      console.log("socket.add_card", card);
+      // console.log("socket.add_card", card);
       addCard(card);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

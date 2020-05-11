@@ -12,12 +12,12 @@ function Card(props) {
   const [ cardState, setCardState ] = useState({ ...props });
   const updateCardState = useCallback((data) => {
     if (typeof data === "object") {
-      setCardState({
-        ...cardState,
+      setCardState((prevState) => ({
+        ...prevState,
         ...data
-      });
+      }));
     }
-  }, [ cardState ]);
+  }, []);
 
 
 

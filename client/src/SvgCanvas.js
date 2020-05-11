@@ -42,12 +42,12 @@ function SvgCanvas(props) {
   });
   const updatecanvasState = useCallback((data) => {
     if (typeof data === "object") {
-      setCanvasState({
-        ...canvasState,
+      setCanvasState((prevState) => ({
+        ...prevState,
         ...data
-      });
+      }));
     }
-  }, [ canvasState ]);
+  }, []);
 
   // clickState saves information at the time of a mouse click
   //    to use while moving stuff:

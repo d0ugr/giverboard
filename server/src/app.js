@@ -25,7 +25,7 @@ const io = require("socket.io")(app.srv);
 
 io.on("connection", socket => {
   console.log(`io.connection: ${socket.id}`);
-  socket.emit("stuff", "super fun");
+  socket.emit("server_message", "WB2020 ready to be super fun");
 
   socket.on("disconnect", () => {
     console.log(`socket.disconnect: ${socket.id}`);

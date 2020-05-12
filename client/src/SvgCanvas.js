@@ -34,10 +34,10 @@ function SvgCanvas(props) {
 
     // document.addEventListener("mousemove", onMouseMove);
 
+    // Show the move mouse cursor while holding Ctrl:
     document.addEventListener("keydown", (event) => {
       svg.style.cursor = (event.keyCode === KEY_CTRL ? "move" : "default");
     });
-
     document.addEventListener("keyup", (event) => {
       svg.style.cursor = (event.keyCode === KEY_CTRL ? "default" : "move");
     });
@@ -67,12 +67,12 @@ function SvgCanvas(props) {
   //    to use while moving stuff:
   const [ clickState, setClickState ] = useState(null);
 
-  // setOnMouseDown is called to save the mouse and an element's
+  // setClickObject is called to save the mouse and an element's
   //    position at the time of a click.  Then when the mouse is moved,
   //    its position is updated with the mouse movement relative to
   //    the original click position.  This is called by the children too.
 
-  function setOnMouseDown(event, object) {
+  function setClickObject(event, object) {
     event.preventDefault();
     event.stopPropagation();
     setClickState({
@@ -85,7 +85,7 @@ function SvgCanvas(props) {
 
   function onMouseDown(event) {
     if (event.ctrlKey) {
-      setOnMouseDown(event, canvasState);
+      setClickObject(event, canvasState);
     }
   }
 
@@ -97,7 +97,8 @@ function SvgCanvas(props) {
     // console.log(event.target)
     // console.log(event.clientX, event.clientY)
 
-    // Only move stuff if the left mouse button is being held:
+    // Only move stuff if the left mouse button is being held
+    //    and something that can be moved was clicked:
     if (event.buttons === LEFT_BUTTON && clickState) {
       const prevPos  = ui.screenToSvg(svg, clickState.mouse);
       const mousePos = ui.screenToSvg(svg, ui.elementPoint(svg, event));
@@ -108,11 +109,11 @@ function SvgCanvas(props) {
       // Moving an element on the canvas:
       if (!event.ctrlKey && clickState.object.id) {
         props.setCardNotify(clickState.object.id, {
-          x:  clickState.object.x + mouseDelta.x,
-          y:  clickState.object.y + mouseDelta.y
+          x: clickState.object.x + mouseDelta.x,
+          y: clickState.object.y + mouseDelta.y
         });
       // Panning the canvas:
-      } else if (event.ctrlKey) {
+      } else {
         updateCanvasState({
           x: clickState.object.x - mouseDelta.x,
           y: clickState.object.y - mouseDelta.y
@@ -178,7 +179,7 @@ function SvgCanvas(props) {
         <Card
           key={index}
           card={props.cards[id]}
-          setOnMouseDown={(event) => setOnMouseDown(event, { id })}
+          setClickObject={(event) => setClickObject(event, { id })}
           title={props.cards[id].fields && props.cards[id].fields.title}
           content={props.cards[id].fields && props.cards[id].fields.content}
         />

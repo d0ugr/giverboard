@@ -3,6 +3,7 @@ import io from "socket.io-client";
 
 import "./App.scss";
 
+import * as util from "./lib/util";
 import Header    from "./Header";
 import SvgCanvas from "./SvgCanvas";
 
@@ -22,9 +23,9 @@ socket.on("server_message", (message) => {
   console.log("socket.server_message:", message);
 });
 
-let newId = 1;
 
-const DEFAULT_SESSION = { cards: {} }
+
+const DEFAULT_SESSION = { cards: {} };
 
 
 
@@ -62,7 +63,7 @@ function App(_props) {
   const setCardNotify = (id, card) => {
     setCard(id, card);
     socket.emit("update_card", id, card);
-  }
+  };
 
 
 
@@ -71,7 +72,7 @@ function App(_props) {
   const addRandomCard = () => {
     const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
     const content = document.querySelector(".App-sidebar textarea").value;
-    setCardNotify(`id_${newId++}`, {
+    setCardNotify(util.uuidv4_compact(), {
       x: Math.floor(Math.random() * 200) - 100,
       y: Math.floor(Math.random() * 200) - 100,
       fields: {
@@ -79,21 +80,37 @@ function App(_props) {
         content: content
       }
     });
-  }
+  };
 
   const updateChickens = () => {
     setCardNotify("chickens", { x: 10, y: 10 });
-  }
+  };
+
+
+
+  const joinSession = (sessionId) => {
+    socket.emit("join_session", sessionId, (status, session) => {
+      console.log("socket.join_session:", status, session)
+      setSession(session);
+    });
+  };
+
+  const newSession = () => {
+    const title = document.querySelector(".App-sidebar input[name='card-title']").value;
+    socket.emit("new_session", title, (status, sessionId) => {
+      console.log("socket.new_session:", status, sessionId)
+      if (status === "session_created") {
+        joinSession(sessionId);
+      }
+    });
+  };
 
 
 
   // Set up stuff on page load:
   useEffect(() => {
 
-    socket.emit("join_session", "default", (status, session) => {
-      console.log("socket.join_session:", status, session)
-      setSession(session);
-    });
+    joinSession("default");
 
     socket.on("update_card", (id, card) => setCard(id, card));
 
@@ -110,18 +127,20 @@ function App(_props) {
       <main>
 
         <div className="App-sidebar">
-          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => addRandomCard()}>Add card</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
+          <hr/>
+          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
+          {/* <p style={{cursor: "pointer"}} onClick={(_event) => joinSession()}>Join session</p> */}
           <hr/>
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addRandomCard}>Add card</button>
           </div>
+          <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}

@@ -44,7 +44,8 @@ app.io.on("connection", (socket) => {
     console.log(`socket.disconnect: ${socket.id}`);
   });
 
-  socket.on("create_session", (name, callback) => {
+  socket.on("new_session", (name, callback) => {
+    console.dir(`socket.new_session: ${name}`);
     if (name && typeof name === "string") {
       socket.sessionId = newSession(name);
       callback("session_created", socket.sessionId);
@@ -54,6 +55,7 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("join_session", (sessionId, callback) => {
+    console.dir(`socket.join_session: ${sessionId}`);
     if (app.sessions[sessionId]) {
       socket.sessionId = sessionId;
       callback("session_joined", app.sessions[sessionId]);
@@ -78,7 +80,7 @@ app.srv.listen(process.env.APP_PORT);
 
 
 const newSession = (name) => {
-  sessionId = util.newUuid();
+  const sessionId = util.newUuid();
   app.sessions[sessionId] = { name, cards: {} };
   return sessionId;
 };

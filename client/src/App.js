@@ -43,8 +43,6 @@ function App(_props) {
     kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
   });
 
-  const findCard = (id) => cards[id];
-
   const setCard = useCallback((id, card) => {
     setCards((prevState) => {
       if (card) {
@@ -114,7 +112,6 @@ function App(_props) {
           viewBoxSize={300}
           className={"whiteboard"}
           cards={cards}
-          findCard={findCard}
           setCardNotify={setCardNotify}
         />
       </main>

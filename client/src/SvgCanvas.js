@@ -64,7 +64,7 @@ function SvgCanvas(props) {
     event.stopPropagation();
     setClickState({
       mouse:  ui.elementPoint(svg, event),
-      object: (object.id ? { id: object.id, ...props.findCard(object.id) } : object)
+      object: (object.id ? { id: object.id, ...props.cards[object.id] } : object)
     });
   }
 

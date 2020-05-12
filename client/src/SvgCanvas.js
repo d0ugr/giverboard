@@ -77,9 +77,13 @@ function SvgCanvas(props) {
     event.stopPropagation();
     setClickState({
       mouse:  ui.elementPoint(svg, event),
-      object: (object.id
-        ? { id: object.id, ...props.cards[object.id] }
-        : object)
+      // Ctrl overrides any object that was clicked and pans the canvas:
+      object: (event.ctrlKey
+        ? canvasState
+        : (object.id
+          ? { id: object.id, ...props.cards[object.id] }
+          : object)
+      )
     });
   }
 

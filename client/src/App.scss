@@ -60,6 +60,33 @@ main {
   }
 }
 
+.main-container {
+  position: relative;
+
+  .size-cue {
+    position: absolute;
+    top: 0;
+    padding: 1em;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-shadow:
+      0 0 1em black,  0 0 1em black,
+      0 0 .5em black, 0 0 .5em black,
+      0 0 .5em black, 0 0 .5em black,
+      0 0 .5em black, 0 0 .5em black;
+  }
+
+  .left {
+    left: 0;
+    color: lightseagreen;
+  }
+
+  .right {
+    right: 0;
+    color: lightcoral;
+  }
+}
+
 svg {
   width: 100%;
   height: 100%;

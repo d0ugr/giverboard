@@ -122,12 +122,16 @@ function App(_props) {
           </svg> */}
         </div>
 
-        <SvgCanvas
-          viewBoxSize={300}
-          className={"whiteboard"}
-          cards={cards}
-          setCardNotify={setCardNotify}
-        />
+        <div className="main-container">
+          <div className="left size-cue">EASY</div>
+          <div className="right size-cue">HARD</div>
+          <SvgCanvas
+            viewBoxSize={300}
+            className={"whiteboard"}
+            cards={cards}
+            setCardNotify={setCardNotify}
+          />
+        </div>
 
       </main>
 

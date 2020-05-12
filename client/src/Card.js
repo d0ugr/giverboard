@@ -1,54 +1,40 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
+
+const CARD_WIDTH  = 75;
+const CARD_HEIGHT = 50;
 
 
 
 function Card(props) {
 
-  const [ svg, setSvg ] = useState(null);
-  useEffect(() => {
-    setSvg(document.querySelector("svg.whiteboard"));
-  }, []);
-
-  const [ cardState, setCardState ] = useState({ ...props });
-  const updateCardState = useCallback((data) => {
-    if (typeof data === "object") {
-      setCardState((prevState) => ({
-        ...prevState,
-        ...data
-      }));
-    }
-  }, []);
-
-
-
-  function onMouseDown(event) {
-    // Set the mouse click state in the canvas
-    //    so it can handle moving the card:
-    if (cardState.setOnMouseDown) {
-      cardState.setOnMouseDown(svg, event, cardState, updateCardState);
-    }
-  }
-
-
-
   return (
-    <rect
-      x={cardState.x}
-      y={cardState.y}
-      width={cardState.w}
-      height={cardState.h}
-      onMouseDown={onMouseDown}
-    ></rect>
+    // <rect
+    //   x={props.card.x || 0}
+    //   y={props.card.y || 0}
+    //   width={props.card.w || CARD_WIDTH}
+    //   height={props.card.h || CARD_HEIGHT}
+    //   onMouseDown={props.setOnMouseDown}
+    // ></rect>
 
-    // <foreignObject
-    //   x={cardState.x}
-    //   y={cardState.y}
-    //   width={cardState.w}
-    //   height={cardState.h}
-    //   onMouseDown={onMouseDown}
-    // >
-    //   <div>yo yo yo</div>
-    // </foreignObject>
+    // foreignObject can't be styled, so container div is necessary:
+    <foreignObject
+      x={props.card.x || 0}
+      y={props.card.y || 0}
+      width={props.card.w || CARD_WIDTH}
+      height={props.card.h || CARD_HEIGHT}
+      onMouseDown={props.setOnMouseDown}
+    >
+      <div>
+        <header>
+          <strong>Kitties and Chickens</strong>
+        </header>
+        <article>
+          <p style={{textAlign: "left"}}><strong>MEOW</strong></p>
+          <p style={{textAlign: "center"}}><strong>CLUCK</strong></p>
+          <p style={{textAlign: "right"}}><strong>MEUCK</strong></p>
+        </article>
+      </div>
+    </foreignObject>
   );
 
 }

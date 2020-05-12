@@ -80,7 +80,19 @@ rect.moving {
 }
 
 foreignObject div {
-  background-color: red;
-  font-size: .25rem;
+  border: .1rem solid lightcoral;
+  background-color: purple;
   cursor: default;
+
+  header {
+    padding: .25em;
+    background-color: olive;
+    font-size: .25rem;
+    cursor: move;
+  }
+
+  article {
+    padding: 1em;
+    font-size: .25rem;
+  }
 }

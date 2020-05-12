@@ -31,9 +31,9 @@ io.on("connection", socket => {
     console.log(`socket.disconnect: ${socket.id}`);
   });
 
-  socket.on("add_card", (data) => {
-    console.dir(`socket.add_card: ${JSON.stringify(data)}`);
-    socket.broadcast.emit("add_card", data);
+  socket.on("update_cards", (id, card) => {
+    // console.dir(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
+    socket.broadcast.emit("update_cards", id, card);
   });
 
 });

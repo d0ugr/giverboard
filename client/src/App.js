@@ -3,8 +3,8 @@ import io from "socket.io-client";
 
 import "./App.scss";
 
+import Header    from "./Header";
 import SvgCanvas from "./SvgCanvas";
-// import Card from "./Card";
 
 
 
@@ -105,9 +105,7 @@ function App(_props) {
   return (
     <div className="App">
 
-      <header className="App-header">
-        <strong>WB2020</strong>&nbsp;&bull;&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas</span>
-      </header>
+      <Header sessionName={session.name} />
 
       <main>
 

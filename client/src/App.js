@@ -99,7 +99,7 @@ function App(_props) {
     <div className="App">
 
       <header className="App-header">
-        WB2020 -&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas</span>
+        <strong>WB2020</strong>&nbsp;&bull;&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas</span>
       </header>
 
       <main>

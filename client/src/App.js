@@ -114,8 +114,8 @@ function App(_props) {
           <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
           <hr/>
           <div>
-            <label>Title</label><br/><input name={"card-title"} style={{width: "100%", marginBottom: ".5em"}} /><br/>
-            <label>Content</label><br/><textarea name={"card-content"} style={{width: "100%", marginBottom: "1em"}} /><br/>
+            <label>Title</label><br/><input name={"card-title"} /><br/>
+            <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addRandomCard}>Add card</button>
           </div>
           {/* <svg>

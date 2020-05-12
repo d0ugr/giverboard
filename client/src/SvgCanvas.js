@@ -77,16 +77,19 @@ function SvgCanvas(props) {
     event.stopPropagation();
     setClickState({
       mouse:  ui.elementPoint(svg, event),
-      object: (object.id ? { id: object.id, ...props.cards[object.id] } : object)
+      object: (event.ctrlKey
+        ? canvasState
+        : (object
+          ? { id: object.id, ...props.cards[object.id] }
+          : object)
+      )
     });
   }
 
   // Canvas mouse event handlers
 
   function onMouseDown(event) {
-    if (event.ctrlKey) {
-      setClickObject(event, canvasState);
-    }
+    setClickObject(event, null);
   }
 
   function onMouseUp(_event) {

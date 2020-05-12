@@ -102,7 +102,7 @@ function App(_props) {
     <div className="App">
 
       <header className="App-header">
-        WB2020 -&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas, Kitties add cards</span>
+        WB2020 -&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas</span>
       </header>
 
       <main>
@@ -112,6 +112,8 @@ function App(_props) {
           <p style={{cursor: "pointer"}} onClick={(_event) => addRandomCard()}>Add card</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
+          {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
           <hr/>
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>

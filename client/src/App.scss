@@ -5,6 +5,7 @@
   top: 0;
   bottom: 0;
   background-color: #black;
+  cursor: default;
 }
 
 main {
@@ -23,7 +24,6 @@ main {
   font-size: calc(10px + 2vmin);
   color: ghostwhite;
   text-shadow: 2px 2px 2px black, 2px 2px 2px black;
-  cursor: default;
 }
 
 .App-sidebar {
@@ -32,7 +32,6 @@ main {
   padding: 0.5%;
   background-color: #181026;
   color: skyblue;
-  cursor: default;
 
   input, textarea {
     width: 90%;
@@ -96,12 +95,6 @@ svg {
 ellipse {
   fill: purple;
   stroke: black;
-}
-
-rect {
-  fill: purple;
-  stroke: black;
-  cursor: move;
 }
 
 foreignObject {

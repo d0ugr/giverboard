@@ -24,11 +24,12 @@ function Card(props) {
       height={props.card.h || CARD_HEIGHT}
       onMouseDown={props.setOnMouseDown}
     >
-      <div>
+      <div style={{maxHeight: `${props.card.h || CARD_HEIGHT}px`}}>
         <header>
-          <strong>Kitties and Chickens</strong>
+          <strong>{props.title}</strong>
         </header>
         <article>
+          {props.content}
           <p style={{textAlign: "left"}}><strong>MEOW</strong></p>
           <p style={{textAlign: "center"}}><strong>CLUCK</strong></p>
           <p style={{textAlign: "right"}}><strong>MEUCK</strong></p>

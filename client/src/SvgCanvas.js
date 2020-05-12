@@ -168,6 +168,8 @@ function SvgCanvas(props) {
           key={index}
           card={props.cards[id]}
           setOnMouseDown={(event) => setOnMouseDown(event, { id })}
+          title={props.cards[id].fields && props.cards[id].fields.title}
+          content={props.cards[id].fields && props.cards[id].fields.content}
         />
       )}
     </svg>

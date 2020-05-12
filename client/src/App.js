@@ -38,9 +38,9 @@ let newId = 1;
 function App(_props) {
 
   const [ cards, setCards ] = useState({
-    kitties:  { x:    0, y:   0},
-    chickens: { x: -100, y: -50},
-    kitckens: { x:  150, y:  60}
+    kitties:  { x:    0, y:   0, fields: { title: "kitties!",  content: "Kitties are the best." } },
+    chickens: { x: -100, y: -50, fields: { title: "chickens!", content: "No, chickens are the best!" } },
+    kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
   });
 
   const findCard = (id) => cards[id];

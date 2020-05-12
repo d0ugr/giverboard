@@ -19,47 +19,49 @@ const socket = io("http://localhost:3001");
 // });
 
 socket.on("server_message", (message) => {
-  console.log(`socket.server_message ${message}`);
+  console.log("socket.server_message:", message);
 });
 
 let newId = 1;
 
-
-// cardId: {
-//   x: 0,
-//   y: 0,
-//   fields: {
-//     ...
-//   }
-// }
+const DEFAULT_SESSION = { cards: {} }
 
 
 
 function App(_props) {
 
-  const [ cards, setCards ] = useState({
-    kitties:  { x: -100, y: -50, fields: { title: "kitties!",  content: "Kitties are the best." } },
-    chickens: { x:    0, y:   0, fields: { title: "chickens!", content: "No, chickens are the best!" } },
-    kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
-  });
+  // session = {
+  //   id: <sessionId>,
+  //   name: "<name>",
+  //   cards: {
+  //     <cardId>: {
+  //     x: 0,
+  //     y: 0,
+  //     fields: {
+  //       ...
+  //     }
+  //   }
+  // }
+
+  const [ session, setSession ] = useState(DEFAULT_SESSION);
 
   const setCard = useCallback((id, card) => {
-    setCards((prevState) => {
+    setSession((prevState) => {
       if (card) {
-        prevState[id] = {
-          ...prevState[id],
+        prevState.cards[id] = {
+          ...prevState.cards[id],
           ...card
         };
       } else {
-        delete prevState[id];
+        delete prevState.cards[id];
       }
       return { ...prevState };
     });
-  }, [ setCards ]);
+  }, [ setSession ]);
 
   const setCardNotify = (id, card) => {
     setCard(id, card);
-    socket.emit("update_cards", id, card);
+    socket.emit("update_card", id, card);
   }
 
 
@@ -80,16 +82,21 @@ function App(_props) {
   }
 
   const updateChickens = () => {
-    setCardNotify("chickens", {
-      x: 10, y: 10,
-    });
+    setCardNotify("chickens", { x: 10, y: 10 });
   }
 
 
 
   // Set up stuff on page load:
   useEffect(() => {
-    socket.on("update_cards", (id, card) => setCard(id, card));
+
+    socket.emit("join_session", "default", (status, session) => {
+      console.log("socket.join_session:", status, session)
+      setSession(session);
+    });
+
+    socket.on("update_card", (id, card) => setCard(id, card));
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,7 +112,7 @@ function App(_props) {
       <main>
 
         <div className="App-sidebar">
-          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(cards)}>Dump cards to console</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => addRandomCard()}>Add card</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
@@ -128,7 +135,7 @@ function App(_props) {
           <SvgCanvas
             viewBoxSize={300}
             className={"whiteboard"}
-            cards={cards}
+            cards={session.cards}
             setCardNotify={setCardNotify}
           />
         </div>

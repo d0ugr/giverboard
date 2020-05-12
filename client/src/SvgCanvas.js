@@ -72,7 +72,7 @@ function SvgCanvas(props) {
 
   function onMouseDown(event) {
     if (event.ctrlKey) {
-      setOnMouseDown(svg, event, canvasState);
+      setOnMouseDown(event, canvasState);
     }
   }
 

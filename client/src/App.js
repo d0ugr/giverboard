@@ -89,10 +89,7 @@ function App(_props) {
 
   // Set up stuff on page load:
   useEffect(() => {
-    socket.on("update_cards", (id, card) => {
-      console.log("socket.update_cards", id, card);
-      setCard(id, card);
-    });
+    socket.on("update_cards", (id, card) => setCard(id, card));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

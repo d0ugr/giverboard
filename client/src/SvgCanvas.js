@@ -29,7 +29,20 @@ function SvgCanvas(props) {
   //    to map screen coordinates to SVG space coordinates:
   const [ svg, setSvg ] = useState(null);
   useEffect(() => {
-    setSvg(document.querySelector(`svg.${props.className}`));
+    const svg = document.querySelector(`svg.${props.className}`);
+    setSvg(svg);
+
+    // document.addEventListener("mousemove", onMouseMove);
+
+    document.addEventListener("keydown", (event) => {
+      svg.style.cursor = (event.keyCode === KEY_CTRL ? "move" : "default");
+    });
+
+    document.addEventListener("keyup", (event) => {
+      svg.style.cursor = (event.keyCode === KEY_CTRL ? "default" : "move");
+    });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initialize the canvas SVG viewbox origin and dimensions:
@@ -68,7 +81,7 @@ function SvgCanvas(props) {
     });
   }
 
-  // Canvas mouse event handlers:
+  // Canvas mouse event handlers
 
   function onMouseDown(event) {
     if (event.ctrlKey) {
@@ -83,9 +96,6 @@ function SvgCanvas(props) {
   function onMouseMove(event) {
     // console.log(event.target)
     // console.log(event.clientX, event.clientY)
-
-    // Show the move cursor over the canvas if holding Ctrl:
-    svg.style.cursor = (event.ctrlKey ? "move" : "default");
 
     // Only move stuff if the left mouse button is being held:
     if (event.buttons === LEFT_BUTTON && clickState) {
@@ -132,15 +142,16 @@ function SvgCanvas(props) {
     });
   }
 
-  // Canvas keyboard event handlers:
+  // Canvas keyboard event handlers
 
-  function onKeyDown(event) {
-    svg.style.cursor = (event.keyCode === KEY_CTRL ? "move" : "default");
-  }
+  // Showing the move cursor when Ctrl is held
+  //    is handled by document mouse events.
 
-  function onKeyUp(event) {
-    svg.style.cursor = (event.keyCode === KEY_CTRL ? "default" : "move");
-  }
+  // function onKeyDown(event) {
+  // }
+
+  // function onKeyUp(event) {
+  // }
 
 
 
@@ -159,8 +170,8 @@ function SvgCanvas(props) {
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
       onWheel={onWheel}
-      onKeyDown={onKeyDown}
-      onKeyUp={onKeyUp}
+      // onKeyDown={onKeyDown}
+      // onKeyUp={onKeyUp}
     >
       <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
       {Object.keys(props.cards).map((id, index) =>

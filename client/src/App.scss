@@ -34,10 +34,19 @@ main {
   cursor: default;
 
   input, textarea {
-    width: 93%;
+    width: 90%;
     border: .2em solid darkgray;
     margin: 0 .5% 1em;
     padding: 0.5em;
+    background-color: ghostwhite;
+    font-size: 1em;
+  }
+
+  button {
+    padding: 0.25em 2em;
+    border: .2em solid darkgray;
+    background-color: ghostwhite;
+    font-size: 1em;
   }
 
   svg {

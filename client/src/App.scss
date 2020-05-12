@@ -13,12 +13,7 @@ main {
   height: 100%;
 }
 
-header {
-  // position: fixed;
-  // top: 0;
-  // left: 0;
-  // right: 0;
-
+.App-header {
   background-color: darkslategray;
   // min-height: 100vh;
   display: flex;
@@ -31,7 +26,7 @@ header {
 }
 
 .App-sidebar {
-  width: 15rem;
+  width: 17rem;
   height: 100%;
   background-color: #332233;
   color: skyblue;
@@ -49,11 +44,6 @@ header {
 }
 
 svg {
-  // position: fixed;
-  // top: 0;
-  // bottom: 0;
-  // left: 0;
-  // right: 0;
   width: 100%;
   height: 100%;
   background-color: #282c34;
@@ -62,11 +52,6 @@ svg {
 ellipse {
   fill: purple;
   stroke: black;
-  cursor: move;
-}
-
-ellipse.moving {
-  stroke: blue
 }
 
 rect {
@@ -75,24 +60,33 @@ rect {
   cursor: move;
 }
 
-rect.moving {
-  stroke: blue
-}
+foreignObject {
+  width: 5rem;
+  height: 3rem;
+  font-size: 0.25rem;
+  cursor: move;
 
-foreignObject div {
-  border: .1rem solid lightcoral;
-  background-color: purple;
-  cursor: default;
+  div {
+    height: 2.8rem;
+    border: .1rem solid darkgreen;
+    background-color: khaki;
 
-  header {
-    padding: .25em;
-    background-color: olive;
-    font-size: .25rem;
-    cursor: move;
-  }
+    header {
+      height: 15%;
+      padding: .25em;
+      background-color: olive;
+      color: ghostwhite;
+      font-size: 150%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: move;
+    }
 
-  article {
-    padding: 1em;
-    font-size: .25rem;
+    article {
+      height: 85%;
+      padding: 1em;
+      word-break: break-all;
+    }
   }
 }

@@ -1,35 +1,28 @@
 import React from "react";
 
-const CARD_WIDTH  = 75;
-const CARD_HEIGHT = 50;
+// const CARD_WIDTH  = 75;
+// const CARD_HEIGHT = 50;
 
 
 
 function Card(props) {
 
   return (
-    // <rect
-    //   x={props.card.x || 0}
-    //   y={props.card.y || 0}
-    //   width={props.card.w || CARD_WIDTH}
-    //   height={props.card.h || CARD_HEIGHT}
-    //   onMouseDown={props.setOnMouseDown}
-    // ></rect>
-
-    // foreignObject can't be styled, so container div is necessary:
+    // foreignObject can't be styled much,
+    //    so a container div is necessary:
     <foreignObject
       x={props.card.x || 0}
       y={props.card.y || 0}
-      width={props.card.w || CARD_WIDTH}
-      height={props.card.h || CARD_HEIGHT}
-      onMouseDown={props.setOnMouseDown}
+      // width={props.card.w || CARD_WIDTH}
+      // height={props.card.h || CARD_HEIGHT}
+      onMouseDown={props.setClickObject}
     >
-      <div style={{maxHeight: `${props.card.h || CARD_HEIGHT}px`}}>
+      <div>
         <header>
           <strong>{props.title}</strong>
         </header>
         <article>
-          {props.content}
+          <span>{props.content}</span>
           <p style={{textAlign: "left"}}><strong>MEOW</strong></p>
           <p style={{textAlign: "center"}}><strong>CLUCK</strong></p>
           <p style={{textAlign: "right"}}><strong>MEUCK</strong></p>

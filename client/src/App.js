@@ -46,7 +46,10 @@ function App(_props) {
   const setCard = useCallback((id, card) => {
     setCards((prevState) => {
       if (card) {
-        prevState[id] = card;
+        prevState[id] = {
+          ...prevState[id],
+          ...card
+        };
       } else {
         delete prevState[id];
       }
@@ -63,13 +66,17 @@ function App(_props) {
 
   // Temporary testing functions
 
-  const addRandomCard = (_event) => {
-    const newCardId = `id_${newId++}`;
-    const newCard = {
-      x:  Math.floor(Math.random() * 200) - 100,
-      y:  Math.floor(Math.random() * 200) - 100,
-    };
-    setCardNotify(newCardId, newCard);
+  const addRandomCard = () => {
+    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
+    const content = document.querySelector(".App-sidebar textarea").value;
+    setCardNotify(`id_${newId++}`, {
+      x: Math.floor(Math.random() * 200) - 100,
+      y: Math.floor(Math.random() * 200) - 100,
+      fields: {
+        title:   title,
+        content: content
+      }
+    });
   }
 
   const updateChickens = () => {
@@ -93,27 +100,36 @@ function App(_props) {
 
   return (
     <div className="App">
-      <header>
+
+      <header className="App-header">
         WB2020 -&nbsp;<span style={{color: "darkgrey"}}>Hold Ctrl to pan the canvas, Kitties add cards</span>
       </header>
+
       <main>
+
         <div className="App-sidebar">
-          <ul>
-            <li onClick={(_event) => console.log(cards)}>Dump cards</li>
-            <li onClick={addRandomCard}>Kitties</li>
-            <li onClick={(_event) => updateChickens()}>Chickens</li>
-            <li onClick={(_event) => setCardNotify("kitckens")}>Kittes and chickens</li>
-          </ul>
+          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(cards)}>Dump cards to console</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => addRandomCard()}>Add card</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
+          <hr/>
+          <div>
+            <label>Title</label><br/><input name={"card-title"} style={{width: "100%", marginBottom: ".5em"}} /><br/>
+            <label>Content</label><br/><textarea name={"card-content"} style={{width: "100%", marginBottom: "1em"}} /><br/>
+            <button onClick={addRandomCard}>Add card</button>
+          </div>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}
         </div>
+
         <SvgCanvas
           viewBoxSize={300}
           className={"whiteboard"}
           cards={cards}
           setCardNotify={setCardNotify}
         />
+
       </main>
 
     </div>

@@ -100,7 +100,7 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("update_card", (id, card) => {
-    // console.dir(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
+    // console.log(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
     loadCards(socket.sessionKey, (session) => {
       session.cards[id] = {
         ...session.cards[id],
@@ -114,6 +114,12 @@ app.io.on("connection", (socket) => {
   // socket.on("save_card", (id) => {
   //   console.dir(`socket.save_card: ${id}`);
   // });
+
+  socket.on("delete_all_cards", () => {
+    console.log("socket.delete_all_cards");
+    app.sessions[socket.sessionKey].cards = {};
+    socket.broadcast.to(socket.sessionKey).emit("delete_all_cards");
+  });
 
 });
 

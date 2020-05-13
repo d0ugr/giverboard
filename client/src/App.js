@@ -70,6 +70,11 @@ function App(_props) {
     });
   }, [ setSession ]);
 
+  const deleteAllCardsNotify = useCallback(() => {
+    deleteAllCards();
+    socket.emit("delete_all_cards");
+  }, [ setSession ]);
+
 
 
   const getSessions = () => {
@@ -150,13 +155,10 @@ function App(_props) {
       })
     });
 
-    socket.on("server_message", (message) => {
-      console.log("socket.server_message:", message);
-    });
+    socket.on("server_message", (message) => console.log("socket.server_message:", message));
 
-    socket.on("update_card", (id, card) => {
-      setCard(id, card);
-    });
+    socket.on("update_card", (id, card) => setCard(id, card));
+    socket.on("delete_all_cards", () => deleteAllCards());
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -180,7 +182,7 @@ function App(_props) {
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addRandomCard}>Add card</button>&nbsp;
-            <button onClick={deleteAllCards}>Clear board</button>
+            <button onClick={deleteAllCardsNotify}>Clear board</button>
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader

@@ -88,17 +88,23 @@ function App(_props) {
     });
   };
 
+  const addCard = () => {
+    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
+    const content = document.querySelector(".App-sidebar textarea").value;
+    addRandomCard(title, content);
+  };
+
   const addCards = (cardData) => {
-    console.log(cardData)
+    for (const row of cardData) {
+      addRandomCard(row[1], row[2]);
+    }
   };
 
 
 
   // Temporary testing functions
 
-  const addRandomCard = () => {
-    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
-    const content = document.querySelector(".App-sidebar textarea").value;
+  const addRandomCard = (title, content) => {
     setCardNotify(util.uuidv4_compact(), {
       x: Math.floor(Math.random() * 200) - 100,
       y: Math.floor(Math.random() * 200) - 100,
@@ -169,7 +175,7 @@ function App(_props) {
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
-            <button onClick={addRandomCard}>Add card</button>
+            <button onClick={addCard}>Add card</button>
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader

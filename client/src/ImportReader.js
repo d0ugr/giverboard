@@ -11,7 +11,7 @@ function ImportReader(props) {
   const fileEncoding = props.fileEncoding || "UTF-8";
 
   const onClick = (_event) => {
-    document.querySelector(elementId).click();
+    document.querySelector(`#${elementId}`).click();
   };
 
   const openFiles = (event) => {

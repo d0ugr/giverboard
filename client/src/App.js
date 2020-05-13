@@ -169,8 +169,6 @@ function App(_props) {
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addRandomCard}>Add card</button>
           </div>
-          <p style={{cursor: "pointer"}} onClick={(_event) => updateChickens()}>Move chickens</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => setCardNotify("kitckens")}>Remove kitckens</p>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}

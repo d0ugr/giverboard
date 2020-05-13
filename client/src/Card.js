@@ -25,9 +25,6 @@ function Card(props) {
         </header>
         <article>
           <span>{props.content}</span>
-          <p style={{textAlign: "left"}}><strong>MEOW</strong></p>
-          <p style={{textAlign: "center"}}><strong>CLUCK</strong></p>
-          <p style={{textAlign: "right"}}><strong>MEUCK</strong></p>
         </article>
       </div>
     </foreignObject>

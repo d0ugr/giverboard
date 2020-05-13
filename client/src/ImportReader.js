@@ -28,9 +28,10 @@ function ImportReader(props) {
       fileReader.onload = (_event) => {
         const csvData = csv.parse(
           fileReader.result, {
-            error:    props.onError,
-            encoding: fileEncoding,
-            header:   props.header
+            error:          props.onError,
+            encoding:       fileEncoding,
+            header:         props.header,
+            skipEmptyLines: true
           }
         );
         props.onFileLoaded && props.onFileLoaded(fileInfo, csvData.data)

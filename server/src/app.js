@@ -67,7 +67,10 @@ app.io.on("connection", (socket) => {
 
   socket.on("get_sessions", (callback) => {
     console.log("socket.get_sessions");
-    callback(Object.keys(app.sessions).map((sessionKey) => ({ id: sessionKey, name: app.sessions[sessionKey].name })));
+    callback(Object.keys(app.sessions).map((sessionKey) => ({
+      id:   sessionKey,
+      name: app.sessions[sessionKey].name
+    })));
   });
 
   socket.on("new_session", (name, callback) => {
@@ -107,10 +110,10 @@ app.io.on("connection", (socket) => {
     });
   });
 
-  // Save a card in the database (i.e. on mouseup):
-  socket.on("save_card", (id) => {
-    console.dir(`socket.save_card: ${id}`);
-  });
+  // // Save a card in the database (i.e. on mouseup):
+  // socket.on("save_card", (id) => {
+  //   console.dir(`socket.save_card: ${id}`);
+  // });
 
 });
 

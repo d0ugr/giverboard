@@ -60,6 +60,15 @@ function App(_props) {
     socket.emit("update_card", id, card);
   };
 
+  const deleteAllCards = useCallback(() => {
+    setSession((prevState) => {
+      return {
+        ...prevState,
+        cards: {}
+      };
+    });
+  }, [ setSession ]);
+
 
 
   const getSessions = () => {
@@ -153,19 +162,19 @@ function App(_props) {
         <div className="App-sidebar">
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
+          <div>
+            <label>Title</label><br/><input name={"card-title"} /><br/>
+            <label>Content</label><br/><textarea name={"card-content"} /><br/>
+            <button onClick={addRandomCard}>Add card</button>&nbsp;
+            <button onClick={deleteAllCards}>Clear board</button>
+          </div>
           <hr/>
-          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
           <SessionList
             sessionList={sessionList}
             joinSession={joinSession}
           />
-          <hr/>
-          <div>
-            <label>Title</label><br/><input name={"card-title"} /><br/>
-            <label>Content</label><br/><textarea name={"card-content"} /><br/>
-            <button onClick={addRandomCard}>Add card</button>
-          </div>
+          <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}

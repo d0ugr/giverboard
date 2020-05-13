@@ -127,7 +127,6 @@ function App(_props) {
       y += 20;
     }
     setCardsNotify(cards);
-    socket.emit("update_cards", cards);
   };
 
 

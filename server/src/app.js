@@ -67,44 +67,49 @@ app.io.on("connection", (socket) => {
 
   socket.on("get_sessions", (callback) => {
     console.log("socket.get_sessions");
-    callback(Object.keys(app.sessions).map((sessionId) => ({ id: sessionId, name: app.sessions[sessionId].name })));
+    callback(Object.keys(app.sessions).map((sessionKey) => ({ id: sessionKey, name: app.sessions[sessionKey].name })));
   });
 
   socket.on("new_session", (name, callback) => {
     console.log(`socket.new_session: ${name}`);
     if (name && typeof name === "string") {
-      socket.sessionId = newSession(name);
-      callback("session_created", socket.sessionId);
+      socket.sessionKey = newSession(name);
+      callback("session_created", socket.sessionKey);
     } else {
       callback("error", `Cannot create session "${name}"`);
     }
   });
 
-  socket.on("join_session", (sessionId, callback) => {
-    console.log(`socket.join_session: ${sessionId}, in ${JSON.stringify(socket.rooms)}`);
-    if (app.sessions[sessionId]) {
+  socket.on("join_session", (sessionKey, callback) => {
+    console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringify(socket.rooms)}`);
+    if (app.sessions[sessionKey]) {
       socket.leaveAll();
-      socket.sessionId = sessionId;
-      socket.join(sessionId, () => {
+      socket.sessionKey = sessionKey;
+      socket.join(sessionKey, () => {
         console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
-        loadCards(sessionId, (session) => {
+        loadCards(sessionKey, (session) => {
           callback("session_joined", session);
         });
       });
     } else {
-      callback("error", `Session "${sessionId}" not found`);
+      callback("error", `Session "${sessionKey}" not found`);
     }
   });
 
   socket.on("update_card", (id, card) => {
     // console.dir(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
-    loadCards(socket.sessionId, (session) => {
+    loadCards(socket.sessionKey, (session) => {
       session.cards[id] = {
         ...session.cards[id],
         ...card
       };
-      socket.broadcast.to(socket.sessionId).emit("update_card", id, card);
+      socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);
     });
+  });
+
+  // Save a card in the database (i.e. on mouseup):
+  socket.on("save_card", (id) => {
+    console.dir(`socket.save_card: ${id}`);
   });
 
 });
@@ -114,21 +119,25 @@ app.srv.listen(process.env.APP_PORT);
 
 
 const newSession = (name) => {
-  const sessionId = util.newUuid();
-  app.sessions[sessionId] = { name, cards: {} };
-  return sessionId;
+  const sessionKey = util.newUuid();
+  app.sessions[sessionKey] = { name, cards: {} };
+  return sessionKey;
 };
 
-// const deleteSession = (sessionId) => {
-//   delete app.sessions[sessionId];
+// const deleteSession = (sessionKey) => {
+//   delete app.sessions[sessionKey];
 // };
 
-const loadCards = (sessionId, callback) => {
-  if (!app.sessions[sessionId].cards) {
-    const dbId = app.sessions[sessionId].id;
+
+
+const loadCards = (sessionKey, callback) => {
+  if (app.sessions[sessionKey].cards) {
+    callback(app.sessions[sessionKey]);
+  } else {
+    const dbId = app.sessions[sessionKey].id;
     app.db.query("SELECT * FROM cards WHERE session_id = $1", [ dbId ])
       .then((res) => {
-        const session = app.sessions[sessionId];
+        const session = app.sessions[sessionKey];
         session.cards = {};
         for (const card of res.rows) {
           session.cards[card.id] = {
@@ -140,8 +149,6 @@ const loadCards = (sessionId, callback) => {
         callback(session);
       })
       .catch((err) => console.log(err));
-  } else {
-    callback(app.sessions[sessionId]);
   }
 };
 

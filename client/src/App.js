@@ -23,7 +23,8 @@ const DEFAULT_SESSION = { cards: {} };
 function App(_props) {
 
   // session = {
-  //   name: "<name>",
+  //   id: <dbid>   <- Get rid of this
+  //   name: <name>,
   //   cards: {
   //     <cardId>: {
   //     x: 0,
@@ -61,27 +62,6 @@ function App(_props) {
 
 
 
-  // Temporary testing functions
-
-  const addRandomCard = () => {
-    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
-    const content = document.querySelector(".App-sidebar textarea").value;
-    setCardNotify(util.uuidv4_compact(), {
-      x: Math.floor(Math.random() * 200) - 100,
-      y: Math.floor(Math.random() * 200) - 100,
-      content: {
-        title:   title,
-        content: content
-      }
-    });
-  };
-
-  const updateChickens = () => {
-    setCardNotify("chickens", { x: 10, y: 10 });
-  };
-
-
-
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
       console.log("socket.get_sessions:", sessions)
@@ -103,6 +83,23 @@ function App(_props) {
       if (status === "session_created") {
         joinSession(sessionId);
         getSessions();
+      }
+    });
+  };
+
+
+
+  // Temporary testing functions
+
+  const addRandomCard = () => {
+    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
+    const content = document.querySelector(".App-sidebar textarea").value;
+    setCardNotify(util.uuidv4_compact(), {
+      x: Math.floor(Math.random() * 200) - 100,
+      y: Math.floor(Math.random() * 200) - 100,
+      content: {
+        title:   title,
+        content: content
       }
     });
   };

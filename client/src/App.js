@@ -36,7 +36,7 @@ function App(_props) {
   //   }
   // }
 
-  const [ app, setApp ] = useState({ connected: false });
+  const [ connected, setConnected ] = useState(false);
 
   const [ sessionList, setSessionList ] = useState([]);
 
@@ -139,20 +139,14 @@ function App(_props) {
 
     socket.on("connect", () => {
       console.log("socket.connect");
-      setApp({
-        ...app,
-        connected: true
-      })
+      setConnected(true);
       joinSession("default");
       getSessions()
     });
 
     socket.on("disconnect", () => {
       console.log("socket.disconnect");
-      setApp({
-        ...app,
-        connected: false
-      })
+      setConnected(false);
     });
 
     socket.on("server_message", (message) => console.log("socket.server_message:", message));
@@ -170,7 +164,7 @@ function App(_props) {
 
       <Header
         sessionName={session.name}
-        connected={app.connected}
+        connected={connected}
       />
 
       <main>
@@ -181,7 +175,7 @@ function App(_props) {
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
-            <button onClick={addRandomCard}>Add card</button>&nbsp;
+            <button onClick={addCard}>Add card</button>&nbsp;
             <button onClick={deleteAllCardsNotify}>Clear board</button>
           </div>
           <p style={{cursor: "pointer"}}>

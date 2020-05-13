@@ -73,7 +73,7 @@ function App(_props) {
   const deleteAllCardsNotify = useCallback(() => {
     deleteAllCards();
     socket.emit("delete_all_cards");
-  }, [ setSession ]);
+  }, [ deleteAllCards ]);
 
 
 

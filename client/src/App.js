@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 
+import * as util from "./lib/util";
+
 import "./App.scss";
 
-import * as util from "./lib/util";
-import Header    from "./Header";
-import SvgCanvas from "./SvgCanvas";
+import Header      from "./Header";
+import SessionList from "./SessionList";
+import SvgCanvas   from "./SvgCanvas";
 
 
 
@@ -32,7 +34,6 @@ const DEFAULT_SESSION = { cards: {} };
 function App(_props) {
 
   // session = {
-  //   id: <sessionId>,
   //   name: "<name>",
   //   cards: {
   //     <cardId>: {
@@ -43,6 +44,8 @@ function App(_props) {
   //     }
   //   }
   // }
+
+  const [ sessionList, setSessionList ] = useState([]);
 
   const [ session, setSession ] = useState(DEFAULT_SESSION);
 
@@ -88,6 +91,13 @@ function App(_props) {
 
 
 
+  const getSessions = () => {
+    socket.emit("get_sessions", (sessions) => {
+      console.log("socket.get_sessions:", sessions)
+      setSessionList(sessions);
+    });
+  };
+
   const joinSession = (sessionId) => {
     socket.emit("join_session", sessionId, (status, session) => {
       console.log("socket.join_session:", status, session)
@@ -101,6 +111,7 @@ function App(_props) {
       console.log("socket.new_session:", status, sessionId)
       if (status === "session_created") {
         joinSession(sessionId);
+        getSessions();
       }
     });
   };
@@ -110,9 +121,14 @@ function App(_props) {
   // Set up stuff on page load:
   useEffect(() => {
 
-    joinSession("default");
+    socket.on("connect", () => {
+      joinSession("default");
+      getSessions()
+    });
 
-    socket.on("update_card", (id, card) => setCard(id, card));
+    socket.on("update_card", (id, card) => {
+      setCard(id, card);
+    });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -131,8 +147,12 @@ function App(_props) {
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
           <hr/>
           <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => getSessions()}>Get sessions</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
-          {/* <p style={{cursor: "pointer"}} onClick={(_event) => joinSession()}>Join session</p> */}
+          <SessionList
+            sessionList={sessionList}
+            joinSession={joinSession}
+          />
           <hr/>
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>

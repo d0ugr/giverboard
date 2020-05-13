@@ -44,6 +44,11 @@ app.io.on("connection", (socket) => {
     console.log(`socket.disconnect: ${socket.id}`);
   });
 
+  socket.on("get_sessions", (callback) => {
+    console.dir("socket.get_sessions");
+    callback(Object.keys(app.sessions).map((sessionId) => ({ id: sessionId, name: app.sessions[sessionId].name })));
+  });
+
   socket.on("new_session", (name, callback) => {
     console.dir(`socket.new_session: ${name}`);
     if (name && typeof name === "string") {

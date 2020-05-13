@@ -5,10 +5,11 @@ import * as util from "./lib/util";
 
 import "./App.scss";
 
-import Header      from "./Header";
-import SessionList from "./SessionList";
-import SizeCues    from "./SizeCues";
-import SvgCanvas   from "./SvgCanvas";
+import Header       from "./Header";
+import SessionList  from "./SessionList";
+import ImportReader from "./ImportReader";
+import SizeCues     from "./SizeCues";
+import SvgCanvas    from "./SvgCanvas";
 
 
 
@@ -85,6 +86,10 @@ function App(_props) {
         getSessions();
       }
     });
+  };
+
+  const addCards = (cardData) => {
+    console.log(cardData)
   };
 
 
@@ -166,6 +171,16 @@ function App(_props) {
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addRandomCard}>Add card</button>
           </div>
+          <p style={{cursor: "pointer"}}>
+            <ImportReader
+              id="csv-import"
+              className="csv-import"
+              prompt="Open CSV file..."
+              fileEncoding="UTF-8"
+              onFileLoaded={(_fileInfo, csvData) => addCards(csvData)}
+              onError={() => alert("Error")}
+            />
+          </p>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}

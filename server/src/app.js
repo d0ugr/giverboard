@@ -136,6 +136,12 @@ app.io.on("connection", (socket) => {
   //   console.dir(`socket.save_card: ${id}`);
   // });
 
+  socket.on("update_name", (name) => {
+    console.log(`socket.update_name: ${name}`);
+    socket.participantName = name;
+    socket.broadcast.to(socket.sessionKey).emit("update_name", name);
+  });
+
 });
 
 app.srv.listen(process.env.APP_PORT);

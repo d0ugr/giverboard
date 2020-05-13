@@ -22,7 +22,7 @@ const socket = io(`ws://${windowLocation.hostname}:3001`);
 function App(_props) {
 
   // session = {
-  //   id: <dbid>   <- Get rid of this
+  //   id: <sessionkey>
   //   name: <name>,
   //   cards: {
   //     <cardId>: {
@@ -31,6 +31,10 @@ function App(_props) {
   //     content: {
   //       ...
   //     }
+  //   },
+  //   participants: {
+  //     id: <id>
+  //     name: <name>
   //   }
   // }
 
@@ -39,6 +43,39 @@ function App(_props) {
   const [ sessionList, setSessionList ] = useState([]);
 
   const [ session, setSession ] = useState({});
+
+
+
+  const getSessions = () => {
+    socket.emit("get_sessions", (sessions) => {
+      console.log("socket.get_sessions:", sessions)
+      setSessionList(sessions);
+    });
+  };
+
+  const joinSession = (sessionKey) => {
+    socket.emit("join_session", sessionKey, (status, session) => {
+      console.log("socket.join_session:", status, session)
+      if (status !== "error") {
+        setSession(session);
+      } else {
+        joinSession("default");
+      }
+    });
+  };
+
+  const newSession = () => {
+    const title = document.querySelector(".App-sidebar input[name='card-title']").value;
+    socket.emit("new_session", title, (status, sessionKey) => {
+      console.log("socket.new_session:", status, sessionKey)
+      if (status === "session_created") {
+        joinSession(sessionKey);
+        getSessions();
+      }
+    });
+  };
+
+
 
   const setCard = useCallback((id, card) => {
     setSession((prevState) => {
@@ -78,37 +115,6 @@ function App(_props) {
     socket.emit("update_cards", cards);
   }, [ setCards ]);
 
-
-
-  const getSessions = () => {
-    socket.emit("get_sessions", (sessions) => {
-      console.log("socket.get_sessions:", sessions)
-      setSessionList(sessions);
-    });
-  };
-
-  const joinSession = (sessionKey) => {
-    socket.emit("join_session", sessionKey, (status, session) => {
-      console.log("socket.join_session:", status, session)
-      if (status !== "error") {
-        setSession(session);
-      } else {
-        joinSession("default");
-      }
-    });
-  };
-
-  const newSession = () => {
-    const title = document.querySelector(".App-sidebar input[name='card-title']").value;
-    socket.emit("new_session", title, (status, sessionKey) => {
-      console.log("socket.new_session:", status, sessionKey)
-      if (status === "session_created") {
-        joinSession(sessionKey);
-        getSessions();
-      }
-    });
-  };
-
   const addCard = () => {
     const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
     const content = document.querySelector(".App-sidebar textarea").value;
@@ -132,6 +138,12 @@ function App(_props) {
       y += 20;
     }
     setCardsNotify(cards);
+  };
+
+
+
+  const updateName = (event) => {
+    socket.emit("update_name", event.target.value);
   };
 
 
@@ -172,6 +184,8 @@ function App(_props) {
     socket.on("update_card", (id, card) => setCard(id, card));
     socket.on("update_cards", (cards) => setCards(cards));
 
+    socket.on("update_name", (name) => console.log("socket.update_name", name));
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -190,6 +204,8 @@ function App(_props) {
         <div className="App-sidebar">
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
+          <label>Your name</label><br/><input name={"participant-name"} onChange={updateName}/><br/>
+          <hr/>
           <div>
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>

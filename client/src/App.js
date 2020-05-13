@@ -7,23 +7,12 @@ import "./App.scss";
 
 import Header      from "./Header";
 import SessionList from "./SessionList";
+import SizeCues    from "./SizeCues";
 import SvgCanvas   from "./SvgCanvas";
 
 
 
 const socket = io("http://localhost:3001");
-
-// socket.on("connect", function() {
-//   console.log("socket.connect");
-// });
-
-// socket.on("disconnect", function() {
-//   console.log("socket.disconnect");
-// });
-
-socket.on("server_message", (message) => {
-  console.log("socket.server_message:", message);
-});
 
 
 
@@ -122,11 +111,22 @@ function App(_props) {
   useEffect(() => {
 
     socket.on("connect", () => {
+      console.log("socket.connect");
       joinSession("default");
       getSessions()
     });
 
-    socket.on("update_card", (id, card) => {
+    socket.on("disconnect", () => {
+      console.log("socket.disconnect");
+      joinSession("default");
+      getSessions()
+    });
+
+    socket.on("server_message", (message) => {
+      console.log("socket.server_message:", message);
+    });
+
+        socket.on("update_card", (id, card) => {
       setCard(id, card);
     });
 
@@ -167,8 +167,7 @@ function App(_props) {
         </div>
 
         <div className="main-container">
-          <div className="left size-cue">EASY</div>
-          <div className="right size-cue">HARD</div>
+          <SizeCues />
           <SvgCanvas
             viewBoxSize={300}
             className={"whiteboard"}

@@ -1,0 +1,21 @@
+.size-cue {
+  position: absolute;
+  top: 0;
+  padding: 1em;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-shadow:
+  .1em .1em .1em black, -.1em .1em .1em black, .1em -.1em .1em black, -.1em -.1em .1em black,
+    0 0 .5em gray, 0 0 1em gray,
+    0 0 .5em gray, 0 0 1em gray;
+}
+
+.left {
+  left: 0;
+  color: lightseagreen;
+}
+
+.right {
+  right: 0;
+  color: lightcoral;
+}

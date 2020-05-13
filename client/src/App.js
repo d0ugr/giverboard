@@ -13,7 +13,8 @@ import SvgCanvas    from "./SvgCanvas";
 
 
 
-const socket = io("http://localhost:3001");
+const url = new URL(window.location);
+const socket = io(`ws://${url.hostname}:3001`);
 
 
 
@@ -109,9 +110,19 @@ function App(_props) {
   };
 
   const addJiraCards = (cardData) => {
+    let x = -200;
+    let y = -200;
     for (const row of cardData) {
       if (row["Issue Type"] && row["Issue key"] && row["Summary"]) {
-        addRandomCard(row["Issue Type"].toLowerCase(), row["Issue key"], row["Summary"]);
+        setCardNotify(util.uuidv4_compact(), {
+          x, y,
+          content: {
+            category: row["Issue Type"].toLowerCase(),
+            title:    row["Issue key"],
+            content:  row["Summary"]
+          }
+        });
+        y += 20;
       }
     }
   };

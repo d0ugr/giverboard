@@ -13,8 +13,9 @@ import SvgCanvas    from "./SvgCanvas";
 
 
 
-const url = new URL(window.location);
-const socket = io(`ws://${url.hostname}:3001`);
+const windowLocation = new URL(window.location);
+console.log(windowLocation);
+const socket = io(`ws://${windowLocation.hostname}:3001`);
 
 
 
@@ -86,19 +87,23 @@ function App(_props) {
     });
   };
 
-  const joinSession = (sessionId) => {
-    socket.emit("join_session", sessionId, (status, session) => {
+  const joinSession = (sessionKey) => {
+    socket.emit("join_session", sessionKey, (status, session) => {
       console.log("socket.join_session:", status, session)
-      setSession(session);
+      if (status !== "error") {
+        setSession(session);
+      } else {
+        joinSession("default");
+      }
     });
   };
 
   const newSession = () => {
     const title = document.querySelector(".App-sidebar input[name='card-title']").value;
-    socket.emit("new_session", title, (status, sessionId) => {
-      console.log("socket.new_session:", status, sessionId)
+    socket.emit("new_session", title, (status, sessionKey) => {
+      console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
-        joinSession(sessionId);
+        joinSession(sessionKey);
         getSessions();
       }
     });
@@ -153,8 +158,8 @@ function App(_props) {
     socket.on("connect", () => {
       console.log("socket.connect");
       setConnected(true);
-      joinSession("default");
-      getSessions()
+      joinSession(windowLocation.pathname.substring(1));
+      getSessions();
     });
 
     socket.on("disconnect", () => {

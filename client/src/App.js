@@ -173,10 +173,7 @@ function App(_props) {
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader
-              id="csv-import"
-              className="csv-import"
               prompt="Open CSV file..."
-              fileEncoding="UTF-8"
               onFileLoaded={(_fileInfo, csvData) => addCards(csvData)}
               onError={() => alert("Error")}
             />

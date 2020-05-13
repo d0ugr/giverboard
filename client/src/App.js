@@ -134,7 +134,7 @@ function App(_props) {
       console.log("socket.server_message:", message);
     });
 
-        socket.on("update_card", (id, card) => {
+    socket.on("update_card", (id, card) => {
       setCard(id, card);
     });
 

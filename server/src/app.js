@@ -81,28 +81,16 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("join_session", (sessionId, callback) => {
-    console.log(`socket.join_session: ${sessionId}`);
+    console.log(`socket.join_session: ${sessionId}, in ${JSON.stringify(socket.rooms)}`);
     if (app.sessions[sessionId]) {
+      socket.leaveAll();
       socket.sessionId = sessionId;
-      if (!app.sessions[sessionId].cards) {
-        const dbId = app.sessions[sessionId].id;
-        app.db.query("SELECT * FROM cards WHERE session_id = $1", [ dbId ])
-          .then((res) => {
-            const session = app.sessions[sessionId];
-            session.cards = {};
-            for (const card of res.rows) {
-              session.cards[card.id] = {
-                x:       card.position.x,
-                y:       card.position.y,
-                content: card.content
-              };
-            }
-            callback("session_joined", session);
-          })
-          .catch((err) => console.log(err));
-      } else {
-        callback("session_joined", app.sessions[sessionId]);
-      }
+      socket.join(sessionId, () => {
+        console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
+        loadCards(sessionId, (session) => {
+          callback("session_joined", session);
+        });
+      });
     } else {
       callback("error", `Session "${sessionId}" not found`);
     }
@@ -110,11 +98,13 @@ app.io.on("connection", (socket) => {
 
   socket.on("update_card", (id, card) => {
     // console.dir(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
-    app.sessions[socket.sessionId].cards[id] = {
-      ...app.sessions[socket.sessionId].cards[id],
-      ...card
-    };
-    socket.broadcast.emit("update_card", id, card);
+    loadCards(socket.sessionId, (session) => {
+      session.cards[id] = {
+        ...session.cards[id],
+        ...card
+      };
+      socket.broadcast.to(socket.sessionId).emit("update_card", id, card);
+    });
   });
 
 });
@@ -132,6 +122,28 @@ const newSession = (name) => {
 // const deleteSession = (sessionId) => {
 //   delete app.sessions[sessionId];
 // };
+
+const loadCards = (sessionId, callback) => {
+  if (!app.sessions[sessionId].cards) {
+    const dbId = app.sessions[sessionId].id;
+    app.db.query("SELECT * FROM cards WHERE session_id = $1", [ dbId ])
+      .then((res) => {
+        const session = app.sessions[sessionId];
+        session.cards = {};
+        for (const card of res.rows) {
+          session.cards[card.id] = {
+            x:       card.position.x,
+            y:       card.position.y,
+            content: card.content
+          };
+        }
+        callback(session);
+      })
+      .catch((err) => console.log(err));
+  } else {
+    callback(app.sessions[sessionId]);
+  }
+};
 
 
 

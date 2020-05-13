@@ -193,7 +193,7 @@ function App(_props) {
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader
-              prompt="Open Jira CSV file..."
+              prompt="Import Jira CSV file..."
               header={true}
               onFileLoaded={(_fileInfo, csvData) => addJiraCardsNotify(csvData)}
               onError={() => alert("Error")}

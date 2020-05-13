@@ -81,7 +81,11 @@ function SvgCanvas(props) {
       object: (event.ctrlKey
         ? canvasState
         : (object.id
-          ? { id: object.id, ...props.cards[object.id] }
+          ? {
+              id: object.id,
+              x: props.cards[object.id].x,
+              y: props.cards[object.id].y
+            }
           : object)
       )
     });
@@ -102,6 +106,8 @@ function SvgCanvas(props) {
   function onMouseMove(event) {
     // console.log(event.target)
     // console.log(event.clientX, event.clientY)
+    const mousePos = ui.screenToSvg(svg, ui.elementPoint(svg, event));
+    console.log(mousePos)
 
     // Only move stuff if the left mouse button is being held
     //    and something that can be moved was clicked:
@@ -142,8 +148,12 @@ function SvgCanvas(props) {
   }
 
   function onWheel(event) {
+    const mousePos = ui.screenToSvg(svg, ui.elementPoint(svg, event));
+    console.log(mousePos)
     const scaleFactor = (event.deltaY < 0 ? 0.9 : 1.1);
     updateCanvasState({
+      x: mousePos.x,
+      y: mousePos.y,
       w: canvasState.w * scaleFactor,
       h: canvasState.h * scaleFactor
     });

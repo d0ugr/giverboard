@@ -5,22 +5,21 @@
 
 INSERT INTO sessions (session_key, username, password, email, name) VALUES
   ('default',    'default', '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', 'de@fau.lt', 'Default Session'),
-  ('jazz',       '123',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', 't@e.st', 'Jazz Session'),
-  ('mad_sesh',   '123',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', 't@e.st', 'Mad Sesh'),
-  ('max+relax',  '421',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', '4@2.0', 'Max and Relax'),
-  ('chillin',    '421',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', '4@2.0', 'Chillin Yo'),
-  ('sleeeeeeps', '421',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', '4@2.0', 'Let''s go to Sleep')
+  ('jazz',       '123',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', 't@e.st',    'Kitties'),
+  ('mad_sesh',   '123',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', 't@e.st',    'Chickens'),
+  ('max+relax',  '421',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', '4@2.0',     'Kitties and Chickens'),
+  ('sleeeeeeps', '421',     '$2b$10$WMtxQHMdAIcArSAe8B.dPu3FJ56M2.MenoSGja8Xx/6PGkDcFgrzG', '4@2.0',     'Let''s go to Sleep')
 ;
 
-INSERT INTO cards (session_id, content) VALUES
-  (1, '{ "title": "Kitties!", "content": "MEOW!" }'),
-  (1, '{ "title": "Chickens!", "content": "CLUCK!" }'),
-  (1, '{ "title": "Kitties and Chickens", "content": "MEUCK!!!" }'),
-  (2, '{ "title": "123", "content": "How to count to 3" }'),
-  (2, '{ "title": "123456", "content": "How to count to 6" }'),
-  (2, '{ "title": "123456789", "content": "How to count to 9" }'),
-  (2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "content": "Dr. Fewa Jiop" }'),
-  (2, '{ "title": "jiop 2 da max", "content": "w3rd" }')
+INSERT INTO cards (session_id, content, position) VALUES
+  (1, '{ "title": "Kitties!", "content": "MEOW!" }', '{ "x":-100, "y":-60 }'),
+  (1, '{ "title": "Chickens!", "content": "CLUCK!" }', '{ "x":-50, "y":-10 }'),
+  (1, '{ "title": "Kitties and Chickens!!!", "content": "MEUCK!!!" }', '{ "x":0, "y":40 }'),
+  (2, '{ "title": "123", "content": "How to count to 3" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "123456", "content": "How to count to 6" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "123456789", "content": "How to count to 9" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "content": "Dr. Fewa Jiop" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "jiop is the best", "content": "word" }', '{ "x":0, "y":0 }')
 ;
 
 INSERT INTO participants (session_id, sequence, name) VALUES

@@ -99,8 +99,10 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  // update_card updates a single card and is
+  //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
-    // console.log(`socket.update_cards: ${id}: ${JSON.stringify(card)}`);
+    // console.log(`socket.update_card: ${id}: ${JSON.stringify(card)}`);
     loadCards(socket.sessionKey, (session) => {
       session.cards[id] = {
         ...session.cards[id],
@@ -110,16 +112,29 @@ app.io.on("connection", (socket) => {
     });
   });
 
+  // update_cards updates a batch of cards,
+  //    or deletes all cards if cards is null, and is
+  //    not intended for real-time updates across clients:
+  socket.on("update_cards", (cards) => {
+    console.log(`socket.update_cards: ${cards ? "..." : cards}`);
+    // console.log(`socket.update_cards: ${JSON.stringify(cards)}`);
+    if (cards) {
+      loadCards(socket.sessionKey, (session) => {
+        session.cards = {
+          ...session.cards,
+          ...cards
+        };
+      });
+    } else {
+      app.sessions[socket.sessionKey].cards = {};
+    }
+    socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
+  });
+
   // // Save a card in the database (i.e. on mouseup):
   // socket.on("save_card", (id) => {
   //   console.dir(`socket.save_card: ${id}`);
   // });
-
-  socket.on("delete_all_cards", () => {
-    console.log("socket.delete_all_cards");
-    app.sessions[socket.sessionKey].cards = {};
-    socket.broadcast.to(socket.sessionKey).emit("delete_all_cards");
-  });
 
 });
 

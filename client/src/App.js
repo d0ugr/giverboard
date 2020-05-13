@@ -18,10 +18,6 @@ const socket = io(`ws://${url.hostname}:3001`);
 
 
 
-const DEFAULT_SESSION = { cards: {} };
-
-
-
 function App(_props) {
 
   // session = {
@@ -41,7 +37,7 @@ function App(_props) {
 
   const [ sessionList, setSessionList ] = useState([]);
 
-  const [ session, setSession ] = useState(DEFAULT_SESSION);
+  const [ session, setSession ] = useState({});
 
   const setCard = useCallback((id, card) => {
     setSession((prevState) => {
@@ -62,19 +58,24 @@ function App(_props) {
     socket.emit("update_card", id, card);
   };
 
-  const deleteAllCards = useCallback(() => {
+  const setCards = useCallback((cards) => {
     setSession((prevState) => {
-      return {
-        ...prevState,
-        cards: {}
-      };
+      if (cards) {
+        prevState.cards = {
+          ...prevState.cards,
+          ...cards
+        };
+      } else {
+        prevState.cards = {};
+      }
+      return { ...prevState };
     });
   }, [ setSession ]);
 
-  const deleteAllCardsNotify = useCallback(() => {
-    deleteAllCards();
-    socket.emit("delete_all_cards");
-  }, [ deleteAllCards ]);
+  const setCardsNotify = useCallback((cards) => {
+    setCards(cards);
+    socket.emit("update_cards", cards);
+  }, [ setCards ]);
 
 
 
@@ -109,22 +110,24 @@ function App(_props) {
     addRandomCard("", title, content);
   };
 
-  const addJiraCards = (cardData) => {
+  const addJiraCardsNotify = (cardData) => {
     let x = -200;
     let y = -200;
+    const cards = {};
     for (const row of cardData) {
-      if (row["Issue Type"] && row["Issue key"] && row["Summary"]) {
-        setCardNotify(util.uuidv4_compact(), {
-          x, y,
-          content: {
-            category: row["Issue Type"].toLowerCase(),
-            title:    row["Issue key"],
-            content:  row["Summary"]
-          }
-        });
-        y += 20;
-      }
+      cards[util.uuidv4_compact()] = {
+        id: util.uuidv4_compact(),
+        x, y,
+        content: {
+          category: row["Issue Type"].toLowerCase(),
+          title:    row["Issue key"],
+          content:  row["Summary"]
+        }
+      };
+      y += 20;
     }
+    setCardsNotify(cards);
+    socket.emit("update_cards", cards);
   };
 
 
@@ -163,7 +166,7 @@ function App(_props) {
     socket.on("server_message", (message) => console.log("socket.server_message:", message));
 
     socket.on("update_card", (id, card) => setCard(id, card));
-    socket.on("delete_all_cards", () => deleteAllCards());
+    socket.on("update_cards", (cards) => setCards(cards));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -187,13 +190,13 @@ function App(_props) {
             <label>Title</label><br/><input name={"card-title"} /><br/>
             <label>Content</label><br/><textarea name={"card-content"} /><br/>
             <button onClick={addCard}>Add card</button>&nbsp;
-            <button onClick={deleteAllCardsNotify}>Clear board</button>
+            <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader
               prompt="Open Jira CSV file..."
               header={true}
-              onFileLoaded={(_fileInfo, csvData) => addJiraCards(csvData)}
+              onFileLoaded={(_fileInfo, csvData) => addJiraCardsNotify(csvData)}
               onError={() => alert("Error")}
             />
           </p>
@@ -214,7 +217,7 @@ function App(_props) {
           <SvgCanvas
             viewBoxSize={300}
             className={"whiteboard"}
-            cards={session.cards}
+            cards={session.cards || {}}
             setCardNotify={setCardNotify}
           />
         </div>

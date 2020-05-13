@@ -34,6 +34,8 @@ function App(_props) {
   //   }
   // }
 
+  const [ app, setApp ] = useState({ connected: false });
+
   const [ sessionList, setSessionList ] = useState([]);
 
   const [ session, setSession ] = useState(DEFAULT_SESSION);
@@ -112,14 +114,20 @@ function App(_props) {
 
     socket.on("connect", () => {
       console.log("socket.connect");
+      setApp({
+        ...app,
+        connected: true
+      })
       joinSession("default");
       getSessions()
     });
 
     socket.on("disconnect", () => {
       console.log("socket.disconnect");
-      joinSession("default");
-      getSessions()
+      setApp({
+        ...app,
+        connected: false
+      })
     });
 
     socket.on("server_message", (message) => {
@@ -138,7 +146,10 @@ function App(_props) {
   return (
     <div className="App">
 
-      <Header sessionName={session.name} />
+      <Header
+        sessionName={session.name}
+        connected={app.connected}
+      />
 
       <main>
 

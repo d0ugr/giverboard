@@ -28,7 +28,7 @@ function App(_props) {
   //     <cardId>: {
   //     x: 0,
   //     y: 0,
-  //     fields: {
+  //     content: {
   //       ...
   //     }
   //   }
@@ -69,7 +69,7 @@ function App(_props) {
     setCardNotify(util.uuidv4_compact(), {
       x: Math.floor(Math.random() * 200) - 100,
       y: Math.floor(Math.random() * 200) - 100,
-      fields: {
+      content: {
         title:   title,
         content: content
       }
@@ -158,7 +158,6 @@ function App(_props) {
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
           <hr/>
           <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => getSessions()}>Get sessions</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
           <SessionList
             sessionList={sessionList}

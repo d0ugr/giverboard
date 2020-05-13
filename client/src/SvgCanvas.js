@@ -186,8 +186,8 @@ function SvgCanvas(props) {
           key={index}
           card={props.cards[id]}
           setClickObject={(event) => setClickObject(event, { id })}
-          title={props.cards[id].fields && props.cards[id].fields.title}
-          content={props.cards[id].fields && props.cards[id].fields.content}
+          title={props.cards[id].content && props.cards[id].content.title}
+          content={props.cards[id].content && props.cards[id].content.content}
         />
       )}
     </svg>

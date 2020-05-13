@@ -17,23 +17,6 @@ const pg   = require("./pg");
 
 const app = {};
 
-app.db = pg({
-  host:     process.env.DB_HOSTNAME,
-  port:     process.env.DB_PORT,
-  user:     process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-});
-
-app.sessions = {};
-app.db.query("SELECT * FROM sessions")
-  .then(res => {
-    for (const session of res.rows) {
-      app.sessions[session.session_key] = { name: session.name };
-    }
-  })
-  .catch(err => console.log(err));
-
 // app.sessions = {
 //   default: {
 //     name: "Default Session",
@@ -44,6 +27,26 @@ app.db.query("SELECT * FROM sessions")
 //     }
 //   }
 // };
+
+app.db = pg({
+  host:     process.env.DB_HOSTNAME,
+  port:     process.env.DB_PORT,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+});
+
+app.sessions = {};
+app.db.query("SELECT * FROM sessions")
+  .then((res) => {
+    for (const session of res.rows) {
+      app.sessions[session.session_key] = {
+        id:   session.id,
+        name: session.name
+      };
+    }
+  })
+  .catch((err) => console.log(err));
 
 app.exp = express();
 app.srv = http.Server(app.exp);
@@ -63,12 +66,12 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("get_sessions", (callback) => {
-    console.dir("socket.get_sessions");
+    console.log("socket.get_sessions");
     callback(Object.keys(app.sessions).map((sessionId) => ({ id: sessionId, name: app.sessions[sessionId].name })));
   });
 
   socket.on("new_session", (name, callback) => {
-    console.dir(`socket.new_session: ${name}`);
+    console.log(`socket.new_session: ${name}`);
     if (name && typeof name === "string") {
       socket.sessionId = newSession(name);
       callback("session_created", socket.sessionId);
@@ -78,10 +81,28 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("join_session", (sessionId, callback) => {
-    console.dir(`socket.join_session: ${sessionId}`);
+    console.log(`socket.join_session: ${sessionId}`);
     if (app.sessions[sessionId]) {
       socket.sessionId = sessionId;
-      callback("session_joined", app.sessions[sessionId]);
+      if (!app.sessions[sessionId].cards) {
+        const dbId = app.sessions[sessionId].id;
+        app.db.query("SELECT * FROM cards WHERE session_id = $1", [ dbId ])
+          .then((res) => {
+            const session = app.sessions[sessionId];
+            session.cards = {};
+            for (const card of res.rows) {
+              session.cards[card.id] = {
+                x:       card.position.x,
+                y:       card.position.y,
+                content: card.content
+              };
+            }
+            callback("session_joined", session);
+          })
+          .catch((err) => console.log(err));
+      } else {
+        callback("session_joined", app.sessions[sessionId]);
+      }
     } else {
       callback("error", `Session "${sessionId}" not found`);
     }

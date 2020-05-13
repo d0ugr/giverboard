@@ -184,10 +184,11 @@ function SvgCanvas(props) {
       {Object.keys(props.cards).map((id, index) =>
         <Card
           key={index}
-          card={props.cards[id]}
-          setClickObject={(event) => setClickObject(event, { id })}
+          category={props.cards[id].content && props.cards[id].content.category}
           title={props.cards[id].content && props.cards[id].content.title}
           content={props.cards[id].content && props.cards[id].content.content}
+          card={props.cards[id]}
+          setClickObject={(event) => setClickObject(event, { id })}
         />
       )}
     </svg>

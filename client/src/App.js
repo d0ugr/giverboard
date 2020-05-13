@@ -91,12 +91,14 @@ function App(_props) {
   const addCard = () => {
     const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
     const content = document.querySelector(".App-sidebar textarea").value;
-    addRandomCard(title, content);
+    addRandomCard("", title, content);
   };
 
-  const addCards = (cardData) => {
+  const addJiraCards = (cardData) => {
     for (const row of cardData) {
-      addRandomCard(row[1], row[2]);
+      if (row["Issue Type"] && row["Issue key"] && row["Summary"]) {
+        addRandomCard(row["Issue Type"].toLowerCase(), row["Issue key"], row["Summary"]);
+      }
     }
   };
 
@@ -104,13 +106,14 @@ function App(_props) {
 
   // Temporary testing functions
 
-  const addRandomCard = (title, content) => {
+  const addRandomCard = (category, title, content) => {
     setCardNotify(util.uuidv4_compact(), {
       x: Math.floor(Math.random() * 200) - 100,
       y: Math.floor(Math.random() * 200) - 100,
       content: {
-        title:   title,
-        content: content
+        category: category,
+        title:    title,
+        content:  content
       }
     });
   };
@@ -179,8 +182,9 @@ function App(_props) {
           </div>
           <p style={{cursor: "pointer"}}>
             <ImportReader
-              prompt="Open CSV file..."
-              onFileLoaded={(_fileInfo, csvData) => addCards(csvData)}
+              prompt="Open Jira CSV file..."
+              header={true}
+              onFileLoaded={(_fileInfo, csvData) => addJiraCards(csvData)}
               onError={() => alert("Error")}
             />
           </p>

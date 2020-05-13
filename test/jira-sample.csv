@@ -1,0 +1,25 @@
+Issue Type,Issue key,Summary
+Task,SWDEV-1197,SPIKE: identify all the places a TISApp user is sent directly to the sign in screen
+Task,SWDEV-1146,Implement bitbucket pipelines to set the value of test_event for datadog containers
+Task,SWDEV-1145,"Create documentation for ""How to run a parcel ingestion process on Staging"""
+Bug,SWDEV-1144,"When an external user is deleted in SF and then recreated, there is an error upon Auth User insertion and user cannot log into TISApp"
+Bug,SWDEV-1125,"Report Type: CVR, for any product/component clicking on report icon takes back to the search page from product details page (staging). "
+Task,SWDEV-1060,Identify reports that are in Atlas but not S3
+Story,SWDEV-1037,Document Endpoints using Swagger 2.0
+Bug,SWDEV-959,Loophole in batch server prevent parcel processing
+Task,SWDEV-877,The targetsearch crawlers sends lots of false positives.
+Task,SWDEV-852,Create a token table cleaning job
+Task,SWDEV-726,Rollout the UDP datadog agent for PHP
+Bug,SWDEV-703,"Crawler ydevices, plibrary and yreports are broken because callisto10 does not exist any more."
+Bug,SWDEV-702,The plibrary crawler is trying to crawl \\zebra\publish which no longer exists
+Bug,SWDEV-701,The treport crawler is trying to crawl \\zeus\products\teardowns which no longer exists
+Bug,SWDEV-700,The ydevices crawler should be decommissoned.
+Bug,SWDEV-699,The Inside Technology runs out of disk space
+Bug,SWDEV-698,Result count is inconsistent after incremental parcel ingestion
+Task,SWDEV-696,Change the PDF Text Extraction project to be built with the serverless framework
+Task,SWDEV-695,Fine tuning crawler schedule
+Task,SWDEV-692,Use Datadog to monitor asset counts in Inside Technology
+Task,SWDEV-691,"Automate check of first product returned in search for ""all"" in Inside Technology"
+Task,SWDEV-690,Create a development environment for S
+Task,SWDEV-689,Move monitoring of Inside Tech data pipeline from Cloudwatch to Datadog
+Story,PTA-1310,Dump Tf and Title words from PTA on 68 patents

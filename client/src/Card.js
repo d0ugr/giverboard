@@ -1,5 +1,7 @@
 import React from "react";
 
+import "./Card.scss";
+
 // const CARD_WIDTH  = 75;
 // const CARD_HEIGHT = 50;
 

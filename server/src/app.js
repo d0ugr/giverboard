@@ -11,10 +11,19 @@ const http    = require("http");
 const express = require("express");
 
 const util = require("./util");
+const pg   = require("./pg");
 
 
 
 const app = {};
+
+app.db = pg({
+  host:     process.env.DB_HOSTNAME,
+  port:     process.env.DB_PORT,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+});
 
 app.sessions = {
   default: {

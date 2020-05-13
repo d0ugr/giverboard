@@ -25,16 +25,25 @@ app.db = pg({
   database: process.env.DB_DATABASE
 });
 
-app.sessions = {
-  default: {
-    name: "Default Session",
-    cards: {
-      kitties:  { x: -100, y: -50, fields: { title: "kitties!",  content: "Kitties are the best." } },
-      chickens: { x:    0, y:   0, fields: { title: "chickens!", content: "No, chickens are the best!" } },
-      kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
+app.sessions = {};
+app.db.query("SELECT * FROM sessions")
+  .then(res => {
+    for (const session of res.rows) {
+      app.sessions[session.session_key] = { name: session.name };
     }
-  }
-};
+  })
+  .catch(err => console.log(err));
+
+// app.sessions = {
+//   default: {
+//     name: "Default Session",
+//     cards: {
+//       kitties:  { x: -100, y: -50, fields: { title: "kitties!",  content: "Kitties are the best." } },
+//       chickens: { x:    0, y:   0, fields: { title: "chickens!", content: "No, chickens are the best!" } },
+//       kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
+//     }
+//   }
+// };
 
 app.exp = express();
 app.srv = http.Server(app.exp);

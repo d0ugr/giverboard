@@ -2,7 +2,7 @@ const uuid = require("uuid");
 
 
 
-exports.newUuid = () => uuid.v4().replace(/-/g, "").toUpperCase();
+exports.newUuid = () => uuid.v4().replace(/-/g, "");
 
 
 

@@ -14,18 +14,6 @@ main {
   height: 100%;
 }
 
-.App-header {
-  background-color: rebeccapurple;
-  min-height: 1.75em;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: ghostwhite;
-  text-shadow: 2px 2px 2px black, 2px 2px 2px black;
-}
-
 .App-sidebar {
   width: 20rem;
   height: 100%;
@@ -38,7 +26,7 @@ main {
     border: .2em solid darkgray;
     margin: 0 .5% 1em;
     padding: 0.5em;
-    background-color: ghostwhite;
+    background-color: lightgray;
     font-size: 1em;
   }
 
@@ -62,28 +50,6 @@ main {
 
 .main-container {
   position: relative;
-
-  .size-cue {
-    position: absolute;
-    top: 0;
-    padding: 1em;
-    font-size: 1.5em;
-    font-weight: bold;
-    text-shadow:
-    .1em .1em .1em black, -.1em .1em .1em black, .1em -.1em .1em black, -.1em -.1em .1em black,
-      0 0 .5em gray, 0 0 1em gray,
-      0 0 .5em gray, 0 0 1em gray;
-  }
-
-  .left {
-    left: 0;
-    color: lightseagreen;
-  }
-
-  .right {
-    right: 0;
-    color: lightcoral;
-  }
 }
 
 svg {

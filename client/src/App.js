@@ -250,42 +250,45 @@ function App(props) {
         connected={connected}
       />
 
-      <main>
+      <div className="main-container">
 
         <div className="sidebar">
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
-          <div>
-            <input name={"card-title"} placeholder="Card title" />
-            <textarea name={"card-content"} placeholder="Card content" />
-            <button onClick={addCard}>Add card</button>&nbsp;
-            <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
-          </div>
-          <p>
-            <ImportReader
-              prompt="Import Jira CSV file..."
-              header={true}
-              onFileLoaded={(_fileInfo, csvData) => addJiraCardsNotify(csvData)}
-              onError={() => alert("Error")}
+          <section className="cards">
+            <div>
+              <input name={"card-title"} placeholder="Card title" />
+              <textarea name={"card-content"} placeholder="Card content" />
+              <button onClick={addCard}>Add card</button>&nbsp;
+              <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
+            </div>
+            <p>
+              <ImportReader
+                prompt="Import Jira CSV file..."
+                header={true}
+                onFileLoaded={(_fileInfo, csvData) => addJiraCardsNotify(csvData)}
+                onError={() => alert("Error")}
+              />
+            </p>
+            {/* <svg>
+              <Card x={0} y={0} w={125} h={100} />
+            </svg> */}
+          </section>
+          <section className="sessions">
+            <hr/>
+            <SessionList
+              sessionList={sessionList}
+              joinSession={joinSession}
             />
-          </p>
-          <hr/>
-          <SessionList
-            sessionList={sessionList}
-            joinSession={joinSession}
-          />
-          <input name={"session-name"} placeholder="Session name" />
-          <input name={"session-host-password"} type="password" placeholder="Host password" />
-          <button onClick={newSession}>Create session</button>
-          <hr/>
-          <p onClick={(_event) => console.log(session)}>Dump session to console</p>
-          <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
-          {/* <svg>
-            <Card x={0} y={0} w={125} h={100} />
-          </svg> */}
+            <input name={"session-name"} placeholder="Session name" />
+            <input name={"session-host-password"} type="password" placeholder="Host password" />
+            <button onClick={newSession}>Create session</button>
+            <p onClick={(_event) => console.log(session)}>Dump session to console</p>
+            <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
+          </section>
         </div>
 
-        <div className="main-container">
+        <main>
           <SizeCues />
           <SvgCanvas
             viewBoxSize={300}
@@ -294,17 +297,19 @@ function App(props) {
             setCardNotify={setCardNotify}
             saveCardNotify={saveCardNotify}
           />
-        </div>
+        </main>
 
         <div className="sidebar">
-          <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
-          <ParticipantList
-            clientId={props.clientId}
-            participants={session.participants || {}}
-          />
+          <section className="participants">
+            <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
+            <ParticipantList
+              clientId={props.clientId}
+              participants={session.participants || {}}
+            />
+          </section>
         </div>
 
-      </main>
+      </div>
 
     </div>
   );

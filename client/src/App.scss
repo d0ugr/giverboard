@@ -15,14 +15,24 @@ main {
   height: 100%;
 }
 
-.App-sidebar {
-  width: 20rem;
+.sidebar {
+  min-width: 17rem;
+  max-width: 17rem;
   height: 100%;
   padding: 0.5%;
   background-color: #181026;
   color: skyblue;
 
+  p {
+    cursor: pointer;
+  }
+
+  ::placeholder {
+    opacity: 0.25;
+  }
+
   input {
+    margin: 0 .5%;
     background-color: olive;
     color: ghostwhite;
     text-shadow: .1em .1em .1em black;
@@ -30,6 +40,7 @@ main {
   }
 
   textarea {
+    margin: .5em .5%;
     background-color: khaki;
     color: black;
   }
@@ -37,7 +48,6 @@ main {
   input, textarea {
     width: 90%;
     border: .2em solid darkgray;
-    margin: 0 .5% 1em;
     padding: 0.5em;
     font-size: 1em;
   }

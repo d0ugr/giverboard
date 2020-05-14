@@ -19,11 +19,10 @@ if (!cookies.get(CLIENT_ID_COOKIE)) {
     expires: 365
   });
 }
-const clientID = cookies.get(CLIENT_ID_COOKIE);
 
 ReactDOM.render(
   <React.StrictMode>
-    <App clientID={clientID}/>
+    <App clientId={cookies.get(CLIENT_ID_COOKIE)}/>
   </React.StrictMode>,
   document.getElementById("root")
 );

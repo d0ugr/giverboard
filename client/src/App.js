@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
-import io from "socket.io-client";
+import io      from "socket.io-client";
 
 import * as util from "./lib/util";
 
 import "./App.scss";
 
-import Header       from "./Header";
-import SessionList  from "./SessionList";
-import ImportReader from "./ImportReader";
-import SizeCues     from "./SizeCues";
-import SvgCanvas    from "./SvgCanvas";
+import Header          from "./Header";
+import SessionList     from "./sessions/SessionList";
+import ParticipantList from "./participants/ParticipantList";
+import ImportReader    from "./ImportReader";
+import SizeCues        from "./SizeCues";
+import SvgCanvas       from "./SvgCanvas";
 
 
 
 const windowLocation = new URL(window.location);
-console.log(windowLocation);
 const socket = io(`ws://${windowLocation.hostname}:3001`);
 
 
 
-function App(_props) {
+function App(props) {
 
   // session = {
   //   id: <sessionkey>
@@ -39,10 +39,10 @@ function App(_props) {
   // }
 
   const [ connected, setConnected ] = useState(false);
-
+  const [ session, setSession ] = useState({});
   const [ sessionList, setSessionList ] = useState([]);
 
-  const [ session, setSession ] = useState({});
+  // Session functions
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
@@ -56,6 +56,7 @@ function App(_props) {
       console.log("socket.join_session:", status, session)
       if (status !== "error") {
         setSession(session);
+        updateNameNotify();
       } else {
         joinSession("default");
       }
@@ -63,7 +64,7 @@ function App(_props) {
   };
 
   const newSession = () => {
-    const title = document.querySelector(".App-sidebar input[name='card-title']").value;
+    const title = document.querySelector(".sidebar input[name='card-title']").value;
     socket.emit("new_session", title, (status, sessionKey) => {
       console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
@@ -73,7 +74,7 @@ function App(_props) {
     });
   };
 
-
+  // Card functions
 
   const setCard = useCallback((id, card) => {
     setSession((prevState) => {
@@ -114,8 +115,8 @@ function App(_props) {
   }, [ setCards ]);
 
   const addCard = () => {
-    const title   = document.querySelector(".App-sidebar input[name='card-title']").value;
-    const content = document.querySelector(".App-sidebar textarea").value;
+    const title   = document.querySelector(".sidebar input[name='card-title']").value;
+    const content = document.querySelector(".sidebar textarea").value;
     addRandomCard("", title, content);
   };
 
@@ -138,10 +139,32 @@ function App(_props) {
     setCardsNotify(cards);
   };
 
+  // Participant functions
 
+  const setParticipant = useCallback((id, participant) => {
+    setSession((prevState) => {
+      if (participant) {
+        prevState.participants[id] = {
+          ...prevState.participants[id],
+          ...participant
+        };
+      } else {
+        delete prevState.participants[id];
+      }
+      return { ...prevState };
+    });
+  }, [ setSession ]);
 
-  const updateName = (event) => {
-    socket.emit("update_name", event.target.value);
+  const setParticipantNotify = (id, participant) => {
+    setParticipant(id, participant);
+    socket.emit("update_participant", participant);
+  };
+
+  const updateNameNotify = (event) => {
+    const target = (event ? event.target : document.querySelector("input[name='participant-name']"));
+    setParticipantNotify(props.clientId, {
+      name: target.value || `Anonymous${(props.clientId ? ` ${props.clientId.substring(0, 4)}` : "")}`
+    });
   };
 
 
@@ -168,6 +191,7 @@ function App(_props) {
     socket.on("connect", () => {
       console.log("socket.connect");
       setConnected(true);
+      socket.emit("client_init", props.clientId);
       joinSession(windowLocation.pathname.substring(1));
       getSessions();
     });
@@ -179,10 +203,10 @@ function App(_props) {
 
     socket.on("server_message", (message) => console.log("socket.server_message:", message));
 
-    socket.on("update_card", (id, card) => setCard(id, card));
-    socket.on("update_cards", (cards) => setCards(cards));
+    socket.on("update_card", setCard);
+    socket.on("update_cards", setCards);
 
-    socket.on("update_name", (name) => console.log("socket.update_name", name));
+    socket.on("update_participant", setParticipant);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -199,18 +223,18 @@ function App(_props) {
 
       <main>
 
-        <div className="App-sidebar">
+        <div className="sidebar">
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
-          <label>Your name</label><br/><input name={"participant-name"} onChange={updateName}/><br/>
+          <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
           <hr/>
           <div>
-            <label>Title</label><br/><input name={"card-title"} /><br/>
-            <label>Content</label><br/><textarea name={"card-content"} /><br/>
+            <input name={"card-title"} placeholder="Card title" />
+            <textarea name={"card-content"} placeholder="Card content" />
             <button onClick={addCard}>Add card</button>&nbsp;
             <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
           </div>
-          <p style={{cursor: "pointer"}}>
+          <p>
             <ImportReader
               prompt="Import Jira CSV file..."
               header={true}
@@ -223,8 +247,9 @@ function App(_props) {
             sessionList={sessionList}
             joinSession={joinSession}
           />
-          <p style={{cursor: "pointer"}} onClick={(_event) => newSession()}>New session</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => console.log(session)}>Dump session to console</p>
+          <p onClick={(_event) => newSession()}>New session</p>
+          <p onClick={(_event) => console.log(session)}>Dump session to console</p>
+          <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
           {/* <svg>
             <Card x={0} y={0} w={125} h={100} />
           </svg> */}
@@ -237,6 +262,13 @@ function App(_props) {
             className={"whiteboard"}
             cards={session.cards || {}}
             setCardNotify={setCardNotify}
+          />
+        </div>
+
+        <div className="sidebar">
+          <ParticipantList
+            clientId={props.clientId}
+            participants={session.participants || {}}
           />
         </div>
 

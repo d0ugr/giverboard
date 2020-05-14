@@ -24,6 +24,10 @@ const app = {};
 //       kitties:  { x: -100, y: -50, fields: { title: "kitties!",  content: "Kitties are the best." } },
 //       chickens: { x:    0, y:   0, fields: { title: "chickens!", content: "No, chickens are the best!" } },
 //       kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
+//     },
+//     participants: {
+//       id:   <id>
+//       name: "Joe"
 //     }
 //   }
 // };
@@ -42,7 +46,8 @@ app.db.query("SELECT * FROM sessions")
     for (const session of res.rows) {
       app.sessions[session.session_key] = {
         id:   session.id,
-        name: session.name
+        name: session.name,
+        participants: {}
       };
     }
   })
@@ -63,6 +68,11 @@ app.io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`socket.disconnect: ${socket.id}`);
+  });
+
+  socket.on("client_init", (clientId) => {
+    console.log(`socket.client_init: ${clientId}`);
+    socket.clientId = clientId;
   });
 
   socket.on("get_sessions", (callback) => {
@@ -136,10 +146,14 @@ app.io.on("connection", (socket) => {
   //   console.dir(`socket.save_card: ${id}`);
   // });
 
-  socket.on("update_name", (name) => {
-    console.log(`socket.update_name: ${name}`);
-    socket.participantName = name;
-    socket.broadcast.to(socket.sessionKey).emit("update_name", name);
+  socket.on("update_participant", (participant) => {
+    console.log(`socket.update_participant: ${participant}`);
+    app.sessions[socket.sessionKey].participants[socket.clientId] = participant;
+    socket.broadcast.to(socket.sessionKey).emit("update_name", socket.clientId, participant.name);
+  });
+
+  socket.on("debug_sessions", () => {
+    console.log("socket.debug_sessions:", app.sessions);
   });
 
 });

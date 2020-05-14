@@ -177,12 +177,12 @@ function App(props) {
     });
     if (name) {
       props.setCookie(c.COOKIE_USER_NAME, name);
+    // Removing a cookie that isn't there causes
+    //    Firefox to complain about SameSite:
     } else if (cookies.get(c.COOKIE_USER_NAME)) {
       cookies.remove(c.COOKIE_USER_NAME);
     }
   };
-
-
 
   // Temporary testing functions
 

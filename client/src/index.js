@@ -1,12 +1,29 @@
 import React    from "react";
 import ReactDOM from "react-dom";
+import cookies  from "js-cookie";
+
 import "./index.scss";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
+import * as util from "./lib/util";
+
+const CLIENT_ID_COOKIE = "wb2020_id";
+
+if (!cookies.get(CLIENT_ID_COOKIE)) {
+  cookies.set(CLIENT_ID_COOKIE, util.uuidv4_compact().toUpperCase(), {
+    secure:   false,
+    path:     "/",
+    // domain:   ".example.com",
+    sameSite: "strict",
+    expires: 365
+  });
+}
+const clientID = cookies.get(CLIENT_ID_COOKIE);
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App clientID={clientID}/>
   </React.StrictMode>,
   document.getElementById("root")
 );

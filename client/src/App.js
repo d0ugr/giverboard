@@ -40,9 +40,40 @@ function App(props) {
   //   }
   // }
 
-  const [ connected, setConnected ] = useState(false);
-  const [ session, setSession ] = useState({});
+  const [ connected, setConnected ]     = useState(false);
+  const [ session, setSession ]         = useState({});
   const [ sessionList, setSessionList ] = useState([]);
+
+  // Set up stuff on page load:
+  useEffect(() => {
+
+    window.addEventListener("popstate", (event) => {
+      console.log(event.state)
+      joinSession(new URL(window.location).pathname.substring(1));
+    });
+
+    socket.on("connect", () => {
+      console.log("socket.connect");
+      setConnected(true);
+      socket.emit("client_init", props.clientId);
+      joinSession(windowLocation.pathname.substring(1));
+      getSessions();
+    });
+
+    socket.on("disconnect", () => {
+      console.log("socket.disconnect");
+      setConnected(false);
+    });
+
+    socket.on("server_message", (message) => console.log("socket.server_message:", message));
+
+    socket.on("update_card", setCard);
+    socket.on("update_cards", setCards);
+
+    socket.on("update_participant", setParticipant);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Session functions
 
@@ -57,7 +88,12 @@ function App(props) {
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)
       if (status !== "error") {
-        props.setCookie(c.COOKIE_SESSION_ID, sessionKey, );
+        document.title = `WB2020 - ${session.name}`;
+        const sessionUrl = `${windowLocation.origin}/${sessionKey}`;
+        if (window.location !== sessionUrl) {
+          window.history.pushState(null, "", `${windowLocation.origin}/${sessionKey}`)
+        }
+        props.setCookie(c.COOKIE_SESSION_ID, sessionKey);
         setSession(session);
         updateNameNotify();
       } else {
@@ -132,8 +168,9 @@ function App(props) {
     let y = -200;
     const cards = {};
     for (const row of cardData) {
-      cards[util.uuidv4_compact()] = {
-        id: util.uuidv4_compact(),
+      const cardId = util.uuidv4_compact();
+      cards[cardId] = {
+        id: cardId,
         x, y,
         content: {
           category: row["Issue Type"].toLowerCase(),
@@ -173,7 +210,7 @@ function App(props) {
       : document.querySelector("input[name='participant-name']")
     ).value.trim();
     setParticipantNotify(props.clientId, {
-      name: name || `Anonymous${(props.clientId ? ` ${props.clientId.substring(0, 4)}` : "")}`
+      name: name || `Anonymous${(props.clientId ? ` ${props.clientId.toUpperCase().substring(0, 4)}` : "")}`
     });
     if (name) {
       props.setCookie(c.COOKIE_USER_NAME, name);
@@ -200,34 +237,6 @@ function App(props) {
 
 
 
-  // Set up stuff on page load:
-  useEffect(() => {
-
-    socket.on("connect", () => {
-      console.log("socket.connect");
-      setConnected(true);
-      socket.emit("client_init", props.clientId);
-      joinSession(windowLocation.pathname.substring(1));
-      getSessions();
-    });
-
-    socket.on("disconnect", () => {
-      console.log("socket.disconnect");
-      setConnected(false);
-    });
-
-    socket.on("server_message", (message) => console.log("socket.server_message:", message));
-
-    socket.on("update_card", setCard);
-    socket.on("update_cards", setCards);
-
-    socket.on("update_participant", setParticipant);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-
   return (
     <div className="App">
 
@@ -241,8 +250,6 @@ function App(props) {
         <div className="sidebar">
           {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
           <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
-          <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
-          <hr/>
           <div>
             <input name={"card-title"} placeholder="Card title" />
             <textarea name={"card-content"} placeholder="Card content" />
@@ -282,6 +289,7 @@ function App(props) {
         </div>
 
         <div className="sidebar">
+          <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
           <ParticipantList
             clientId={props.clientId}
             participants={session.participants || {}}

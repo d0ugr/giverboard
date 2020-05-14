@@ -170,7 +170,7 @@ app.srv.listen(process.env.APP_PORT);
 
 
 const newSession = (name) => {
-  const sessionKey = util.newUuid().toUpperCase();
+  const sessionKey = util.newUuid();
   app.sessions[sessionKey] = {
     name,
     cards:        {},

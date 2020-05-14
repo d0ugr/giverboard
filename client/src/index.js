@@ -23,7 +23,7 @@ const setCookie = (name, value) => {
 };
 
 if (!cookies.get(c.COOKIE_CLIENT_ID)) {
-  setCookie(c.COOKIE_CLIENT_ID, util.uuidv4_compact().toUpperCase());
+  setCookie(c.COOKIE_CLIENT_ID, util.uuidv4_compact());
 }
 
 ReactDOM.render(

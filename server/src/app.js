@@ -120,33 +120,25 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("host_login", (password, callback) => {
-    app.db.query("SELECT host_password AS hostPassword FROM sessions WHERE session_key = $1", [
-      socket.sessionKey
-    ])
+    app.db.query("SELECT host_password AS hostPassword FROM sessions WHERE session_key = $1",
+      [ socket.sessionKey ])
       .then((res) => {
-        console.log(password, res.rows[0].hostpassword)
         bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-          if (!err) {
-            callback(pwMatch ? null : "Incorrect password")
-          } else {
-            callback(err);
-          }
-        })
+          callback(err || (pwMatch ? null : "Incorrect password"));
+        });
       })
       .catch((err) => console.error(err, null));
   });
 
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
-    app.db.query("SELECT start FROM sessions WHERE session_key = $1", [
-      socket.sessionKey
-    ])
+    app.db.query("SELECT start FROM sessions WHERE session_key = $1",
+      [ socket.sessionKey ])
       .then((res) => {
         if (!res.rows.start) {
           const timestamp = new Date();
-          app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1", [
-            socket.sessionKey, timestamp
-          ])
+          app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1",
+            [ socket.sessionKey, timestamp ])
             .then((_res) => {
               callback(null, timestamp);
             })
@@ -160,15 +152,13 @@ app.io.on("connection", (socket) => {
 
   socket.on("stop_session", () => {
     console.log(`socket.start_session`);
-    app.db.query("SELECT start FROM sessions WHERE session_key = $1", [
-      socket.sessionKey
-    ])
+    app.db.query("SELECT start FROM sessions WHERE session_key = $1",
+      [ socket.sessionKey ])
       .then((res) => {
         if (res.rows.start) {
           const timestamp = new Date();
-          app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1", [
-            socket.sessionKey, timestamp
-          ])
+          app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1",
+            [ socket.sessionKey, timestamp ])
             .then((_res) => {
               callback(null, timestamp);
             })
@@ -250,9 +240,8 @@ const newSession = (name, hostPassword, callback) => {
       return;
     }
     const sessionKey = util.newUuid();
-    app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)", [
-      sessionKey, name, (hostPassword ? hashedPassword : "")
-    ])
+    app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)",
+      [ sessionKey, name, (hostPassword ? hashedPassword : "") ])
       .then((_res) => {
         app.sessions[sessionKey] = {
           name,
@@ -276,7 +265,8 @@ const loadCards = (sessionKey, callback) => {
     callback(app.sessions[sessionKey]);
   } else {
     const dbId = app.sessions[sessionKey].id;
-    app.db.query("SELECT * FROM cards WHERE session_id = $1", [ dbId ])
+    app.db.query("SELECT * FROM cards WHERE session_id = $1",
+      [ dbId ])
       .then((res) => {
         const session = app.sessions[sessionKey];
         session.cards = {};

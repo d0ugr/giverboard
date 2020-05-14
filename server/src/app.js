@@ -170,8 +170,17 @@ app.srv.listen(process.env.APP_PORT);
 
 
 const newSession = (name) => {
-  const sessionKey = util.newUuid();
-  app.sessions[sessionKey] = { name, cards: {} };
+  const sessionKey = util.newUuid().toUpperCase();
+  app.sessions[sessionKey] = {
+    name,
+    cards:        {},
+    participants: {}
+  };
+  app.db.query("INSERT INTO sessions (session_key, name) VALUES ($1, $2)", [
+    sessionKey, name
+  ])
+    .then((res) => console.log(res))
+    .catch((err) => console.log(err));
   return sessionKey;
 };
 

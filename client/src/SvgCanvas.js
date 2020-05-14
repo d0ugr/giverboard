@@ -100,7 +100,7 @@ function SvgCanvas(props) {
   }
 
   function onMouseUp(_event) {
-    if (clickState) {
+    if (clickState && clickState.object.id) {
       props.saveCardNotify(clickState.object.id);
     }
     setClickState(null);

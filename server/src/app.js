@@ -119,21 +119,26 @@ app.io.on("connection", (socket) => {
     }
   });
 
-  socket.on("start_session", () => {
+  socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
     app.db.query("SELECT start FROM sessions WHERE session_key = $1", [
       socket.sessionKey
     ])
       .then((res) => {
         if (!res.rows.start) {
-          app.db.query("UPDATE sessions SET start = CURRENT_TIMESTAMP WHERE session_key = $1", [
-            socket.sessionKey
-          ]).catch((err) => console.log(err));
+          const timestamp = new Date();
+          app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1", [
+            socket.sessionKey, timestamp
+          ])
+            .then((_res) => {
+              callback(null, timestamp);
+            })
+            .catch((err) => console.error(err, null));
         } else {
           console.log("socket.start_session: Session already started")
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err, null));
   });
 
   socket.on("stop_session", () => {
@@ -143,14 +148,19 @@ app.io.on("connection", (socket) => {
     ])
       .then((res) => {
         if (res.rows.start) {
-          app.db.query("UPDATE sessions SET stop = CURRENT_TIMESTAMP WHERE session_key = $1", [
-            socket.sessionKey
-          ]).catch((err) => console.log(err));
+          const timestamp = new Date();
+          app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1", [
+            socket.sessionKey, timestamp
+          ])
+            .then((_res) => {
+              callback(null, timestamp);
+            })
+            .catch((err) => console.error(err, null));
         } else {
           console.log("socket.stop_session: Not setting stop when there is no start")
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err, null));
   });
 
   // update_card updates a single card and is

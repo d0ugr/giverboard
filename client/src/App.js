@@ -120,11 +120,23 @@ function App(props) {
   };
 
   const startSession = () => {
-    socket.emit("start_session");
+    socket.emit("start_session", (err, timestamp) => {
+      if (!err) {
+        session.start = timestamp;
+      } else {
+        console.log("startSession: Error starting session:", err)
+      }
+    });
   };
 
   const stopSession = () => {
-    socket.emit("stop_session");
+    socket.emit("stop_session", (err, timestamp) => {
+      if (!err) {
+        session.stop = timestamp;
+      } else {
+        console.log("startSession: Error stopping session:", err)
+      }
+    });
   };
 
   // Card functions

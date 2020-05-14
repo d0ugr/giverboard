@@ -44,8 +44,6 @@ function App(_props) {
 
   const [ session, setSession ] = useState({});
 
-
-
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
       console.log("socket.get_sessions:", sessions)

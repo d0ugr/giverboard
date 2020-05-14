@@ -2,16 +2,17 @@ import React    from "react";
 import ReactDOM from "react-dom";
 import cookies  from "js-cookie";
 
+import * as c    from "./constants";
+import * as util from "./lib/util";
+
 import "./index.scss";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
-import * as util from "./lib/util";
+JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
 
-const CLIENT_ID_COOKIE = "wb2020_id";
-
-if (!cookies.get(CLIENT_ID_COOKIE)) {
-  cookies.set(CLIENT_ID_COOKIE, util.uuidv4_compact().toUpperCase(), {
+if (!cookies.get(c.CLIENT_ID_COOKIE)) {
+  cookies.set(c.CLIENT_ID_COOKIE, util.uuidv4_compact().toUpperCase(), {
     secure:   false,
     path:     "/",
     // domain:   ".example.com",
@@ -22,7 +23,7 @@ if (!cookies.get(CLIENT_ID_COOKIE)) {
 
 ReactDOM.render(
   <React.StrictMode>
-    <App clientId={cookies.get(CLIENT_ID_COOKIE)}/>
+    <App clientId={cookies.get(c.CLIENT_ID_COOKIE)}/>
   </React.StrictMode>,
   document.getElementById("root")
 );

@@ -156,7 +156,7 @@ app.io.on("connection", (socket) => {
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
     app.sessions[socket.sessionKey].participants[socket.clientId] = participant;
-    socket.broadcast.to(socket.sessionKey).emit("update_name", socket.clientId, participant.name);
+    socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
   });
 
   socket.on("debug_sessions", () => {

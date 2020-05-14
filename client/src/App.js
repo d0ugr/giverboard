@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import io      from "socket.io-client";
+import cookies from "js-cookie";
 
+import * as c    from "./constants";
 import * as util from "./lib/util";
 
 import "./App.scss";
@@ -46,19 +48,26 @@ function App(props) {
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
-      console.log("socket.get_sessions:", sessions)
+      // console.log("socket.get_sessions:", sessions)
       setSessionList(sessions);
     });
   };
 
   const joinSession = (sessionKey) => {
     socket.emit("join_session", sessionKey, (status, session) => {
-      console.log("socket.join_session:", status, session)
+      // console.log("socket.join_session:", status, session)
       if (status !== "error") {
+        cookies.set(c.SESSION_ID_COOKIE, sessionKey, {
+          secure:   false,
+          path:     "/",
+          // domain:   ".example.com",
+          sameSite: "strict",
+          expires: 365
+        });
         setSession(session);
         updateNameNotify();
       } else {
-        joinSession("default");
+        joinSession(cookies.get(c.SESSION_ID_COOKIE) || "default");
       }
     });
   };

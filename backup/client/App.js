@@ -1,6 +1,8 @@
 import React from "react";
 // import React, { useState } from "react";
 
+import * as c from "./constants";
+
 import "./App.scss";
 import SvgCanvas from "./SvgCanvas";
 import Card from "./Card";
@@ -47,7 +49,7 @@ function App() {
   return (
     <div className="App">
       <header>
-        WB2020
+        {c.APP_NAME}
       </header>
       <main>
         <div className="App-sidebar">

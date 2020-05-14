@@ -1,5 +1,7 @@
 import React, { Fragment } from "react";
 
+import * as c from "./constants";
+
 import "./Header.scss";
 
 
@@ -8,7 +10,7 @@ function Header(props) {
 
   return (
     <header className="app-header">
-      <strong>WB2020</strong>
+      <strong>{c.APP_NAME}</strong>
       {props.sessionName
         ? <Fragment>&nbsp;&bull;&nbsp;{props.sessionName}</Fragment>
         : ""}

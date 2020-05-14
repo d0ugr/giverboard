@@ -90,7 +90,7 @@ function App(props) {
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)
       if (status !== "error") {
-        document.title = `WB2020 - ${session.name}`;
+        document.title = `${c.APP_NAME} - ${session.name}`;
         const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
         if (window.location.href !== sessionUrl) {
           window.history.pushState(null, "", sessionUrl)

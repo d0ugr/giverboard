@@ -1,6 +1,6 @@
 // app.js
 //
-// Main entry point of the WB2020 server.
+// Main entry point of the app server.
 
 "use strict";
 
@@ -68,7 +68,7 @@ app.io = require("socket.io")(app.srv);
 
 app.io.on("connection", (socket) => {
   console.log(`io.connection: ${socket.id}`);
-  socket.emit("server_message", "WB2020 ready to be super fun");
+  socket.emit("server_message", `${process.env.APP_NAME} ready to be super fun`);
 
   socket.on("disconnect", () => {
     console.log(`socket.disconnect: ${socket.id}`);

@@ -119,9 +119,6 @@ function App(props) {
   const startSession = () => {
   };
 
-  const pauseSession = () => {
-  };
-
   const stopSession = () => {
   };
 
@@ -319,7 +316,6 @@ function App(props) {
           <section className="host">
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
-            <button onClick={pauseSession}>Pause session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>
           </section>
         </div>

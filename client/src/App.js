@@ -104,6 +104,10 @@ function App(props) {
     socket.emit("update_card", id, card);
   };
 
+  const saveCardNotify = (id) => {
+    socket.emit("save_card", id);
+  };
+
   const setCards = useCallback((cards) => {
     setSession((prevState) => {
       if (cards) {
@@ -271,6 +275,7 @@ function App(props) {
             className={"whiteboard"}
             cards={session.cards || {}}
             setCardNotify={setCardNotify}
+            saveCardNotify={saveCardNotify}
           />
         </div>
 

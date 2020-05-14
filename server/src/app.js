@@ -13,21 +13,22 @@ const express = require("express");
 const util = require("./util");
 const pg   = require("./pg");
 
+JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
+
 
 
 const app = {};
 
 // app.sessions = {
-//   default: {
-//     name: "Default Session",
+//   sessionKey: {
+//     name: <name>,
 //     cards: {
-//       kitties:  { x: -100, y: -50, fields: { title: "kitties!",  content: "Kitties are the best." } },
-//       chickens: { x:    0, y:   0, fields: { title: "chickens!", content: "No, chickens are the best!" } },
-//       kitckens: { x:  150, y:  60, fields: { title: "kitckens!", content: "Let's breed them and make a half-kitty, half chicken!!!" } }
+//       <id>:  { x: 0, y: 0, content: { title: <title>, body: <body> } },
+//       ...
 //     },
 //     participants: {
-//       id:   <id>
-//       name: "Joe"
+//       <clientId>: {
+//         name: <name>
 //     }
 //   }
 // };
@@ -94,12 +95,12 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("join_session", (sessionKey, callback) => {
-    console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringify(socket.rooms)}`);
+    console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringifyPretty(socket.rooms)}`);
     if (app.sessions[sessionKey]) {
       socket.leaveAll();
       socket.sessionKey = sessionKey;
       socket.join(sessionKey, () => {
-        console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
+        console.log(`socket.join_session: joined ${JSON.stringifyPretty(socket.rooms)}`);
         loadCards(sessionKey, (session) => {
           callback("session_joined", session);
         });
@@ -112,7 +113,7 @@ app.io.on("connection", (socket) => {
   // update_card updates a single card and is
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
-    // console.log(`socket.update_card: ${id}: ${JSON.stringify(card)}`);
+    // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
     loadCards(socket.sessionKey, (session) => {
       session.cards[id] = {
         ...session.cards[id],
@@ -127,7 +128,7 @@ app.io.on("connection", (socket) => {
   //    not intended for real-time updates across clients:
   socket.on("update_cards", (cards) => {
     console.log(`socket.update_cards: ${cards ? "..." : cards}`);
-    // console.log(`socket.update_cards: ${JSON.stringify(cards)}`);
+    // console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
     if (cards) {
       loadCards(socket.sessionKey, (session) => {
         session.cards = {
@@ -141,10 +142,16 @@ app.io.on("connection", (socket) => {
     socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
 
-  // // Save a card in the database (i.e. on mouseup):
-  // socket.on("save_card", (id) => {
-  //   console.dir(`socket.save_card: ${id}`);
-  // });
+  // Save a card in the database (i.e. on mouseup):
+  socket.on("save_card", (id) => {
+    console.log(`socket.save_card: ${id}`);
+    app.db.query("UPDATE cards SET position = $2 WHERE id = $1", [
+      id, {
+        x: app.sessions[socket.sessionKey].cards[id].x,
+        y: app.sessions[socket.sessionKey].cards[id].y
+      }
+    ]).catch((err) => console.log(err));
+  });
 
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${participant}`);
@@ -153,7 +160,7 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("debug_sessions", () => {
-    console.log("socket.debug_sessions:", app.sessions);
+    console.log("socket.debug_sessions:", JSON.stringifyPretty(app.sessions));
   });
 
 });

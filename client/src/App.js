@@ -120,6 +120,13 @@ function App(props) {
   };
 
   const hostLogin = () => {
+    const hostPassword = document.querySelector("input[name='participant-host-password']").value;
+    socket.emit("host_login", hostPassword, (err) => {
+      session.host = !err;
+      if (err) {
+        console.log("hostLogin: Login failed:", err)
+      }
+    });
   };
 
   const startSession = () => {
@@ -345,7 +352,7 @@ function App(props) {
               participants={session.participants || {}}
             />
             <input
-              name={"participants-host-password"}
+              name={"participant-host-password"}
               type="password"
               placeholder="Host password"
             />

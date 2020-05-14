@@ -119,6 +119,23 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  socket.on("host_login", (password, callback) => {
+    app.db.query("SELECT host_password AS hostPassword FROM sessions WHERE session_key = $1", [
+      socket.sessionKey
+    ])
+      .then((res) => {
+        console.log(password, res.rows[0].hostpassword)
+        bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
+          if (!err) {
+            callback(pwMatch ? null : "Incorrect password")
+          } else {
+            callback(err);
+          }
+        })
+      })
+      .catch((err) => console.error(err, null));
+  });
+
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
     app.db.query("SELECT start FROM sessions WHERE session_key = $1", [

@@ -119,6 +119,9 @@ function App(props) {
     });
   };
 
+  const hostLogin = () => {
+  };
+
   const startSession = () => {
     socket.emit("start_session", (err, timestamp) => {
       if (!err) {
@@ -303,8 +306,15 @@ function App(props) {
               sessionList={sessionList}
               joinSession={joinSession}
             />
-            <input name={"session-name"} placeholder="Session name" />
-            <input name={"session-host-password"} type="password" placeholder="Host password" />
+            <input
+              name={"session-name"}
+              placeholder="Session name"
+            />
+            <input
+              name={"session-host-password"}
+              type="password"
+              placeholder="Host password"
+            />
             <button onClick={newSession}>Create session</button>
             <p onClick={(_event) => console.log(session)}>Dump session to console</p>
             <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
@@ -334,6 +344,12 @@ function App(props) {
               clientId={props.clientId}
               participants={session.participants || {}}
             />
+            <input
+              name={"participants-host-password"}
+              type="password"
+              placeholder="Host password"
+            />
+            <button onClick={hostLogin}>Login</button><br/>
           </section>
           <section className="host">
             <hr/>

@@ -9,11 +9,14 @@
 require("dotenv").config();
 const http    = require("http");
 const express = require("express");
+const bcrypt  = require("bcrypt");
 
 const util = require("./util");
 const pg   = require("./pg");
 
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
+
+const SALT_ROUNDS = 10;
 
 
 
@@ -87,8 +90,14 @@ app.io.on("connection", (socket) => {
   socket.on("new_session", (name, hostPassword, callback) => {
     console.log(`socket.new_session: ${name} / ${hostPassword || "<no password>"}`);
     if (name && typeof name === "string") {
-      socket.sessionKey = newSession(name, hostPassword);
-      callback("session_created", socket.sessionKey);
+      newSession(name, hostPassword, (err, sessionKey) => {
+        if (!err) {
+          socket.sessionKey = sessionKey;
+          callback("session_created", sessionKey);
+        } else {
+          callback("error", err);
+        }
+      });
     } else {
       callback("error", `Cannot create session "${name}"`);
     }
@@ -169,19 +178,30 @@ app.srv.listen(process.env.APP_PORT);
 
 
 
-const newSession = (name, hostPassword) => {
-  const sessionKey = util.newUuid();
-  app.sessions[sessionKey] = {
-    name,
-    cards:        {},
-    participants: {}
-  };
-  app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)", [
-    sessionKey, name, hostPassword
-  ])
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
-  return sessionKey;
+const newSession = (name, hostPassword, callback) => {
+  // Hash the password even if it's blank (indicating no host)
+  //    and check for that when updating the database
+  //    to avoid multiple callback chains:
+  bcrypt.hash(hostPassword, SALT_ROUNDS, (err, hashedPassword) => {
+    if (err) {
+      console.error(err);
+      callback(err, null);
+      return;
+    }
+    const sessionKey = util.newUuid();
+    app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)", [
+      sessionKey, name, (hostPassword ? hashedPassword : "")
+    ])
+      .then((_res) => {
+        app.sessions[sessionKey] = {
+          name,
+          cards:        {},
+          participants: {}
+        };
+        callback(null, sessionKey);
+      })
+      .catch((err) => console.log(err));
+  })
 };
 
 // const deleteSession = (sessionKey) => {

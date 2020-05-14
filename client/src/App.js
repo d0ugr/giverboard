@@ -36,7 +36,10 @@ function App(props) {
   //   participants: {
   //     id: <id>
   //     name: <name>
-  //   }
+  //   },
+  //   start: <timestamp>,
+  //   stop: <timestamp>,
+  //   currentParticipant: <id>
   // }
 
   const [ connected, setConnected ]     = useState(false);
@@ -297,7 +300,7 @@ function App(props) {
         </div>
 
         <main>
-          <SizeCues />
+          <SizeCues/>
           <SvgCanvas
             viewBoxSize={300}
             className={"whiteboard"}
@@ -309,7 +312,12 @@ function App(props) {
 
         <div className="sidebar">
           <section className="participants">
-            <input name={"participant-name"} placeholder="Enter your name" onChange={updateNameNotify}/>
+            <input
+              name={"participant-name"}
+              placeholder="Enter your name"
+              // value={session[].participants[].name}
+              onChange={updateNameNotify}
+            />
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}

@@ -122,10 +122,13 @@ function App(props) {
   const hostLogin = () => {
     const hostPassword = document.querySelector("input[name='participant-host-password']").value;
     socket.emit("host_login", hostPassword, (err) => {
-      session.host = !err;
       if (err) {
         console.log("hostLogin: Login failed:", err)
       }
+      setSession((prevState) => ({
+        ...prevState,
+        host: !err
+      }));
     });
   };
 
@@ -358,7 +361,7 @@ function App(props) {
             />
             <button onClick={hostLogin}>Login</button><br/>
           </section>
-          <section className="host">
+          <section className={`host${!session.host ? " hidden" : ""}`}>
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>

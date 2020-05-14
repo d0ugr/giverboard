@@ -11,19 +11,26 @@ import * as serviceWorker from "./serviceWorker";
 
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
 
-if (!cookies.get(c.CLIENT_ID_COOKIE)) {
-  cookies.set(c.CLIENT_ID_COOKIE, util.uuidv4_compact().toUpperCase(), {
+const setCookie = (name, value) => {
+  console.log("setCookie", name, value)
+  cookies.set(name, value, {
     secure:   false,
-    path:     "/",
     // domain:   ".example.com",
+    path:     "/",
     sameSite: "strict",
-    expires: 365
+    expires:  365
   });
+};
+
+if (!cookies.get(c.COOKIE_CLIENT_ID)) {
+  setCookie(c.COOKIE_CLIENT_ID, util.uuidv4_compact().toUpperCase());
 }
 
 ReactDOM.render(
   <React.StrictMode>
-    <App clientId={cookies.get(c.CLIENT_ID_COOKIE)}/>
+    <App
+      setCookie={setCookie}
+      clientId={cookies.get(c.COOKIE_CLIENT_ID)}/>
   </React.StrictMode>,
   document.getElementById("root")
 );

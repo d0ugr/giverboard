@@ -57,24 +57,18 @@ function App(props) {
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)
       if (status !== "error") {
-        cookies.set(c.SESSION_ID_COOKIE, sessionKey, {
-          secure:   false,
-          path:     "/",
-          // domain:   ".example.com",
-          sameSite: "strict",
-          expires: 365
-        });
+        props.setCookie(c.COOKIE_SESSION_ID, sessionKey, );
         setSession(session);
         updateNameNotify();
       } else {
-        joinSession(cookies.get(c.SESSION_ID_COOKIE) || "default");
+        joinSession(cookies.get(c.COOKIE_SESSION_ID) || "default");
       }
     });
   };
 
   const newSession = () => {
-    const title = document.querySelector(".sidebar input[name='card-title']").value;
-    socket.emit("new_session", title, (status, sessionKey) => {
+    const name = document.querySelector("input[name='card-title']").value;
+    socket.emit("new_session", name, (status, sessionKey) => {
       console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
         joinSession(sessionKey);
@@ -174,10 +168,18 @@ function App(props) {
   };
 
   const updateNameNotify = (event) => {
-    const target = (event ? event.target : document.querySelector("input[name='participant-name']"));
+    const name = (event
+      ? event.target
+      : document.querySelector("input[name='participant-name']")
+    ).value.trim();
     setParticipantNotify(props.clientId, {
-      name: target.value || `Anonymous${(props.clientId ? ` ${props.clientId.substring(0, 4)}` : "")}`
+      name: name || `Anonymous${(props.clientId ? ` ${props.clientId.substring(0, 4)}` : "")}`
     });
+    if (name) {
+      props.setCookie(c.COOKIE_USER_NAME, name);
+    } else if (cookies.get(c.COOKIE_USER_NAME)) {
+      cookies.remove(c.COOKIE_USER_NAME);
+    }
   };
 
 

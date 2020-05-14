@@ -95,12 +95,12 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("join_session", (sessionKey, callback) => {
-    console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringifyPretty(socket.rooms)}`);
+    console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringify(socket.rooms)}`);
     if (app.sessions[sessionKey]) {
       socket.leaveAll();
       socket.sessionKey = sessionKey;
       socket.join(sessionKey, () => {
-        console.log(`socket.join_session: joined ${JSON.stringifyPretty(socket.rooms)}`);
+        console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
         loadCards(sessionKey, (session) => {
           callback("session_joined", session);
         });
@@ -154,7 +154,7 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("update_participant", (participant) => {
-    console.log(`socket.update_participant: ${participant}`);
+    console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
     app.sessions[socket.sessionKey].participants[socket.clientId] = participant;
     socket.broadcast.to(socket.sessionKey).emit("update_name", socket.clientId, participant.name);
   });

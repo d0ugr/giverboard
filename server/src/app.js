@@ -84,10 +84,10 @@ app.io.on("connection", (socket) => {
     })));
   });
 
-  socket.on("new_session", (name, callback) => {
-    console.log(`socket.new_session: ${name}`);
+  socket.on("new_session", (name, hostPassword, callback) => {
+    console.log(`socket.new_session: ${name} / ${hostPassword || "<no password>"}`);
     if (name && typeof name === "string") {
-      socket.sessionKey = newSession(name);
+      socket.sessionKey = newSession(name, hostPassword);
       callback("session_created", socket.sessionKey);
     } else {
       callback("error", `Cannot create session "${name}"`);
@@ -169,15 +169,15 @@ app.srv.listen(process.env.APP_PORT);
 
 
 
-const newSession = (name) => {
+const newSession = (name, hostPassword) => {
   const sessionKey = util.newUuid();
   app.sessions[sessionKey] = {
     name,
     cards:        {},
     participants: {}
   };
-  app.db.query("INSERT INTO sessions (session_key, name) VALUES ($1, $2)", [
-    sessionKey, name
+  app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)", [
+    sessionKey, name, hostPassword
   ])
     .then((res) => console.log(res))
     .catch((err) => console.log(err));

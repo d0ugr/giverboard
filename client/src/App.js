@@ -105,8 +105,9 @@ function App(props) {
   };
 
   const newSession = () => {
-    const name = document.querySelector("input[name='card-title']").value;
-    socket.emit("new_session", name, (status, sessionKey) => {
+    const name         = document.querySelector("input[name='session-name']").value;
+    const hostPassword = document.querySelector("input[name='session-host-password']").value;
+    socket.emit("new_session", name, hostPassword, (status, sessionKey) => {
       console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
         joinSession(sessionKey);
@@ -212,7 +213,9 @@ function App(props) {
       : document.querySelector("input[name='participant-name']")
     ).value.trim();
     setParticipantNotify(props.clientId, {
-      name: name || `Anonymous${(props.clientId ? ` ${props.clientId.toUpperCase().substring(0, 4)}` : "")}`
+      name: name || `Anonymous${(props.clientId
+        ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
+        : "")}`
     });
     if (name) {
       props.setCookie(c.COOKIE_USER_NAME, name);
@@ -271,7 +274,10 @@ function App(props) {
             sessionList={sessionList}
             joinSession={joinSession}
           />
-          <p onClick={(_event) => newSession()}>New session</p>
+          <input name={"session-name"} placeholder="Session name" />
+          <input name={"session-host-password"} type="password" placeholder="Host password" />
+          <button onClick={newSession}>Create session</button>
+          <hr/>
           <p onClick={(_event) => console.log(session)}>Dump session to console</p>
           <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
           {/* <svg>

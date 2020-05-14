@@ -16,8 +16,7 @@ import SvgCanvas       from "./SvgCanvas";
 
 
 
-const windowLocation = new URL(window.location);
-const socket = io(`ws://${windowLocation.hostname}:3001`);
+const socket = io(`ws://${new URL(window.location).hostname}:3001`);
 
 
 
@@ -41,22 +40,25 @@ function App(props) {
   // }
 
   const [ connected, setConnected ]     = useState(false);
-  const [ session, setSession ]         = useState({});
   const [ sessionList, setSessionList ] = useState([]);
+  const [ session, setSession ]         = useState({});
 
   // Set up stuff on page load:
   useEffect(() => {
 
-    window.addEventListener("popstate", (event) => {
-      console.log(event.state)
+    // Window event handlers
+
+    window.addEventListener("popstate", (_event) => {
       joinSession(new URL(window.location).pathname.substring(1));
     });
+
+    // Socket event handlers
 
     socket.on("connect", () => {
       console.log("socket.connect");
       setConnected(true);
       socket.emit("client_init", props.clientId);
-      joinSession(windowLocation.pathname.substring(1));
+      joinSession(new URL(window.location).pathname.substring(1));
       getSessions();
     });
 
@@ -89,9 +91,9 @@ function App(props) {
       // console.log("socket.join_session:", status, session)
       if (status !== "error") {
         document.title = `WB2020 - ${session.name}`;
-        const sessionUrl = `${windowLocation.origin}/${sessionKey}`;
-        if (window.location !== sessionUrl) {
-          window.history.pushState(null, "", `${windowLocation.origin}/${sessionKey}`)
+        const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
+        if (window.location.href !== sessionUrl) {
+          window.history.pushState(null, "", sessionUrl)
         }
         props.setCookie(c.COOKIE_SESSION_ID, sessionKey);
         setSession(session);

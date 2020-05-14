@@ -121,13 +121,13 @@ function App(props) {
 
   const hostLogin = () => {
     const hostPassword = document.querySelector("input[name='participant-host-password']").value;
-    socket.emit("host_login", hostPassword, (err) => {
-      if (err) {
-        console.log("hostLogin: Login failed:", err)
+    socket.emit("host_login", hostPassword, (err, pwMatch) => {
+      if (err || !pwMatch) {
+        console.log("hostLogin: Login failed:", err, pwMatch)
       }
       setSession((prevState) => ({
         ...prevState,
-        host: !err
+        host: pwMatch
       }));
     });
   };

@@ -120,11 +120,12 @@ app.io.on("connection", (socket) => {
   });
 
   socket.on("host_login", (password, callback) => {
-    app.db.query("SELECT host_password AS hostPassword FROM sessions WHERE session_key = $1",
+    app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
       [ socket.sessionKey ])
       .then((res) => {
         bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-          callback(err || (pwMatch ? null : "Incorrect password"));
+          app.sessions[socket.sessionKey].participants[socket.clientId].host = pwMatch;
+          callback(err, pwMatch);
         });
       })
       .catch((err) => console.error(err, null));

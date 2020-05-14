@@ -119,6 +119,40 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  socket.on("start_session", () => {
+    console.log(`socket.start_session`);
+    app.db.query("SELECT start FROM sessions WHERE session_key = $1", [
+      socket.sessionKey
+    ])
+      .then((res) => {
+        if (!res.rows.start) {
+          app.db.query("UPDATE sessions SET start = CURRENT_TIMESTAMP WHERE session_key = $1", [
+            socket.sessionKey
+          ]).catch((err) => console.log(err));
+        } else {
+          console.log("socket.start_session: Session already started")
+        }
+      })
+      .catch((err) => console.log(err));
+  });
+
+  socket.on("stop_session", () => {
+    console.log(`socket.start_session`);
+    app.db.query("SELECT start FROM sessions WHERE session_key = $1", [
+      socket.sessionKey
+    ])
+      .then((res) => {
+        if (res.rows.start) {
+          app.db.query("UPDATE sessions SET stop = CURRENT_TIMESTAMP WHERE session_key = $1", [
+            socket.sessionKey
+          ]).catch((err) => console.log(err));
+        } else {
+          console.log("socket.stop_session: Not setting stop when there is no start")
+        }
+      })
+      .catch((err) => console.log(err));
+  });
+
   // update_card updates a single card and is
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {

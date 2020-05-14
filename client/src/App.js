@@ -117,9 +117,11 @@ function App(props) {
   };
 
   const startSession = () => {
+    socket.emit("start_session");
   };
 
   const stopSession = () => {
+    socket.emit("stop_session");
   };
 
   // Card functions

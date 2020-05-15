@@ -306,6 +306,10 @@ function App(props) {
     (session.participants &&
      session.participants[props.clientId] &&
      !session.participants[props.clientId].host);
+  const cardMoveAllowed =
+    !session.participants || !session.turns ||
+    session.participants[props.clientId].host ||
+    props.clientId === session.turns[session.currentTurn];
 
   return (
     <div className="App">
@@ -366,6 +370,7 @@ function App(props) {
             viewBoxSize={300}
             className={"whiteboard"}
             cards={session.cards || {}}
+            cardMoveAllowed={cardMoveAllowed}
             setCardNotify={setCardNotify}
             saveCardNotify={saveCardNotify}
           />

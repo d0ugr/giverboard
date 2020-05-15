@@ -75,20 +75,22 @@ function SvgCanvas(props) {
   function setClickObject(event, object) {
     event.preventDefault();
     event.stopPropagation();
-    setClickState({
-      mouse:  ui.elementPoint(svg, event),
-      // Ctrl overrides any object that was clicked and pans the canvas:
-      object: (event.ctrlKey
-        ? canvasState
-        : (object.id
-          ? {
-              id: object.id,
-              x: props.cards[object.id].x,
-              y: props.cards[object.id].y
-            }
-          : object)
-      )
-    });
+    if (!object.id || props.cardMoveAllowed) {
+      setClickState({
+        mouse:  ui.elementPoint(svg, event),
+        // Ctrl overrides any object that was clicked and pans the canvas:
+        object: (event.ctrlKey
+          ? canvasState
+          : (object.id
+            ? {
+                id: object.id,
+                x: props.cards[object.id].x,
+                y: props.cards[object.id].y
+              }
+            : object)
+        )
+      });
+    }
   }
 
   // Canvas mouse event handlers

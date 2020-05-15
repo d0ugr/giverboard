@@ -1,6 +1,19 @@
 
 
 
+export const arrayMove = (array, oldIndex, newIndex) => {
+  if (newIndex >= array.length) {
+    let k = newIndex - array.length + 1;
+    while (k--) {
+      array.push(undefined);
+    }
+  }
+  array.splice(new_index, 0, array.splice(oldIndex, 1)[0]);
+  // return array; // for testing
+};
+
+
+
 export const uuidv4 = function() {
   // 079cc81a-cf12-4046-9770-1ed443f6a08d
   return generate_uuidv4([1e7] + -1e3 + -4e3 + -8e3 + -1e11);
@@ -26,4 +39,13 @@ const generate_uuidv4 = function(format_string) {
      return (c == "x" ? r : (r & 0x3 | 0x8)).toString(16);
   });
 */
+};
+
+
+
+export const mergeObjects = (object1, object2) => {
+  return {
+    ...object1,
+    ...object2
+  };
 };

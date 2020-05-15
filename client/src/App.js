@@ -34,12 +34,19 @@ function App(props) {
   //     }
   //   },
   //   participants: {
-  //     id: <id>
-  //     name: <name>
+  //     <id>: {
+  //       name: <name>,
+  //       host: <boolean>
+  //     },
+  //     ...
   //   },
   //   start: <timestamp>,
   //   stop: <timestamp>,
-  //   currentParticipant: <id>
+  //   currentParticipant: <id>,
+  //   turnOrder: [
+  //     <participantId>,
+  //     ...
+  //   ]
   // }
 
   const [ connected, setConnected ]     = useState(false);
@@ -125,10 +132,7 @@ function App(props) {
       if (err || !pwMatch) {
         console.log("hostLogin: Login failed:", err, pwMatch)
       }
-      setSession((prevState) => ({
-        ...prevState,
-        host: pwMatch
-      }));
+      setParticipant(props.clientId, { host: pwMatch });
     });
   };
 
@@ -157,10 +161,7 @@ function App(props) {
   const setCard = useCallback((id, card) => {
     setSession((prevState) => {
       if (card) {
-        prevState.cards[id] = {
-          ...prevState.cards[id],
-          ...card
-        };
+        prevState.cards[id] = util.mergeObjects(prevState.cards[id], card);
       } else {
         delete prevState.cards[id];
       }
@@ -179,14 +180,10 @@ function App(props) {
 
   const setCards = useCallback((cards) => {
     setSession((prevState) => {
-      if (cards) {
-        prevState.cards = {
-          ...prevState.cards,
-          ...cards
-        };
-      } else {
-        prevState.cards = {};
-      }
+      prevState.cards = (cards
+        ? util.mergeObjects(prevState.cards, cards)
+        : {}
+      );
       return { ...prevState };
     });
   }, [ setSession ]);
@@ -227,10 +224,8 @@ function App(props) {
   const setParticipant = useCallback((id, participant) => {
     setSession((prevState) => {
       if (participant) {
-        prevState.participants[id] = {
-          ...prevState.participants[id],
-          ...participant
-        };
+        prevState.participants[id] =
+          util.mergeObjects(prevState.participants[id], participant);
       } else {
         delete prevState.participants[id];
       }
@@ -277,6 +272,10 @@ function App(props) {
   };
 
 
+  const showHostControls =
+    (session.participants &&
+     session.participants[props.clientId] &&
+     !session.participants[props.clientId].host);
 
   return (
     <div className="App">
@@ -361,7 +360,7 @@ function App(props) {
             />
             <button onClick={hostLogin}>Login</button><br/>
           </section>
-          <section className={`host${!session.host ? " hidden" : ""}`}>
+          <section className={`host${showHostControls ? " hidden" : ""}`}>
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>

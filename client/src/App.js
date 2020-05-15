@@ -16,7 +16,7 @@ import SvgCanvas       from "./SvgCanvas";
 
 
 
-const socket = io(`ws://${new URL(window.location).hostname}:3001`);
+let socket = null;
 
 
 
@@ -63,6 +63,7 @@ function App(props) {
     });
 
     // Socket event handlers
+    socket = io(`ws://${new URL(window.location).hostname}:3001`);
 
     socket.on("connect", () => {
       console.log("socket.connect");

@@ -24,6 +24,7 @@
 
 main {
   position: relative;
+  width: 100%;
 
   svg {
     width: 100%;
@@ -89,6 +90,9 @@ main {
   section.participants {
     input {
       margin: 0;
+    }
+    button {
+      margin-top: .5em;
     }
   }
 

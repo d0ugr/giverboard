@@ -12,7 +12,6 @@ import * as serviceWorker from "./serviceWorker";
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
 
 const setCookie = (name, value) => {
-  console.log("setCookie", name, value)
   cookies.set(name, value, {
     secure:   false,
     // domain:   ".example.com",

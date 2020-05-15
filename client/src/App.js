@@ -59,17 +59,19 @@ function App(props) {
     // Window event handlers
 
     window.addEventListener("popstate", (_event) => {
-      joinSession(new URL(window.location).pathname.substring(1));
+      joinSession();
     });
 
     // Socket event handlers
+
+    // Connect to the server:
     socket = io(`ws://${new URL(window.location).hostname}:3001`);
 
     socket.on("connect", () => {
       console.log("socket.connect");
       setConnected(true);
       socket.emit("client_init", props.clientId);
-      joinSession(new URL(window.location).pathname.substring(1));
+      joinSession();
       getSessions();
     });
 
@@ -80,7 +82,7 @@ function App(props) {
 
     socket.on("server_message", (message) => console.log("socket.server_message:", message));
 
-    socket.on("update_card", setCard);
+    socket.on("update_card",  setCard);
     socket.on("update_cards", setCards);
 
     socket.on("update_participant",  setParticipant);
@@ -109,19 +111,21 @@ function App(props) {
   };
 
   const joinSession = (sessionKey) => {
+    if (!sessionKey) {
+      sessionKey = new URL(window.location).pathname.substring(1);
+    }
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)
-      if (status !== "error") {
+      if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
         const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
         if (window.location.href !== sessionUrl) {
           window.history.pushState(null, "", sessionUrl)
         }
-        props.setCookie(c.COOKIE_SESSION_ID, sessionKey);
         setSession(session);
         updateNameNotify();
       } else {
-        joinSession(cookies.get(c.COOKIE_SESSION_ID) || "default");
+        joinSession("default");
       }
     });
   };
@@ -278,12 +282,13 @@ function App(props) {
         ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
         : "")}`
     });
+    console.log("updateNameNotify", name);
     if (name) {
       props.setCookie(c.COOKIE_USER_NAME, name);
     // Removing a cookie that isn't there causes
     //    Firefox to complain about SameSite:
-    } else if (cookies.get(c.COOKIE_USER_NAME)) {
-      cookies.remove(c.COOKIE_USER_NAME);
+    // } else {
+      // cookies.remove(c.COOKIE_USER_NAME);
     }
   };
 

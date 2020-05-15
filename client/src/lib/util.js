@@ -8,7 +8,7 @@ export const arrayMove = (array, oldIndex, newIndex) => {
       array.push(undefined);
     }
   }
-  array.splice(new_index, 0, array.splice(oldIndex, 1)[0]);
+  array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
   // return array; // for testing
 };
 

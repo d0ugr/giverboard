@@ -79,6 +79,8 @@ app.io.on("connection", (socket) => {
     socket.clientId = clientId;
   });
 
+  // Session events
+
   socket.on("get_sessions", (callback) => {
     console.log("socket.get_sessions");
     callback(Object.keys(app.sessions).map((sessionKey) => ({
@@ -171,6 +173,8 @@ app.io.on("connection", (socket) => {
       .catch((err) => console.error(err, null));
   });
 
+  // Card events
+
   // update_card updates a single card and is
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
@@ -214,11 +218,19 @@ app.io.on("connection", (socket) => {
     ]).catch((err) => console.log(err));
   });
 
+  // Participant events
+
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
-    app.sessions[socket.sessionKey].participants[socket.clientId] = participant;
+    let existingParticipants = app.sessions[socket.sessionKey].participants;
+    existingParticipants[socket.clientId] = {
+      ...existingParticipants[socket.clientId],
+      ...participant
+    }
     socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
   });
+
+  // Debug events
 
   socket.on("debug_sessions", () => {
     console.log("socket.debug_sessions:", JSON.stringifyPretty(app.sessions));

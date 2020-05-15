@@ -5,6 +5,7 @@ WB2020 is super fun.
 ## **Development Setup**
 
 ```sh
+cd /your/favourite/project/directory
 git clone git@github.com:d0ugr/final-project.git
 cd final-project/server
 npm install

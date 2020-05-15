@@ -2,22 +2,14 @@
 
 WB2020 is super fun.
 
-## **Run server**
-
-Run the server with nodemon:
+## **Development Setup**
 
 ```sh
-cd server
-npm start
-```
-
-## **Run client**
-
-Run the client:
-
-```sh
-cd client
-npm start
+git clone git@github.com:d0ugr/final-project.git
+cd final-project/server
+npm install
+cd final-project/client
+npm install
 ```
 
 ## **Database Setup**
@@ -31,6 +23,24 @@ GRANT ALL ON DATABASE final_project TO final_project;
 Create tables and seed them:
 
 ```sh
-cd server
+cd final-project/server
 npm run resetdb
+```
+
+## **Run server**
+
+Run the server with nodemon:
+
+```sh
+cd final-project/server
+npm start
+```
+
+## **Run client**
+
+Run the client:
+
+```sh
+# cd final-projectclient
+npm start
 ```

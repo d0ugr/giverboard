@@ -83,13 +83,22 @@ function App(props) {
     socket.on("update_cards", setCards);
 
     socket.on("update_participant",  setParticipant);
-    socket.on("update_turns",        (turns) => session.turns = turns);
-    socket.on("update_current_turn", (currentTurn) => session.currentTurn = currentTurn);
+
+    socket.on("update_turns",        (turns) => updateSession({ turns }));
+    socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Session functions
+  const updateSession = useCallback((object) => {
+    setSession((prevState) => {
+      return {
+        ...prevState,
+        ...object
+      };
+    });
+  }, [ setSession ]);
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
@@ -167,17 +176,12 @@ function App(props) {
 
   const nextTurn = () => {
     if (session.turns) {
-      setSession((prevState) => {
-        let currentTurn = prevState.currentTurn + 1;
-        if (currentTurn >= prevState.turns.length) {
-          currentTurn = 0;
-        }
-        socket.emit("update_current_turn", currentTurn);
-        return {
-          ...prevState,
-          currentTurn
-        };
-      });
+      let currentTurn = session.currentTurn + 1;
+      if (currentTurn >= session.turns.length) {
+        currentTurn = 0;
+      }
+      socket.emit("update_current_turn", currentTurn);
+      updateSession({ currentTurn });
     }
   };
 

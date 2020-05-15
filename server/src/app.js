@@ -284,25 +284,29 @@ const newSession = (name, hostPassword, callback) => {
 
 
 const loadCards = (sessionKey, callback) => {
-  if (app.sessions[sessionKey].cards) {
-    callback(app.sessions[sessionKey]);
+  if (app.sessions[sessionKey]) {
+    if (app.sessions[sessionKey].cards) {
+      callback(app.sessions[sessionKey]);
+    } else {
+      const dbId = app.sessions[sessionKey].id;
+      app.db.query("SELECT * FROM cards WHERE session_id = $1",
+        [ dbId ])
+        .then((res) => {
+          const session = app.sessions[sessionKey];
+          session.cards = {};
+          for (const card of res.rows) {
+            session.cards[card.id] = {
+              x:       card.position.x,
+              y:       card.position.y,
+              content: card.content
+            };
+          }
+          callback(session);
+        })
+        .catch((err) => console.log(err));
+    }
   } else {
-    const dbId = app.sessions[sessionKey].id;
-    app.db.query("SELECT * FROM cards WHERE session_id = $1",
-      [ dbId ])
-      .then((res) => {
-        const session = app.sessions[sessionKey];
-        session.cards = {};
-        for (const card of res.rows) {
-          session.cards[card.id] = {
-            x:       card.position.x,
-            y:       card.position.y,
-            content: card.content
-          };
-        }
-        callback(session);
-      })
-      .catch((err) => console.log(err));
+    console.log(`loadCards: app.sessions[${sessionKey}] is`, app.sessions[sessionKey]);
   }
 };
 

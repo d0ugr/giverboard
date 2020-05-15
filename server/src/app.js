@@ -230,6 +230,16 @@ app.io.on("connection", (socket) => {
     socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
   });
 
+  socket.on("update_current_turn", (currentTurn) => {
+    app.sessions[socket.sessionKey].currentTurn = currentTurn;
+    socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
+  });
+
+  socket.on("update_turns", (turns) => {
+    app.sessions[socket.sessionKey].turns = turns;
+    socket.broadcast.to(socket.sessionKey).emit("update_turns", turns);
+  });
+
   // Debug events
 
   socket.on("debug_sessions", () => {

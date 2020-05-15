@@ -8,7 +8,7 @@ function ParticipantListItem(props) {
 
   return (
     <li className={props.className}>
-      {props.name}
+      {props.currentTurn ? "> " : ""}{props.name}
     </li>
   );
 

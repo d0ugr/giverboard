@@ -43,7 +43,7 @@ function App(props) {
   //   start: <timestamp>,
   //   stop: <timestamp>,
   //   currentParticipant: <id>,
-  //   turnOrder: [
+  //   turns: [
   //     <participantId>,
   //     ...
   //   ]
@@ -82,7 +82,9 @@ function App(props) {
     socket.on("update_card", setCard);
     socket.on("update_cards", setCards);
 
-    socket.on("update_participant", setParticipant);
+    socket.on("update_participant",  setParticipant);
+    socket.on("update_turns",        (turns) => session.turns = turns);
+    socket.on("update_current_turn", (currentTurn) => session.currentTurn = currentTurn);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -139,7 +141,14 @@ function App(props) {
   const startSession = () => {
     socket.emit("start_session", (err, timestamp) => {
       if (!err) {
-        session.start = timestamp;
+        setSession((prevState) => ({
+          ...prevState,
+          start:       timestamp,
+          turns:       Object.keys(session.participants),
+          currentTurn: 0
+        }));
+        socket.emit("update_turns",        session.turns);
+        socket.emit("update_current_turn", session.currentTurn);
       } else {
         console.log("startSession: Error starting session:", err)
       }
@@ -154,6 +163,22 @@ function App(props) {
         console.log("startSession: Error stopping session:", err)
       }
     });
+  };
+
+  const nextTurn = () => {
+    if (session.turns) {
+      setSession((prevState) => {
+        let currentTurn = prevState.currentTurn + 1;
+        if (currentTurn >= prevState.turns.length) {
+          currentTurn = 0;
+        }
+        socket.emit("update_current_turn", currentTurn);
+        return {
+          ...prevState,
+          currentTurn
+        };
+      });
+    }
   };
 
   // Card functions
@@ -272,6 +297,7 @@ function App(props) {
   };
 
 
+
   const showHostControls =
     (session.participants &&
      session.participants[props.clientId] &&
@@ -352,6 +378,7 @@ function App(props) {
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}
+              currentParticipantId={session.turns && session.turns[session.currentTurn]}
             />
             <input
               name={"participant-host-password"}
@@ -364,6 +391,7 @@ function App(props) {
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>
+            <button onClick={nextTurn}>Next turn</button>
           </section>
         </div>
 

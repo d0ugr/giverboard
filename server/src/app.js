@@ -45,7 +45,7 @@ app.db = pg({
 });
 
 app.sessions = {};
-app.db.query("SELECT * FROM sessions")
+app.db.query("SELECT * FROM sessions ORDER BY id")
   .then((res) => {
     for (const session of res.rows) {
       app.sessions[session.session_key] = {

@@ -27,10 +27,10 @@ function App(props) {
   //   name: <name>,
   //   cards: {
   //     <cardId>: {
-  //     x: 0,
-  //     y: 0,
-  //     content: {
-  //       ...
+  //       x: 0,
+  //       y: 0,
+  //       content: {
+  //         ...
   //     }
   //   },
   //   participants: {
@@ -42,7 +42,7 @@ function App(props) {
   //   },
   //   start: <timestamp>,
   //   stop: <timestamp>,
-  //   currentParticipant: <id>,
+  //   currentTurn: <id>,
   //   turns: [
   //     <participantId>,
   //     ...

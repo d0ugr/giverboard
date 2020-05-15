@@ -112,7 +112,7 @@ app.io.on("connection", (socket) => {
       socket.sessionKey = sessionKey;
       socket.join(sessionKey, () => {
         console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
-        loadCards(sessionKey, (session) => {
+        loadSession(sessionKey, (session) => {
           callback("session_joined", session);
         });
       });
@@ -179,13 +179,11 @@ app.io.on("connection", (socket) => {
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
-    loadCards(socket.sessionKey, (session) => {
-      session.cards[id] = {
-        ...session.cards[id],
-        ...card
-      };
-      socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);
-    });
+    app.sessions[socket.clientId].cards[id] = {
+      ...session.cards[id],
+      ...card
+    };
+    socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);
   });
 
   // update_cards updates a batch of cards,
@@ -194,15 +192,14 @@ app.io.on("connection", (socket) => {
   socket.on("update_cards", (cards) => {
     console.log(`socket.update_cards: ${cards ? "..." : cards}`);
     // console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
+    const currentSession = app.sessions[socket.sessionKey];
     if (cards) {
-      loadCards(socket.sessionKey, (session) => {
-        session.cards = {
-          ...session.cards,
-          ...cards
-        };
-      });
+      currentSession.cards = {
+        ...session.cards,
+        ...cards
+      };
     } else {
-      app.sessions[socket.sessionKey].cards = {};
+      currentSession.cards = {};
     }
     socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
@@ -210,10 +207,11 @@ app.io.on("connection", (socket) => {
   // Save a card in the database (i.e. on mouseup):
   socket.on("save_card", (id) => {
     console.log(`socket.save_card: ${id}`);
+    const currentSession = app.sessions[socket.sessionKey];
     app.db.query("UPDATE cards SET position = $2 WHERE id = $1", [
       id, {
-        x: app.sessions[socket.sessionKey].cards[id].x,
-        y: app.sessions[socket.sessionKey].cards[id].y
+        x: currentSession.cards[id].x,
+        y: currentSession.cards[id].y
       }
     ]).catch((err) => console.log(err));
   });
@@ -283,30 +281,39 @@ const newSession = (name, hostPassword, callback) => {
 
 
 
-const loadCards = (sessionKey, callback) => {
-  if (app.sessions[sessionKey]) {
-    if (app.sessions[sessionKey].cards) {
-      callback(app.sessions[sessionKey]);
+const loadSession = (sessionKey, callback) => {
+  const session = app.sessions[sessionKey];
+  if (session) {
+    if (session.cards) {
+      callback(session);
     } else {
-      const dbId = app.sessions[sessionKey].id;
       app.db.query("SELECT * FROM cards WHERE session_id = $1",
-        [ dbId ])
+        [ session.id ])
         .then((res) => {
-          const session = app.sessions[sessionKey];
           session.cards = {};
           for (const card of res.rows) {
             session.cards[card.id] = {
-              x:       card.position.x,
-              y:       card.position.y,
+              ...card.position,
               content: card.content
             };
           }
-          callback(session);
+          app.db.query("SELECT * FROM participants WHERE session_id = $1",
+            [ session.id ])
+            .then((res) => {
+              session.participants = {};
+              for (const participant of res.rows) {
+                session.participants[participant.id] = {
+                  name: participant.name
+                };
+              }
+              callback(session);
+            })
+            .catch((err) => console.log(err));
         })
         .catch((err) => console.log(err));
     }
   } else {
-    console.log(`loadCards: app.sessions[${sessionKey}] is`, app.sessions[sessionKey]);
+    console.log(`loadSession: BUG: app.sessions[${sessionKey}] is`, session);
   }
 };
 

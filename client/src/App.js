@@ -7,7 +7,7 @@ import * as util from "./lib/util";
 
 import "./App.scss";
 
-import Header          from "./Header";
+import AppHeader       from "./AppHeader";
 import SessionList     from "./sessions/SessionList";
 import ParticipantList from "./participants/ParticipantList";
 import ImportReader    from "./ImportReader";
@@ -319,14 +319,14 @@ function App(props) {
      session.participants[props.clientId] &&
      !session.participants[props.clientId].settings.host);
   const cardMoveAllowed =
-    !session.participants ||
+    !session.participants || !session.participants[props.clientId] ||
     session.participants[props.clientId].settings.host ||
     props.clientId === Object.keys(session.participants)[session.currentTurn];
 
   return (
     <div className="App">
 
-      <Header
+      <AppHeader
         sessionName={session.name}
         connected={appState.connected}
       />

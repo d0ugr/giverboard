@@ -221,12 +221,23 @@ app.io.on("connection", (socket) => {
 
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
-    let existingParticipants = app.sessions[socket.sessionKey].participants;
+    const currentSession       = app.sessions[socket.sessionKey];
+    const existingParticipants = currentSession.participants;
     existingParticipants[socket.clientId] = {
       ...existingParticipants[socket.clientId],
       ...participant
     }
     socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
+    const settings = {};
+    if (participant.host) {
+      settings.host = participant.host;
+    }
+    app.db.query("INSERT INTO participants " +
+      "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
+      "ON CONFLICT (client_key) DO UPDATE SET name = $5, settings = $6", [
+      socket.clientId, currentSession.id, participant.name, settings,
+      participant.name, settings
+    ]).catch((err) => console.log(err));
   });
 
   socket.on("update_current_turn", (currentTurn) => {

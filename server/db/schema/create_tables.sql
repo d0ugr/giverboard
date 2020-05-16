@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS sessions     CASCADE;
 
 CREATE TABLE sessions (
   id            SERIAL    NOT NULL PRIMARY KEY,
-  session_key   TEXT      NOT NULL DEFAULT '',
+  session_key   TEXT      NOT NULL UNIQUE DEFAULT '',
   username      TEXT      NOT NULL DEFAULT '',
   password      TEXT      NOT NULL DEFAULT '',
   host_password TEXT      NOT NULL DEFAULT '',

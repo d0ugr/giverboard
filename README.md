@@ -1,6 +1,6 @@
 # Estimatron2020
 
-Estimatron2020 is whiteboard designed for distributed Agile development teams to perform Affinity Sizing estimation remotely.  While originating from a niche market, it has more general-purpose uses including children's homework planning.
+Estimatron2020 is whiteboard designed for distributed Agile development teams to perform Affinity Sizing estimation remotely.  While originating from a niche market, it has more general-purpose uses including personal organization and children's homework planning.
 
 ## **Support setup**
 

@@ -49,21 +49,19 @@ function App(props) {
   //   ]
   // }
 
-  const [ appState, setAppState ]       = useState({
+  const [ appState, setAppState ] = useState({
     connected:       false,
     participantName: cookies.get(c.COOKIE_USER_NAME),
+    sessionList:     []
   });
-  const [ sessionList, setSessionList ] = useState([]);
-  const [ session, setSession ]         = useState({});
+  const [ session, setSession ] = useState({});
 
   // Set up stuff on page load:
   useEffect(() => {
 
     // Window event handlers
 
-    window.addEventListener("popstate", (_event) => {
-      joinSession();
-    });
+    window.addEventListener("popstate", (_event) => joinSession());
 
     // Socket event handlers
 
@@ -115,7 +113,7 @@ function App(props) {
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
       // console.log("socket.get_sessions:", sessions)
-      setSessionList(sessions);
+      updateAppState({ sessionList: sessions });
     });
   };
 
@@ -357,7 +355,7 @@ function App(props) {
           <section className="sessions">
             <hr/>
             <SessionList
-              sessionList={sessionList}
+              sessionList={appState.sessionList}
               joinSession={joinSession}
             />
             <input

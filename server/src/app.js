@@ -126,7 +126,7 @@ app.io.on("connection", (socket) => {
       [ socket.sessionKey ])
       .then((res) => {
         bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-          app.sessions[socket.sessionKey].participants[socket.clientId].host = pwMatch;
+          app.sessions[socket.sessionKey].participants[socket.clientId].settings.host = pwMatch;
           callback(err, pwMatch);
         });
       })
@@ -221,26 +221,27 @@ app.io.on("connection", (socket) => {
 
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
+    // Merge the change into the existing participant data:
     const currentSession       = app.sessions[socket.sessionKey];
     const existingParticipants = currentSession.participants;
-    existingParticipants[socket.clientId] = {
+    participant = {
       ...existingParticipants[socket.clientId],
       ...participant
-    }
+    };
+    existingParticipants[socket.clientId] = participant;
+    // Notify other clients in the session about the change:
     socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
-    const settings = {};
-    if (participant.host) {
-      settings.host = participant.host;
-    }
+    // Update the database:
     app.db.query("INSERT INTO participants " +
       "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
       "ON CONFLICT (client_key) DO UPDATE SET name = $5, settings = $6", [
-      socket.clientId, currentSession.id, participant.name, settings,
-      participant.name, settings
+      socket.clientId, currentSession.id, participant.name, participant.settings,
+      participant.name, participant.settings
     ]).catch((err) => console.log(err));
   });
 
   socket.on("update_current_turn", (currentTurn) => {
+    console.log(`socket.update_current_turn: ${currentTurn}`)
     app.sessions[socket.sessionKey].currentTurn = currentTurn;
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
   });
@@ -314,8 +315,9 @@ const loadSession = (sessionKey, callback) => {
             .then((res) => {
               session.participants = {};
               for (const participant of res.rows) {
-                session.participants[participant.id] = {
-                  name: participant.name
+                session.participants[participant.client_key] = {
+                  name:     participant.name,
+                  settings: participant.settings
                 };
               }
               callback(session);

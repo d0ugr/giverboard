@@ -130,9 +130,11 @@ function App(props) {
           window.history.pushState(null, "", sessionUrl)
         }
         setSession(session);
-        updateAppState({
-          participantName: ((session.participants[props.clientId] && session.participants[props.clientId].name) || cookies.get(c.COOKIE_USER_NAME))
-        });
+        // Set the participant name to what was used in the session,
+        //    or keep the current name if new to the session:
+        const currentSession = session.participants[props.clientId];
+        const participantName = ((currentSession && currentSession.name) || cookies.get(c.COOKIE_USER_NAME));
+        updateAppState({ participantName });
       } else {
         joinSession("default");
       }
@@ -157,7 +159,7 @@ function App(props) {
       if (err || !pwMatch) {
         console.log("hostLogin: Login failed:", err, pwMatch)
       }
-      setParticipant(props.clientId, { host: pwMatch });
+      setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
     });
   };
 
@@ -281,18 +283,21 @@ function App(props) {
     socket.emit("update_participant", participant);
   };
 
+  const setParticipantNameNotify = (id, name) => {
+    setParticipantNotify(id, { name: name ||
+      (`Anonymous${props.clientId
+        ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
+        : ""
+      }`)
+    });
+  };
+
   const updateNameNotify = (event) => {
     // updateAppState(event.target);
     updateAppState({ [event.target.name]: event.target.value });
     let name = event.target.value.trim();
     props.setCookie(c.COOKIE_USER_NAME, name);
-    if (name === "") {
-      name = (`Anonymous${props.clientId
-        ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
-        : ""
-      }`);
-    }
-    setParticipantNotify(props.clientId, { name });
+    setParticipantNameNotify(props.clientId, name);
   };
 
   // Temporary testing functions
@@ -314,10 +319,10 @@ function App(props) {
   const showHostControls =
     (session.participants &&
      session.participants[props.clientId] &&
-     !session.participants[props.clientId].host);
+     !session.participants[props.clientId].settings.host);
   const cardMoveAllowed =
     !session.participants || !session.turns ||
-    session.participants[props.clientId].host ||
+    session.participants[props.clientId].settings.host ||
     props.clientId === session.turns[session.currentTurn];
 
   return (

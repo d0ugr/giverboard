@@ -37,7 +37,7 @@ CREATE TABLE participants (
   id         SERIAL    NOT NULL PRIMARY KEY,
   session_id INTEGER   NOT NULL REFERENCES sessions(id),
   client_key TEXT      NOT NULL UNIQUE DEFAULT '',
-  sequence   INTEGER   NOT NULL DEFAULT 0,
+  sequence   INTEGER   NOT NULL DEFAULT -1,
   name       TEXT      NOT NULL DEFAULT '',
   settings   JSONB     NOT NULL DEFAULT '{}',
   created    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

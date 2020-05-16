@@ -187,9 +187,12 @@ function App(props) {
     });
   };
 
-  const nextTurn = () => {
-    let currentTurn = session.currentTurn + 1;
-    if (currentTurn >= Object.keys(session.participants).length) {
+  const setTurn = (increment) => {
+    const turnMax = Object.keys(session.participants).length - 1;
+    let currentTurn = session.currentTurn + increment;
+    if (currentTurn < 0) {
+      currentTurn = turnMax;
+    } else if (currentTurn > turnMax) {
       currentTurn = 0;
     }
     socket.emit("update_current_turn", currentTurn);
@@ -409,7 +412,8 @@ function App(props) {
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>
-            <button onClick={nextTurn}>Next turn</button>
+            <button onClick={(_event) => setTurn(-1)}>Previous turn</button>
+            <button onClick={(_event) => setTurn(1)}>Next turn</button>
           </section>
         </div>
 

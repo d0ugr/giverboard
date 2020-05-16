@@ -49,7 +49,10 @@ function App(props) {
   //   ]
   // }
 
-  const [ connected, setConnected ]     = useState(false);
+  const [ appState, setAppState ]       = useState({
+    connected:       false,
+    participantName: cookies.get(c.COOKIE_USER_NAME),
+  });
   const [ sessionList, setSessionList ] = useState([]);
   const [ session, setSession ]         = useState({});
 
@@ -69,7 +72,7 @@ function App(props) {
 
     socket.on("connect", () => {
       console.log("socket.connect");
-      setConnected(true);
+      updateAppState({ connected: true });
       socket.emit("client_init", props.clientId);
       joinSession();
       getSessions();
@@ -77,13 +80,13 @@ function App(props) {
 
     socket.on("disconnect", () => {
       console.log("socket.disconnect");
-      setConnected(false);
+      updateAppState({ connected: false });
     });
 
-    socket.on("server_message", (message) => console.log("socket.server_message:", message));
+    socket.on("server_message",      (message) => console.log("socket.server_message:", message));
 
-    socket.on("update_card",  setCard);
-    socket.on("update_cards", setCards);
+    socket.on("update_card",         setCard);
+    socket.on("update_cards",        setCards);
 
     socket.on("update_participant",  setParticipant);
 
@@ -93,14 +96,20 @@ function App(props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const updateAppState = useCallback((data) => {
+    setAppState((prevState) => ({
+      ...prevState,
+      ...(data.name && data.value ? { [data.name]: data.value } : data)
+    }));
+  }, [ setAppState ]);
+
   // Session functions
+
   const updateSession = useCallback((object) => {
-    setSession((prevState) => {
-      return {
-        ...prevState,
-        ...object
-      };
-    });
+    setSession((prevState) => ({
+      ...prevState,
+      ...object
+    }));
   }, [ setSession ]);
 
   const getSessions = () => {
@@ -123,7 +132,9 @@ function App(props) {
           window.history.pushState(null, "", sessionUrl)
         }
         setSession(session);
-        updateNameNotify();
+        updateAppState({
+          participantName: ((session.participants[props.clientId] && session.participants[props.clientId].name) || cookies.get(c.COOKIE_USER_NAME))
+        });
       } else {
         joinSession("default");
       }
@@ -273,23 +284,17 @@ function App(props) {
   };
 
   const updateNameNotify = (event) => {
-    const name = (event
-      ? event.target
-      : document.querySelector("input[name='participant-name']")
-    ).value.trim();
-    setParticipantNotify(props.clientId, {
-      name: name || `Anonymous${(props.clientId
+    // updateAppState(event.target);
+    updateAppState({ [event.target.name]: event.target.value });
+    let name = event.target.value.trim();
+    props.setCookie(c.COOKIE_USER_NAME, name);
+    if (name === "") {
+      name = (`Anonymous${props.clientId
         ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
-        : "")}`
-    });
-    console.log("updateNameNotify", name);
-    if (name) {
-      props.setCookie(c.COOKIE_USER_NAME, name);
-    // Removing a cookie that isn't there causes
-    //    Firefox to complain about SameSite:
-    // } else {
-      // cookies.remove(c.COOKIE_USER_NAME);
+        : ""
+      }`);
     }
+    setParticipantNotify(props.clientId, { name });
   };
 
   // Temporary testing functions
@@ -322,7 +327,7 @@ function App(props) {
 
       <Header
         sessionName={session.name}
-        connected={connected}
+        connected={appState.connected}
       />
 
       <div className="main-container">
@@ -385,9 +390,9 @@ function App(props) {
         <div className="sidebar">
           <section className="participants">
             <input
-              name={"participant-name"}
+              name={"participantName"}
               placeholder="Enter your name"
-              // value={session[].participants[].name}
+              value={appState.participantName}
               onChange={updateNameNotify}
             />
             <ParticipantList

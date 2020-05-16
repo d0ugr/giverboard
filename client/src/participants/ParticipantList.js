@@ -43,7 +43,7 @@ function ParticipantList(props) {
         <ParticipantListItem
           key={index}
           className={key === props.clientId ? "highlight" : null}
-          currentTurn={key === props.currentParticipantId}
+          currentTurn={index === props.currentTurn}
           name={props.participants[key].name}
           // name={`${props.participants[key].name}${key === props.clientId ? " (You)" : ""}`}
         />

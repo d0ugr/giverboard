@@ -23,38 +23,28 @@ let socket = null;
 function App(props) {
 
   // session = {
-  //   id: <sessionkey>
-  //   name: <name>,
+  //   id:   <sessionkey>
+  //   name: <name>
   //   cards: {
   //     <cardId>: {
-  //       x: 0,
-  //       y: 0,
+  //       x: 0
+  //       y: 0
   //       content: {
   //         ...
   //     }
-  //   },
+  //   }
   //   participants: {
   //     <id>: {
-  //       name: <name>,
-  //       host: <boolean>
-  //     },
+  //       name:     <name>
+  //       sequence: <index>
+  //       host:     <boolean>
+  //     }
   //     ...
-  //   },
-  //   start: <timestamp>,
-  //   stop: <timestamp>,
-  //   currentTurn: <id>,
-  //   turns: [
-  //     <participantId>,
-  //     ...
-  //   ]
+  //   }
+  //   start:       <timestamp>
+  //   stop:        <timestamp>
+  //   currentTurn: <index>
   // }
-
-  const [ appState, setAppState ] = useState({
-    connected:       false,
-    participantName: cookies.get(c.COOKIE_USER_NAME),
-    sessionList:     []
-  });
-  const [ session, setSession ] = useState({});
 
   // Set up stuff on page load:
   useEffect(() => {
@@ -88,11 +78,19 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
-    socket.on("update_turns",        (turns) => updateSession({ turns }));
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // State management
+
+  const [ appState, setAppState ] = useState({
+    connected:       false,
+    participantName: cookies.get(c.COOKIE_USER_NAME),
+    sessionList:     []
+  });
+  const [ session, setSession ] = useState({});
 
   const updateAppState = useCallback((data) => {
     setAppState((prevState) => ({
@@ -101,14 +99,14 @@ function App(props) {
     }));
   }, [ setAppState ]);
 
-  // Session functions
-
   const updateSession = useCallback((object) => {
     setSession((prevState) => ({
       ...prevState,
       ...object
     }));
   }, [ setSession ]);
+
+  // Session functions
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
@@ -170,11 +168,9 @@ function App(props) {
         setSession((prevState) => ({
           ...prevState,
           start:       timestamp,
-          turns:       Object.keys(session.participants),
           currentTurn: 0
         }));
-        socket.emit("update_turns",        session.turns);
-        socket.emit("update_current_turn", session.currentTurn);
+        socket.emit("update_current_turn", 0);
       } else {
         console.log("startSession: Error starting session:", err)
       }
@@ -192,14 +188,12 @@ function App(props) {
   };
 
   const nextTurn = () => {
-    if (session.turns) {
-      let currentTurn = session.currentTurn + 1;
-      if (currentTurn >= session.turns.length) {
-        currentTurn = 0;
-      }
-      socket.emit("update_current_turn", currentTurn);
-      updateSession({ currentTurn });
+    let currentTurn = session.currentTurn + 1;
+    if (currentTurn >= Object.keys(session.participants).length) {
+      currentTurn = 0;
     }
+    socket.emit("update_current_turn", currentTurn);
+    updateSession({ currentTurn });
   };
 
   // Card functions
@@ -322,9 +316,9 @@ function App(props) {
      session.participants[props.clientId] &&
      !session.participants[props.clientId].settings.host);
   const cardMoveAllowed =
-    !session.participants || !session.turns ||
+    !session.participants ||
     session.participants[props.clientId].settings.host ||
-    props.clientId === session.turns[session.currentTurn];
+    props.clientId === Object.keys(session.participants)[session.currentTurn];
 
   return (
     <div className="App">
@@ -402,7 +396,7 @@ function App(props) {
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}
-              currentParticipantId={session.turns && session.turns[session.currentTurn]}
+              currentTurn={session.currentTurn}
             />
             <input
               name={"participant-host-password"}

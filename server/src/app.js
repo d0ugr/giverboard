@@ -256,11 +256,9 @@ app.io.on("connection", (socket) => {
     console.log(`socket.update_current_turn: ${currentTurn}`)
     app.sessions[socket.sessionKey].currentTurn = currentTurn;
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
-  });
-
-  socket.on("update_turns", (turns) => {
-    app.sessions[socket.sessionKey].turns = turns;
-    socket.broadcast.to(socket.sessionKey).emit("update_turns", turns);
+    app.db.query("UPDATE sessions SET settings = jsonb_set(settings, '{currentTurn}', $2) WHERE session_key = $1", [
+      socket.sessionKey, currentTurn
+    ]).catch((err) => console.log(err));
   });
 
   // Debug events

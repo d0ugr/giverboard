@@ -1,8 +1,8 @@
 -- Drop and recreate all tables
 
-DROP TABLE IF EXISTS cards CASCADE;
+DROP TABLE IF EXISTS cards        CASCADE;
 DROP TABLE IF EXISTS participants CASCADE;
-DROP TABLE IF EXISTS sessions CASCADE;
+DROP TABLE IF EXISTS sessions     CASCADE;
 
 CREATE TABLE sessions (
   id            SERIAL    NOT NULL PRIMARY KEY,
@@ -36,9 +36,9 @@ CREATE TABLE cards (
 CREATE TABLE participants (
   id         SERIAL    NOT NULL PRIMARY KEY,
   session_id INTEGER   NOT NULL REFERENCES sessions(id),
+  client_key TEXT      NOT NULL DEFAULT '',
   sequence   INTEGER   NOT NULL DEFAULT 0,
   name       TEXT      NOT NULL DEFAULT '',
-  avatar     TEXT      NOT NULL DEFAULT '',
   settings   JSONB     NOT NULL DEFAULT '{}',
   created    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP

@@ -1,5 +1,5 @@
 
-export const APP_NAME  = "WB2020";
+export const APP_NAME  = "Estimatron2020";
 
 export const COOKIE_CLIENT_ID  = `${APP_NAME.toLowerCase()}_client_id`;
 export const COOKIE_SESSION_ID = `${APP_NAME.toLowerCase()}_session_id`;

@@ -126,11 +126,23 @@ app.io.on("connection", (socket) => {
       [ socket.sessionKey ])
       .then((res) => {
         bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-          app.sessions[socket.sessionKey].participants[socket.clientId].host = pwMatch;
+          app.sessions[socket.sessionKey].participants[socket.clientId].settings.host = pwMatch;
           callback(err, pwMatch);
         });
       })
       .catch((err) => console.error(err, null));
+  });
+
+  socket.on("update_participant_sequence", (participantKeys) => {
+    const sessionId = app.sessions[socket.sessionKey].id;
+    for (const index in participantKeys) {
+      app.db.query("UPDATE participants SET sequence = $3 WHERE session_id = $1 AND client_key = $2",
+        [ sessionId, participantKeys[index], index ])
+        .then((res) => {
+          console.log(res.rows);
+        })
+        .catch((err) => console.error(err, null));
+    }
   });
 
   socket.on("start_session", (callback) => {
@@ -179,8 +191,9 @@ app.io.on("connection", (socket) => {
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
-    app.sessions[socket.clientId].cards[id] = {
-      ...session.cards[id],
+    const currentSession = app.sessions[socket.sessionKey];
+    currentSession.cards[id] = {
+      ...currentSession.cards[id],
       ...card
     };
     socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);
@@ -220,22 +233,32 @@ app.io.on("connection", (socket) => {
 
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
-    let existingParticipants = app.sessions[socket.sessionKey].participants;
-    existingParticipants[socket.clientId] = {
+    // Merge the change into the existing participant data:
+    const currentSession       = app.sessions[socket.sessionKey];
+    const existingParticipants = currentSession.participants;
+    participant = {
       ...existingParticipants[socket.clientId],
       ...participant
-    }
+    };
+    existingParticipants[socket.clientId] = participant;
+    // Notify other clients in the session about the change:
     socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
+    // Update the database:
+    app.db.query("INSERT INTO participants " +
+      "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
+      "ON CONFLICT (client_key) DO UPDATE SET name = $5, settings = $6", [
+      socket.clientId, currentSession.id, participant.name, participant.settings,
+      participant.name, participant.settings
+    ]).catch((err) => console.log(err));
   });
 
   socket.on("update_current_turn", (currentTurn) => {
+    console.log(`socket.update_current_turn: ${currentTurn}`)
     app.sessions[socket.sessionKey].currentTurn = currentTurn;
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
-  });
-
-  socket.on("update_turns", (turns) => {
-    app.sessions[socket.sessionKey].turns = turns;
-    socket.broadcast.to(socket.sessionKey).emit("update_turns", turns);
+    app.db.query("UPDATE sessions SET settings = jsonb_set(settings, '{currentTurn}', $2) WHERE session_key = $1", [
+      socket.sessionKey, currentTurn
+    ]).catch((err) => console.log(err));
   });
 
   // Debug events
@@ -297,13 +320,15 @@ const loadSession = (sessionKey, callback) => {
               content: card.content
             };
           }
-          app.db.query("SELECT * FROM participants WHERE session_id = $1",
+          app.db.query("SELECT * FROM participants WHERE session_id = $1 ORDER BY sequence, name",
             [ session.id ])
             .then((res) => {
               session.participants = {};
               for (const participant of res.rows) {
-                session.participants[participant.id] = {
-                  name: participant.name
+                session.participants[participant.client_key] = {
+                  name:     participant.name,
+                  sequence: participant.sequence,
+                  settings: participant.settings
                 };
               }
               callback(session);

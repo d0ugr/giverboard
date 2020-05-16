@@ -23,38 +23,28 @@ let socket = null;
 function App(props) {
 
   // session = {
-  //   id: <sessionkey>
-  //   name: <name>,
+  //   id:   <sessionkey>
+  //   name: <name>
   //   cards: {
   //     <cardId>: {
-  //       x: 0,
-  //       y: 0,
+  //       x: 0
+  //       y: 0
   //       content: {
   //         ...
   //     }
-  //   },
+  //   }
   //   participants: {
   //     <id>: {
-  //       name: <name>,
-  //       host: <boolean>
-  //     },
+  //       name:     <name>
+  //       sequence: <index>
+  //       host:     <boolean>
+  //     }
   //     ...
-  //   },
-  //   start: <timestamp>,
-  //   stop: <timestamp>,
-  //   currentTurn: <id>,
-  //   turns: [
-  //     <participantId>,
-  //     ...
-  //   ]
+  //   }
+  //   start:       <timestamp>
+  //   stop:        <timestamp>
+  //   currentTurn: <index>
   // }
-
-  const [ appState, setAppState ] = useState({
-    connected:       false,
-    participantName: cookies.get(c.COOKIE_USER_NAME),
-    sessionList:     []
-  });
-  const [ session, setSession ] = useState({});
 
   // Set up stuff on page load:
   useEffect(() => {
@@ -88,11 +78,19 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
-    socket.on("update_turns",        (turns) => updateSession({ turns }));
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // State management
+
+  const [ appState, setAppState ] = useState({
+    connected:       false,
+    participantName: cookies.get(c.COOKIE_USER_NAME),
+    sessionList:     []
+  });
+  const [ session, setSession ] = useState({});
 
   const updateAppState = useCallback((data) => {
     setAppState((prevState) => ({
@@ -101,14 +99,14 @@ function App(props) {
     }));
   }, [ setAppState ]);
 
-  // Session functions
-
   const updateSession = useCallback((object) => {
     setSession((prevState) => ({
       ...prevState,
       ...object
     }));
   }, [ setSession ]);
+
+  // Session functions
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
@@ -130,9 +128,11 @@ function App(props) {
           window.history.pushState(null, "", sessionUrl)
         }
         setSession(session);
-        updateAppState({
-          participantName: ((session.participants[props.clientId] && session.participants[props.clientId].name) || cookies.get(c.COOKIE_USER_NAME))
-        });
+        // Set the participant name to what was used in the session,
+        //    or keep the current name if new to the session:
+        const currentSession = session.participants[props.clientId];
+        const participantName = ((currentSession && currentSession.name) || cookies.get(c.COOKIE_USER_NAME));
+        updateAppState({ participantName });
       } else {
         joinSession("default");
       }
@@ -157,7 +157,8 @@ function App(props) {
       if (err || !pwMatch) {
         console.log("hostLogin: Login failed:", err, pwMatch)
       }
-      setParticipant(props.clientId, { host: pwMatch });
+      setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
+      socket.emit("update_participant_sequence", Object.keys(session.participants));
     });
   };
 
@@ -167,11 +168,9 @@ function App(props) {
         setSession((prevState) => ({
           ...prevState,
           start:       timestamp,
-          turns:       Object.keys(session.participants),
           currentTurn: 0
         }));
-        socket.emit("update_turns",        session.turns);
-        socket.emit("update_current_turn", session.currentTurn);
+        socket.emit("update_current_turn", 0);
       } else {
         console.log("startSession: Error starting session:", err)
       }
@@ -188,15 +187,16 @@ function App(props) {
     });
   };
 
-  const nextTurn = () => {
-    if (session.turns) {
-      let currentTurn = session.currentTurn + 1;
-      if (currentTurn >= session.turns.length) {
-        currentTurn = 0;
-      }
-      socket.emit("update_current_turn", currentTurn);
-      updateSession({ currentTurn });
+  const setTurn = (increment) => {
+    const turnMax = Object.keys(session.participants).length - 1;
+    let currentTurn = session.currentTurn + increment;
+    if (currentTurn < 0) {
+      currentTurn = turnMax;
+    } else if (currentTurn > turnMax) {
+      currentTurn = 0;
     }
+    socket.emit("update_current_turn", currentTurn);
+    updateSession({ currentTurn });
   };
 
   // Card functions
@@ -281,18 +281,21 @@ function App(props) {
     socket.emit("update_participant", participant);
   };
 
+  const setParticipantNameNotify = (id, name) => {
+    setParticipantNotify(id, { name: name ||
+      (`Anonymous${props.clientId
+        ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
+        : ""
+      }`)
+    });
+  };
+
   const updateNameNotify = (event) => {
     // updateAppState(event.target);
     updateAppState({ [event.target.name]: event.target.value });
     let name = event.target.value.trim();
     props.setCookie(c.COOKIE_USER_NAME, name);
-    if (name === "") {
-      name = (`Anonymous${props.clientId
-        ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
-        : ""
-      }`);
-    }
-    setParticipantNotify(props.clientId, { name });
+    setParticipantNameNotify(props.clientId, name);
   };
 
   // Temporary testing functions
@@ -314,11 +317,11 @@ function App(props) {
   const showHostControls =
     (session.participants &&
      session.participants[props.clientId] &&
-     !session.participants[props.clientId].host);
+     !session.participants[props.clientId].settings.host);
   const cardMoveAllowed =
-    !session.participants || !session.turns ||
-    session.participants[props.clientId].host ||
-    props.clientId === session.turns[session.currentTurn];
+    !session.participants ||
+    session.participants[props.clientId].settings.host ||
+    props.clientId === Object.keys(session.participants)[session.currentTurn];
 
   return (
     <div className="App">
@@ -396,7 +399,7 @@ function App(props) {
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}
-              currentParticipantId={session.turns && session.turns[session.currentTurn]}
+              currentTurn={session.currentTurn}
             />
             <input
               name={"participant-host-password"}
@@ -409,7 +412,8 @@ function App(props) {
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>
-            <button onClick={nextTurn}>Next turn</button>
+            <button onClick={(_event) => setTurn(-1)}>Previous turn</button>
+            <button onClick={(_event) => setTurn(1)}>Next turn</button>
           </section>
         </div>
 

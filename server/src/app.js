@@ -179,8 +179,9 @@ app.io.on("connection", (socket) => {
   //    intended for real-time updates across clients:
   socket.on("update_card", (id, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
-    app.sessions[socket.clientId].cards[id] = {
-      ...session.cards[id],
+    const currentSession = app.sessions[socket.sessionKey];
+    currentSession.cards[id] = {
+      ...currentSession.cards[id],
       ...card
     };
     socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);

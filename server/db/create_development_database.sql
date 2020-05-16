@@ -1,3 +1,3 @@
-CREATE USER wb2020_development WITH NOSUPERUSER PASSWORD 'wb2020_development';
-CREATE DATABASE wb2020_development OWNER wb2020_development;
-GRANT ALL ON DATABASE wb2020_development TO wb2020_development;
+CREATE USER estimatron2020_development WITH NOSUPERUSER PASSWORD 'estimatron2020_development';
+CREATE DATABASE estimatron2020_development OWNER estimatron2020_development;
+GRANT ALL ON DATABASE estimatron2020_development TO estimatron2020_development;

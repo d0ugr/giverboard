@@ -22,14 +22,14 @@ INSERT INTO cards (session_id, content, position) VALUES
   (2, '{ "title": "jiop is the best", "content": "word" }', '{ "x":0, "y":0 }')
 ;
 
-INSERT INTO participants (session_id, sequence, name) VALUES
-  (1, 1, 'Linh Nguyen'),
-  (1, 2, 'Doug Ross'),
-  (1, 3, 'X Æ A-12'),
-  (2, 1, 'Herbert'),
-  (2, 2, 'Bob Knickeryanker'),
-  (2, 3, 'Let''s Play Checkers'),
-  (2, 4, 'Magical Bongo'),
-  (2, 5, 'Password'),
-  (2, 6, 'Chowder Crowder')
+INSERT INTO participants (session_id, client_key, sequence, name) VALUES
+  (1, '1', 1, 'Linh Nguyen'),
+  (1, '2', 2, 'Doug Ross'),
+  (1, '3', 3, 'X Æ A-12'),
+  (2, '4', 1, 'Herbert'),
+  (2, '5', 2, 'Bob Knickeryanker'),
+  (2, '6', 3, 'Let''s Play Checkers'),
+  (2, '7', 4, 'Magical Bongo'),
+  (2, '8', 5, 'Password'),
+  (2, '9', 6, 'Chowder Crowder')
 ;

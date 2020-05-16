@@ -160,6 +160,7 @@ function App(props) {
         console.log("hostLogin: Login failed:", err, pwMatch)
       }
       setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
+      socket.emit("update_participant_sequence", Object.keys(session.participants));
     });
   };
 

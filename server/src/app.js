@@ -133,6 +133,18 @@ app.io.on("connection", (socket) => {
       .catch((err) => console.error(err, null));
   });
 
+  socket.on("update_participant_sequence", (participantKeys) => {
+    const sessionId = app.sessions[socket.sessionKey].id;
+    for (const index in participantKeys) {
+      app.db.query("UPDATE participants SET sequence = $3 WHERE session_id = $1 AND client_key = $2",
+        [ sessionId, participantKeys[index], index ])
+        .then((res) => {
+          console.log(res.rows);
+        })
+        .catch((err) => console.error(err, null));
+    }
+  });
+
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
     app.db.query("SELECT start FROM sessions WHERE session_key = $1",
@@ -310,13 +322,14 @@ const loadSession = (sessionKey, callback) => {
               content: card.content
             };
           }
-          app.db.query("SELECT * FROM participants WHERE session_id = $1",
+          app.db.query("SELECT * FROM participants WHERE session_id = $1 ORDER BY sequence, name",
             [ session.id ])
             .then((res) => {
               session.participants = {};
               for (const participant of res.rows) {
                 session.participants[participant.client_key] = {
                   name:     participant.name,
+                  sequence: participant.sequence,
                   settings: participant.settings
                 };
               }

@@ -83,11 +83,11 @@ function MainMenu(props) {
             <ListItemText primary="Clear board"/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={(_dummyFunction) => true}>
+          {/* <ListItem button onClick={(_dummyFunction) => true}>
             <ListItemIcon><NotesIcon/></ListItemIcon>
             <ListItemText primary="Edit notes"/>
           </ListItem>
-          <Divider/>
+          <Divider/> */}
           {props.showHostControls &&
             <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
               <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>

@@ -45,14 +45,16 @@ app.db = pg({
 });
 
 app.sessions = {};
-app.db.query("SELECT * FROM sessions ORDER BY id")
+app.db.query("SELECT id, session_key, name, description, settings, start, stop FROM sessions ORDER BY id")
   .then((res) => {
     for (const session of res.rows) {
       app.sessions[session.session_key] = {
-        id:   session.id,
-        name: session.name,
-        participants: {}
+        ...session,
+        currentTurn:  (session.settings.currentTurn || 0),
+        // cards:        {},
+        // participants: {}
       };
+      delete app.sessions[session.session_key].session_key;
     }
   })
   .catch((err) => console.log(err));
@@ -111,7 +113,7 @@ app.io.on("connection", (socket) => {
       socket.leaveAll();
       socket.sessionKey = sessionKey;
       socket.join(sessionKey, () => {
-        console.log(`socket.join_session: joined ${JSON.stringify(socket.rooms)}`);
+        console.log(`socket.join_session: ${socket.clientId} joined ${JSON.stringify(socket.rooms)}`);
         loadSession(sessionKey, (session) => {
           callback("session_joined", session);
         });
@@ -147,42 +149,40 @@ app.io.on("connection", (socket) => {
 
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
-    app.db.query("SELECT start FROM sessions WHERE session_key = $1",
-      [ socket.sessionKey ])
-      .then((res) => {
-        if (!res.rows.start) {
-          const timestamp = new Date();
-          app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1",
-            [ socket.sessionKey, timestamp ])
-            .then((_res) => {
-              callback(null, timestamp);
-            })
-            .catch((err) => console.error(err, null));
-        } else {
-          console.log("socket.start_session: Session already started")
-        }
+    const timestamp = new Date();
+    app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1",
+      [ socket.sessionKey, timestamp ])
+      .then((_res) => {
+        app.sessions[socket.sessionKey].start = timestamp;
+        app.sessions[socket.sessionKey].stop  = null;
+        callback(null, timestamp);
+        socket.broadcast.to(socket.sessionKey).emit("start_session", timestamp);
       })
-      .catch((err) => console.error(err, null));
+      .catch((err) => {
+        callback(err);
+        console.error(err)
+      });
   });
 
-  socket.on("stop_session", () => {
+  socket.on("stop_session", (callback) => {
     console.log(`socket.start_session`);
-    app.db.query("SELECT start FROM sessions WHERE session_key = $1",
-      [ socket.sessionKey ])
-      .then((res) => {
-        if (res.rows.start) {
-          const timestamp = new Date();
-          app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1",
-            [ socket.sessionKey, timestamp ])
-            .then((_res) => {
-              callback(null, timestamp);
-            })
-            .catch((err) => console.error(err, null));
-        } else {
-          console.log("socket.stop_session: Not setting stop when there is no start")
-        }
-      })
-      .catch((err) => console.error(err, null));
+    if (app.sessions[socket.sessionKey].start) {
+      const timestamp = new Date();
+      app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1",
+        [ socket.sessionKey, timestamp ])
+        .then((_res) => {
+          app.sessions[socket.sessionKey].stop = timestamp;
+          callback(null, timestamp);
+          socket.broadcast.to(socket.sessionKey).emit("stop_session", timestamp);
+        })
+        .catch((err) => {
+          callback(err);
+          console.error(err)
+        });
+    } else {
+      callback("Session has not been started");
+      console.log("socket.stop_session: Session has not been started")
+    }
   });
 
   // Card events
@@ -247,8 +247,8 @@ app.io.on("connection", (socket) => {
     app.db.query("INSERT INTO participants " +
       "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
       "ON CONFLICT (client_key) DO UPDATE SET name = $5, settings = $6", [
-      socket.clientId, currentSession.id, participant.name, participant.settings,
-      participant.name, participant.settings
+      socket.clientId, currentSession.id, participant.name, participant.settings || {},
+      participant.name, participant.settings || {}
     ]).catch((err) => console.log(err));
   });
 
@@ -307,7 +307,7 @@ const newSession = (name, hostPassword, callback) => {
 const loadSession = (sessionKey, callback) => {
   const session = app.sessions[sessionKey];
   if (session) {
-    if (session.cards) {
+    if (session.cards && session.participants) {
       callback(session);
     } else {
       app.db.query("SELECT * FROM cards WHERE session_id = $1",
@@ -325,7 +325,7 @@ const loadSession = (sessionKey, callback) => {
             .then((res) => {
               session.participants = {};
               for (const participant of res.rows) {
-                session.participants[participant.client_key] = {
+                session.participants[participant.client_key.toLowerCase()] = {
                   name:     participant.name,
                   sequence: participant.sequence,
                   settings: participant.settings

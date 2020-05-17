@@ -1,0 +1,24 @@
+.session-status {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1em;
+  color: ghostwhite;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  text-shadow:
+  .1em .1em .1em black, -.1em .1em .1em black, .1em -.1em .1em black, -.1em -.1em .1em black,
+    0 0 .5em gray, 0 0 1em gray,
+    0 0 .5em gray, 0 0 1em gray;
+
+  .current-turn {
+    color: lightgreen;
+  }
+
+  .next-turn {
+    color: lightblue;
+    font-size: 1.5rem;
+  }
+}

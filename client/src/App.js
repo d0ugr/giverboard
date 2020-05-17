@@ -8,6 +8,7 @@ import * as util from "./lib/util";
 import "./App.scss";
 
 import AppHeader       from "./AppHeader";
+import SessionStatus   from "./SessionStatus";
 import SessionList     from "./sessions/SessionList";
 import ParticipantList from "./participants/ParticipantList";
 import ImportReader    from "./ImportReader";
@@ -78,6 +79,8 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
+    socket.on("start_session",       (timestamp) => updateSession({ start: timestamp }));
+    socket.on("stop_session",        (timestamp) => updateSession({ stop: timestamp }));
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,7 +135,11 @@ function App(props) {
         //    or keep the current name if new to the session:
         const currentSession = session.participants[props.clientId];
         const participantName = ((currentSession && currentSession.name) || cookies.get(c.COOKIE_USER_NAME));
-        updateAppState({ participantName });
+        if (participantName === appState.participantName) {
+          setParticipantNameNotify(props.clientId, participantName);
+        } else {
+          updateAppState({ participantName });
+        }
       } else {
         joinSession("default");
       }
@@ -165,11 +172,10 @@ function App(props) {
   const startSession = () => {
     socket.emit("start_session", (err, timestamp) => {
       if (!err) {
-        setSession((prevState) => ({
-          ...prevState,
+        updateSession({
           start:       timestamp,
           currentTurn: 0
-        }));
+        });
         socket.emit("update_current_turn", 0);
       } else {
         console.log("startSession: Error starting session:", err)
@@ -180,12 +186,16 @@ function App(props) {
   const stopSession = () => {
     socket.emit("stop_session", (err, timestamp) => {
       if (!err) {
-        session.stop = timestamp;
+        updateSession({
+          stop: timestamp
+        });
       } else {
         console.log("startSession: Error stopping session:", err)
       }
     });
   };
+
+  const getCurrentTurn = () => (session.start && !session.stop ? session.currentTurn : -1);
 
   const setTurn = (increment) => {
     const turnMax = Object.keys(session.participants).length - 1;
@@ -304,22 +314,20 @@ function App(props) {
     setCardNotify(util.uuidv4_compact(), {
       x: Math.floor(Math.random() * 200) - 100,
       y: Math.floor(Math.random() * 200) - 100,
-      content: {
-        category: category,
-        title:    title,
-        content:  content
-      }
+      content: {category, title, content }
     });
   };
-
 
 
   const showHostControls =
     (session.participants &&
      session.participants[props.clientId] &&
-     !session.participants[props.clientId].settings.host);
+     session.participants[props.clientId].settings &&
+     session.participants[props.clientId].settings.host);
   const cardMoveAllowed =
-    !session.participants || !session.participants[props.clientId] ||
+    !session.participants ||
+    !session.participants[props.clientId] ||
+    !session.participants[props.clientId].settings ||
     session.participants[props.clientId].settings.host ||
     props.clientId === Object.keys(session.participants)[session.currentTurn];
 
@@ -378,6 +386,12 @@ function App(props) {
 
         <main>
           <SizeCues/>
+          <SessionStatus
+            participants={session.participants || {}}
+            sessionStart={session.start}
+            sessionStop={session.stop}
+            currentTurn={getCurrentTurn()}
+          />
           <SvgCanvas
             viewBoxSize={300}
             className={"whiteboard"}
@@ -399,7 +413,7 @@ function App(props) {
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}
-              currentTurn={session.currentTurn}
+              currentTurn={getCurrentTurn()}
             />
             <input
               name={"participant-host-password"}
@@ -408,7 +422,7 @@ function App(props) {
             />
             <button onClick={hostLogin}>Login</button><br/>
           </section>
-          <section className={`host${showHostControls ? " hidden" : ""}`}>
+          <section className={`host${showHostControls ? "" : " hidden"}`}>
             <hr/>
             <button onClick={startSession}>Start session</button><br/>
             <button onClick={stopSession}>Stop session</button><br/>

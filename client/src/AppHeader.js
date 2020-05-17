@@ -18,8 +18,9 @@ const useStyles = makeStyles((theme) => ({
     cursor: "pointer",
   },
   title: {
+    padding: ".25em",
     flexGrow: 1,
-    fontSize: "150%",
+    fontSize: "200%",
     textShadow: "2px 2px 2px black, 2px 2px 2px black",
   },
   sessionName: {

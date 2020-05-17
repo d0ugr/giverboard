@@ -2,11 +2,11 @@ import React, { useState, Fragment } from "react";
 import Popover from "@material-ui/core/Popover";
 // Icons
 import PersonIcon from "@material-ui/icons/Person";
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import LockOpenIcon from "@material-ui/icons/LockOpen";
 // Host icons
 import AddBoxIcon from "@material-ui/icons/AddBox";
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from "@material-ui/icons/Delete";
 import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
 import NotesIcon from "@material-ui/icons/Notes";
 // List
@@ -17,6 +17,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
 
 import HostLogin from "./HostLogin";
+import EditName from "./EditName";
 
 
 
@@ -31,6 +32,10 @@ function MainMenu(props) {
     }
   };
   const closeHostLogin = () => setHostLoginOpen(false);
+
+  const [ editNameOpen, setEditNameOpen ] = useState(false);
+  const openEditName  = () => setEditNameOpen(true);
+  const closeEditName = () => setEditNameOpen(false);
 
   return (
     <Fragment>
@@ -51,7 +56,7 @@ function MainMenu(props) {
         }}
       >
         <List aria-label="main menu">
-          <ListItem button onClick={props.onMenuItemClick}>
+          <ListItem button onClick={openEditName}>
             <ListItemIcon><PersonIcon/></ListItemIcon>
             <ListItemText primary="Edit name"/>
           </ListItem>
@@ -87,6 +92,14 @@ function MainMenu(props) {
         hostLoginOpen={hostLoginOpen}
         closeHostLogin={closeHostLogin}
         hostLogin={props.hostLogin}
+      />
+
+      <EditName
+        editNameOpen={editNameOpen}
+        closeEditName={closeEditName}
+        participantNamePlaceholder={props.participantNamePlaceholder}
+        currentParticipantName={props.currentParticipantName}
+        setParticipantName={props.setParticipantName}
       />
 
     </Fragment>

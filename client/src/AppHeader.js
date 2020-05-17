@@ -76,6 +76,11 @@ function AppHeader(props) {
         close={closeMenu}
         open={menuOpen}
         onMenuItemClick={onMenuItemClick}
+
+        currentParticipantName={props.currentParticipantName}
+        participantNamePlaceholder={props.participantNamePlaceholder}
+        setParticipantName={props.setParticipantName}
+
         showHostControls={props.showHostControls}
         hostLogin={props.hostLogin}
         hostLogout={props.hostLogout}

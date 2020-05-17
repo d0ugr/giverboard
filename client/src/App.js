@@ -136,7 +136,7 @@ function App(props) {
         const currentSession = session.participants[props.clientId];
         const participantName = ((currentSession && currentSession.name) || cookies.get(c.COOKIE_USER_NAME));
         if (participantName === appState.participantName) {
-          setParticipantNameNotify(props.clientId, participantName);
+          setParticipantNameNotify(participantName);
         } else {
           updateAppState({ participantName });
         }
@@ -289,26 +289,24 @@ function App(props) {
     });
   }, [ setSession ]);
 
-  const setParticipantNotify = (id, participant) => {
-    setParticipant(id, participant);
+  const setParticipantNotify = (participant) => {
+    setParticipant(props.clientId, participant);
     socket.emit("update_participant", participant);
   };
 
-  const setParticipantNameNotify = (id, name) => {
-    setParticipantNotify(id, { name: name ||
+  const setParticipantNameNotify = (name) => {
+    name = name.trim();
+    updateAppState({ participantName: name });
+    props.setCookie(c.COOKIE_USER_NAME, name);
+    setParticipantNotify({ name: getParticipantName(name) });
+  };
+
+  const getParticipantName = (name) => {
+    return name ||
       (`Anonymous${props.clientId
         ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
         : ""
-      }`)
-    });
-  };
-
-  const onChangeName = (event) => {
-    // updateAppState(event.target);
-    updateAppState({ [event.target.name]: event.target.value });
-    let name = event.target.value.trim();
-    props.setCookie(c.COOKIE_USER_NAME, name);
-    setParticipantNameNotify(props.clientId, name);
+      }`);
   };
 
   // Temporary testing functions
@@ -340,6 +338,11 @@ function App(props) {
       <AppHeader
         sessionName={session.name}
         connected={appState.connected}
+
+        currentParticipantName={appState.participantName}
+        participantNamePlaceholder={getParticipantName(null)}
+        setParticipantName={setParticipantNameNotify}
+
         showHostControls={showHostControls}
         hostLogin={hostLogin}
         hostLogout={hostLogout}
@@ -407,12 +410,6 @@ function App(props) {
 
         <div className="sidebar">
           <section className="participants">
-            <input
-              name="participantName"
-              placeholder="Enter your name"
-              value={appState.participantName}
-              onChange={onChangeName}
-            />
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}

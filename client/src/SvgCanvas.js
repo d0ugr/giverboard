@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 
 import * as ui from "./lib/ui";
 
-import Card from "./Card";
+import SizingCard from "./SizingCard";
 
 
 
@@ -213,7 +213,7 @@ function SvgCanvas(props) {
       {/* <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse> */}
 
       {Object.keys(props.cards).map((id, index) =>
-        props.cards[id].content && <Card
+        props.cards[id].content && <SizingCard
           key={index}
           card={props.cards[id]}
           setClickObject={(event) => setClickObject(event, { id })}

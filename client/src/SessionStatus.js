@@ -1,10 +1,23 @@
 import React, { Fragment } from "react";
+import { makeStyles } from '@material-ui/core/styles';
+import Button from "@material-ui/core/Button";
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import "./SessionStatus.scss";
+
+const useStyles = makeStyles((theme) => ({
+  button: {
+    margin: theme.spacing(1),
+    backgroundColor: "rgba(1, 1, 1, .5)",
+  },
+}));
 
 
 
 function SessionStatus(props) {
+
+  const classes = useStyles();
 
   let status = "";
   if (!props.sessionStart) {
@@ -18,10 +31,31 @@ function SessionStatus(props) {
     const nextParticipant = participantKeys[(nextTurn < participantKeys.length ? nextTurn : 0)];
     status =
       <Fragment>
-        <span className="current-turn">{currentParticipant && props.participants[currentParticipant].name}</span>
-        <span className="next-turn">{nextParticipant && ` -> ${props.participants[nextParticipant].name}`}</span>
-      </Fragment>;
-  }
+        <div className="current turn">{currentParticipant && props.participants[currentParticipant].name}</div>
+        {/* <div className="next turn">{nextParticipant && ` -> ${props.participants[nextParticipant].name}`}</div> */}
+        <div className="next turn">{nextParticipant && props.participants[nextParticipant].name}</div><br/>
+        <Button
+          className={classes.button}
+          variant="outlined"
+          size="small"
+          startIcon={<ChevronLeftIcon/>}
+          color="primary"
+          onClick={(_event) => props.setTurn(-1)}
+        >
+          Previous turn
+        </Button>
+        <Button
+          className={classes.button}
+          variant="outlined"
+          size="small"
+          endIcon={<ChevronRightIcon/>}
+          color="primary"
+          onClick={(_event) => props.setTurn(1)}
+        >
+          Next turn
+        </Button>
+      </Fragment>
+    };
 
   return (
     <div className="session-status">

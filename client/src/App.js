@@ -79,7 +79,7 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
-    socket.on("start_session",       (timestamp) => updateSession({ start: timestamp }));
+    socket.on("start_session",       (timestamp) => updateSession({ start: timestamp, stop: null }));
     socket.on("stop_session",        (timestamp) => updateSession({ stop: timestamp }));
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
@@ -402,6 +402,7 @@ function App(props) {
             sessionStart={session.start}
             sessionStop={session.stop}
             currentTurn={getCurrentTurn()}
+            setTurn={setTurn}
           />
           <SvgCanvas
             viewBoxSize={300}
@@ -420,11 +421,6 @@ function App(props) {
               participants={session.participants || {}}
               currentTurn={getCurrentTurn()}
             />
-          </section>
-          <section className={`host${showHostControls ? "" : " hidden"}`}>
-            <hr/>
-            <button onClick={(_event) => setTurn(-1)}>Previous turn</button>
-            <button onClick={(_event) => setTurn(1)}>Next turn</button>
           </section>
         </div>
 

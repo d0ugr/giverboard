@@ -13,12 +13,21 @@
     0 0 .5em gray, 0 0 1em gray,
     0 0 .5em gray, 0 0 1em gray;
 
-  .current-turn {
+  .turn {
+    padding-right: 1em;
+    display: inline-block;
+    max-width: 30%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .current {
     color: lightgreen;
   }
 
-  .next-turn {
+  .next {
     color: lightblue;
-    font-size: 1.5rem;
+    font-size: 75%;
   }
 }

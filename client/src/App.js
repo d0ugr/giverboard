@@ -177,6 +177,7 @@ function App(props) {
       if (!err) {
         updateSession({
           start:       timestamp,
+          stop:        null,
           currentTurn: 0
         });
         socket.emit("update_current_turn", 0);
@@ -346,6 +347,10 @@ function App(props) {
         showHostControls={showHostControls}
         hostLogin={hostLogin}
         hostLogout={hostLogout}
+
+        sessionStarted={session.start && !session.stop}
+        startSession={startSession}
+        stopSession={stopSession}
       />
 
       <div className="main-container">
@@ -418,8 +423,6 @@ function App(props) {
           </section>
           <section className={`host${showHostControls ? "" : " hidden"}`}>
             <hr/>
-            <button onClick={startSession}>Start session</button><br/>
-            <button onClick={stopSession}>Stop session</button><br/>
             <button onClick={(_event) => setTurn(-1)}>Previous turn</button>
             <button onClick={(_event) => setTurn(1)}>Next turn</button>
           </section>

@@ -84,6 +84,10 @@ function AppHeader(props) {
         showHostControls={props.showHostControls}
         hostLogin={props.hostLogin}
         hostLogout={props.hostLogout}
+
+        sessionStarted={props.sessionStarted}
+        startSession={props.startSession}
+        stopSession={props.stopSession}
       />
 
     </Fragment>

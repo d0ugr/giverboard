@@ -9,6 +9,8 @@ import AddBoxIcon from "@material-ui/icons/AddBox";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
 import NotesIcon from "@material-ui/icons/Notes";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import StopIcon from "@material-ui/icons/Stop";
 // List
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -84,6 +86,11 @@ function MainMenu(props) {
           <ListItem button onClick={props.onMenuItemClick}>
             <ListItemIcon><NotesIcon/></ListItemIcon>
             <ListItemText primary="Edit notes"/>
+          </ListItem>
+          <Divider/>
+          <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
+            <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>
+            <ListItemText primary={!props.sessionStarted ? "Start session" : "Stop session"}/>
           </ListItem>
         </List>
       </Popover>

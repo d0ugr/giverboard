@@ -150,7 +150,7 @@ app.io.on("connection", (socket) => {
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
     const timestamp = new Date();
-    app.db.query("UPDATE sessions SET start = $2 WHERE session_key = $1",
+    app.db.query("UPDATE sessions SET start = $2, stop = NULL WHERE session_key = $1",
       [ socket.sessionKey, timestamp ])
       .then((_res) => {
         app.sessions[socket.sessionKey].start = timestamp;
@@ -208,7 +208,7 @@ app.io.on("connection", (socket) => {
     const currentSession = app.sessions[socket.sessionKey];
     if (cards) {
       currentSession.cards = {
-        ...session.cards,
+        ...currentSession.cards,
         ...cards
       };
     } else {

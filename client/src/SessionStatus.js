@@ -34,26 +34,29 @@ function SessionStatus(props) {
         <div className="current turn">{currentParticipant && props.participants[currentParticipant].name}</div>
         {/* <div className="next turn">{nextParticipant && ` -> ${props.participants[nextParticipant].name}`}</div> */}
         <div className="next turn">{nextParticipant && props.participants[nextParticipant].name}</div><br/>
-        <Button
-          className={classes.button}
-          variant="outlined"
-          size="small"
-          startIcon={<ChevronLeftIcon/>}
-          color="primary"
-          onClick={(_event) => props.setTurn(-1)}
-        >
-          Previous turn
-        </Button>
-        <Button
-          className={classes.button}
-          variant="outlined"
-          size="small"
-          endIcon={<ChevronRightIcon/>}
-          color="primary"
-          onClick={(_event) => props.setTurn(1)}
-        >
-          Next turn
-        </Button>
+        {props.showHostControls &&
+        <Fragment>
+          <Button
+            className={classes.button}
+            variant="outlined"
+            size="small"
+            startIcon={<ChevronLeftIcon/>}
+            color="primary"
+            onClick={(_event) => props.setTurn(-1)}
+          >
+            Previous turn
+          </Button>
+          <Button
+            className={classes.button}
+            variant="outlined"
+            size="small"
+            endIcon={<ChevronRightIcon/>}
+            color="primary"
+            onClick={(_event) => props.setTurn(1)}
+          >
+            Next turn
+          </Button>
+        </Fragment>}
       </Fragment>
     };
 

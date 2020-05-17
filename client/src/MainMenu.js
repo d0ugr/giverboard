@@ -26,13 +26,7 @@ import HostLogin from "./HostLogin";
 function MainMenu(props) {
 
   const [ hostLoginOpen, setHostLoginOpen ] = useState(false);
-  const openHostLogin  = () => {
-    if (!props.showHostControls) {
-      setHostLoginOpen(true);
-    } else {
-      props.hostLogout();
-    }
-  };
+  const openHostLogin  = () => setHostLoginOpen(true);
   const closeHostLogin = () => setHostLoginOpen(false);
 
   const [ editNameOpen, setEditNameOpen ] = useState(false);
@@ -70,21 +64,18 @@ function MainMenu(props) {
             <ListItemIcon><OpenInNewIcon/></ListItemIcon>
             <ListItemText primary="New session"/>
           </ListItem>
+          <Divider/>
           <ListItem button onClick={props.onMenuItemClick}>
             <ListItemIcon><AddBoxIcon/></ListItemIcon>
             <ListItemText primary="Add card"/>
-          </ListItem>
-          <ListItem button onClick={props.clearBoard}>
-            <ListItemIcon><DeleteIcon/></ListItemIcon>
-            <ListItemText primary="Clear board"/>
           </ListItem>
           <ListItem button onClick={importJiraCsv}>
             <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
             <ListItemText primary="Import Jira CSV file"/>
           </ListItem>
-          <ListItem button onClick={openHostLogin}>
-            <ListItemIcon><LockOpenIcon/></ListItemIcon>
-            <ListItemText primary={!props.showHostControls ? "Enter host password" : "Host logout"}/>
+          <ListItem button onClick={props.clearBoard}>
+            <ListItemIcon><DeleteIcon/></ListItemIcon>
+            <ListItemText primary="Clear board"/>
           </ListItem>
           <Divider/>
           <ListItem button onClick={props.onMenuItemClick}>
@@ -92,9 +83,17 @@ function MainMenu(props) {
             <ListItemText primary="Edit notes"/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
-            <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>
-            <ListItemText primary={!props.sessionStarted ? "Start session" : "Stop session"}/>
+          {props.showHostControls &&
+            <Fragment>
+              <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
+                <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>
+                <ListItemText primary={!props.sessionStarted ? "Start session" : "Stop session"}/>
+              </ListItem>
+              <Divider/>
+            </Fragment>}
+          <ListItem button onClick={!props.showHostControls ? openHostLogin : props.hostLogout}>
+            <ListItemIcon><LockOpenIcon/></ListItemIcon>
+            <ListItemText primary={!props.showHostControls ? "Enter host password" : "Host logout"}/>
           </ListItem>
         </List>
       </Popover>

@@ -161,14 +161,14 @@ function App(props) {
     socket.emit("host_login", password, (err, pwMatch) => {
       callback(err, pwMatch);
       if (pwMatch) {
-        setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
+        setParticipantNotify({ settings: { host: pwMatch } });
         socket.emit("update_participant_sequence", Object.keys(session.participants));
       }
     });
   };
 
   const hostLogout = () => {
-    setParticipantNotify(props.clientId, { settings: {} });
+    setParticipantNotify({ settings: {} });
   };
 
   const startSession = () => {
@@ -348,12 +348,12 @@ function App(props) {
         addJiraCards={addJiraCardsNotify}
 
         showHostControls={showHostControls}
-        hostLogin={hostLogin}
-        hostLogout={hostLogout}
-
         sessionStarted={session.start && !session.stop}
         startSession={startSession}
         stopSession={stopSession}
+
+        hostLogin={hostLogin}
+        hostLogout={hostLogout}
       />
 
       <div className="main-container">
@@ -393,6 +393,7 @@ function App(props) {
           <SizeCues/>
           <SessionStatus
             participants={session.participants || {}}
+            showHostControls={showHostControls}
             sessionStart={session.start}
             sessionStop={session.stop}
             currentTurn={getCurrentTurn()}

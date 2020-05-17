@@ -264,7 +264,7 @@ function App(props) {
         content: {
           category: row["Issue Type"].toLowerCase(),
           title:    row["Issue key"],
-          content:  row["Summary"]
+          body:     row["Summary"]
         }
       };
       y += 20;

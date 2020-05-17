@@ -1,14 +1,35 @@
 import React from "react";
 // import React, { useState } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+// import Divider from "@material-ui/core/Divider";
+
 // import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-import "./ParticipantList.scss";
 
-import ParticipantListItem from "./ParticipantListItem";
+
+const useStyles = makeStyles((theme) => ({
+  list: {
+    backgroundColor: "ghostwhite",
+    color: "black",
+  },
+  listItem: {
+    padding: "0 .5em",
+  },
+  // listItemIcon: {
+  //   margin: theme.spacing(0),
+  // },
+}));
 
 
 
 function ParticipantList(props) {
+
+  const classes = useStyles();
 
   // const [ list, setList ] = useState([]);
 
@@ -38,17 +59,16 @@ function ParticipantList(props) {
   // };
 
   return (
-    <ul className="participant-list">
+    <List className={classes.list} aria-label="participant list">
       {Object.keys(props.participants).map((key, index) =>
-        <ParticipantListItem
-          key={index}
-          className={key === props.clientId ? "highlight" : null}
-          currentTurn={index === props.currentTurn}
-          name={props.participants[key].name}
-          // name={`${props.participants[key].name}${key === props.clientId ? " (You)" : ""}`}
-        />
+        <ListItem className={classes.listItem} key={index}>
+          <ListItemIcon>
+            {index === props.currentTurn && <PlayArrowIcon/>}
+          </ListItemIcon>
+          <ListItemText primary={props.participants[key].name}/>
+        </ListItem>
       )}
-    </ul>
+    </List>
 
     // <DragDropContext onDragEnd={onDragEnd}>
     //   <Droppable droppableId="droppable">

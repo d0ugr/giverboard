@@ -8,7 +8,7 @@ import LockOpenIcon from "@material-ui/icons/LockOpen";
 import AddBoxIcon from "@material-ui/icons/AddBox";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
-import NotesIcon from "@material-ui/icons/Notes";
+// import NotesIcon from "@material-ui/icons/Notes";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import StopIcon from "@material-ui/icons/Stop";
 // List
@@ -70,7 +70,7 @@ function MainMenu(props) {
             <ListItemText primary="New session"/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={(_dummyFunction) => true}>
+          <ListItem button onClick={props.showSidebar}>
             <ListItemIcon><AddBoxIcon/></ListItemIcon>
             <ListItemText primary="Add card"/>
           </ListItem>

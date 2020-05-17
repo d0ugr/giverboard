@@ -19,12 +19,12 @@ function Card(props) {
       // height={props.card.h || CARD_HEIGHT}
       onMouseDown={props.setClickObject}
     >
-      <div className={props.category}>
+      <div className={props.card.content.category}>
         <header>
-          <strong>{props.title}</strong>
+          <strong>{props.card.content.title}</strong>
         </header>
         <article>
-          <span>{props.content}</span>
+          <span>{props.card.content.body}</span>
         </article>
       </div>
     </foreignObject>

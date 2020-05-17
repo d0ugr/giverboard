@@ -202,11 +202,8 @@ function SvgCanvas(props) {
     >
       <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
       {Object.keys(props.cards).map((id, index) =>
-        <Card
+        props.cards[id].content && <Card
           key={index}
-          category={props.cards[id].content && props.cards[id].content.category}
-          title={props.cards[id].content && props.cards[id].content.title}
-          content={props.cards[id].content && props.cards[id].content.content}
           card={props.cards[id]}
           setClickObject={(event) => setClickObject(event, { id })}
         />

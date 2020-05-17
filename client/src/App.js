@@ -8,9 +8,10 @@ import * as util from "./lib/util";
 import "./App.scss";
 
 import AppHeader       from "./AppHeader";
+import Sidebar         from "./Sidebar";
 import SessionStatus   from "./SessionStatus";
 import SessionList     from "./sessions/SessionList";
-import ParticipantList from "./participants/ParticipantList";
+import ParticipantList from "./ParticipantList";
 import SizeCues        from "./SizeCues";
 import SvgCanvas       from "./SvgCanvas";
 
@@ -59,17 +60,13 @@ function App(props) {
     socket = io(`ws://${new URL(window.location).hostname}:3001`);
 
     socket.on("connect", () => {
-      console.log("socket.connect");
       updateAppState({ connected: true });
       socket.emit("client_init", props.clientId);
       joinSession();
       getSessions();
     });
 
-    socket.on("disconnect", () => {
-      console.log("socket.disconnect");
-      updateAppState({ connected: false });
-    });
+    socket.on("disconnect", () => updateAppState({ connected: false }));
 
     socket.on("server_message",      (message) => console.log("socket.server_message:", message));
 
@@ -247,10 +244,12 @@ function App(props) {
     socket.emit("update_cards", cards);
   }, [ setCards ]);
 
-  const addCard = () => {
-    const title   = document.querySelector(".sidebar input[name='card-title']").value;
-    const content = document.querySelector(".sidebar textarea").value;
-    addRandomCard("", title, content);
+  const addCardNotify = (content) => {
+    setCardNotify(util.uuidv4_compact(), {
+      x: Math.floor(Math.random() * 200) - 100,
+      y: Math.floor(Math.random() * 200) - 100,
+      content
+    });
   };
 
   const addJiraCardsNotify = (cardData) => {
@@ -293,7 +292,7 @@ function App(props) {
   };
 
   const setParticipantNameNotify = (name) => {
-    name = name.trim();
+    name = (name ? name.trim() : "");
     updateAppState({ participantName: name });
     props.setCookie(c.COOKIE_USER_NAME, name);
     setParticipantNotify({ name: getParticipantName(name) });
@@ -307,15 +306,6 @@ function App(props) {
       }`);
   };
 
-  // Temporary testing functions
-
-  const addRandomCard = (category, title, content) => {
-    setCardNotify(util.uuidv4_compact(), {
-      x: Math.floor(Math.random() * 200) - 100,
-      y: Math.floor(Math.random() * 200) - 100,
-      content: {category, title, content }
-    });
-  };
 
 
   const showHostControls =
@@ -329,6 +319,10 @@ function App(props) {
     !session.participants[props.clientId].settings ||
     session.participants[props.clientId].settings.host ||
     props.clientId === Object.keys(session.participants)[session.currentTurn];
+
+  const [ sidebarOpen, setSidebarOpen ] = React.useState(false);
+  const openSidebar  = () => setSidebarOpen(true);
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className="App">
@@ -345,6 +339,7 @@ function App(props) {
 
         clearBoard={() => setCardsNotify(null)}
 
+        showSidebar={openSidebar}
         addJiraCards={addJiraCardsNotify}
 
         showHostControls={showHostControls}
@@ -356,28 +351,14 @@ function App(props) {
         hostLogout={hostLogout}
       />
 
-      <div className="main-container">
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        openSidebar={openSidebar}
+        closeSidebar={closeSidebar}
+        addCardNotify={addCardNotify}
+      />
 
-        <div className="sidebar">
-          {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
-          <section className="cards">
-            <div>
-              <input name={"card-title"} placeholder="Card title" />
-              <textarea name={"card-content"} placeholder="Card content" />
-              <button onClick={addCard}>Add card</button>&nbsp;
-            </div>
-          </section>
-          <section className="sessions">
-            <hr/>
-            <SessionList
-              sessionList={appState.sessionList}
-              joinSession={joinSession}
-            />
-            <p onClick={(_event) => console.log(session)}>Dump session to console</p>
-            <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
-          </section>
-        </div>
+      <div className="main-container">
 
         <main>
           <SizeCues/>
@@ -401,6 +382,16 @@ function App(props) {
         </main>
 
         <div className="sidebar">
+          {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
+          <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
+          <section className="sessions">
+            <SessionList
+              sessionList={appState.sessionList}
+              joinSession={joinSession}
+            />
+            <p onClick={(_event) => console.log(session)}>Dump session to console</p>
+            <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
+          </section>
           <section className="participants">
             <ParticipantList
               clientId={props.clientId}

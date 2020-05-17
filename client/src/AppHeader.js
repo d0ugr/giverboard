@@ -11,10 +11,7 @@ import ImportReader from "./ImportReader";
 
 
 
-const useAppBarStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
+const useStyles = makeStyles((theme) => ({
   appBar: {
     backgroundColor: "rebeccapurple",
     textAlign: "center",
@@ -38,7 +35,7 @@ const useAppBarStyles = makeStyles((theme) => ({
 
 function AppHeader(props) {
 
-  const appBarClasses = useAppBarStyles();
+  const classes = useStyles();
 
   const [ menuAnchorEl, setMenuAnchorEl ] = React.useState(null);
   const openMenu  = (event) => setMenuAnchorEl(event.currentTarget);
@@ -49,7 +46,7 @@ function AppHeader(props) {
     <Fragment>
 
       <AppBar
-        className={appBarClasses.appBar}
+        className={classes.appBar}
         position="static"
         aria-owns={menuOpen ? "app-toolbar" : undefined}
         aria-haspopup="true"
@@ -58,14 +55,14 @@ function AppHeader(props) {
         // onMouseLeave={closeMenu}
         aria-describedby={"app-toolbar"}
       >
-        <Typography variant="h6" className={appBarClasses.title}>
+        <Typography variant="h6" className={classes.title}>
           {c.APP_NAME}
           {props.sessionName
-            ? <Fragment>&nbsp;&bull;&nbsp;<span className={appBarClasses.sessionName}>{props.sessionName}</span></Fragment>
+            ? <Fragment>&nbsp;&bull;&nbsp;<span className={classes.sessionName}>{props.sessionName}</span></Fragment>
             : ""}
           {props.connected
             ? ""
-            : <Fragment>&nbsp;&bull;&nbsp;<span className={appBarClasses.disconnected}>Disconnected</span></Fragment>}
+            : <Fragment>&nbsp;&bull;&nbsp;<span className={classes.disconnected}>Disconnected</span></Fragment>}
         </Typography>
       </AppBar>
 
@@ -80,6 +77,7 @@ function AppHeader(props) {
 
         newSession={props.newSession}
 
+        showSidebar={props.showSidebar}
         clearBoard={props.clearBoard}
 
         showHostControls={props.showHostControls}

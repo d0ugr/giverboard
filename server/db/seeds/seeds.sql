@@ -12,14 +12,14 @@ INSERT INTO sessions (session_key, username, host_password, email, name) VALUES
 ;
 
 INSERT INTO cards (session_id, content, position) VALUES
-  (1, '{ "title": "Kitties!", "content": "MEOW!" }', '{ "x":-100, "y":-60 }'),
-  (1, '{ "title": "Chickens!", "content": "CLUCK!" }', '{ "x":-50, "y":-10 }'),
-  (1, '{ "title": "Kitties and Chickens!!!", "content": "MEUCK!!!" }', '{ "x":0, "y":40 }'),
-  (2, '{ "title": "123", "content": "How to count to 3" }', '{ "x":0, "y":0 }'),
-  (2, '{ "title": "123456", "content": "How to count to 6" }', '{ "x":0, "y":0 }'),
-  (2, '{ "title": "123456789", "content": "How to count to 9" }', '{ "x":0, "y":0 }'),
-  (2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "content": "Dr. Fewa Jiop" }', '{ "x":0, "y":0 }'),
-  (2, '{ "title": "jiop is the best", "content": "word" }', '{ "x":0, "y":0 }')
+  (1, '{ "title": "Kitties!", "body": "MEOW!" }', '{ "x":-100, "y":-60 }'),
+  (1, '{ "title": "Chickens!", "body": "CLUCK!" }', '{ "x":-50, "y":-10 }'),
+  (1, '{ "title": "Kitties and Chickens!!!", "body": "MEUCK!!!" }', '{ "x":0, "y":40 }'),
+  (2, '{ "title": "123", "body": "How to count to 3" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "123456", "body": "How to count to 6" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "123456789", "body": "How to count to 9" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "body": "Dr. Fewa Jiop" }', '{ "x":0, "y":0 }'),
+  (2, '{ "title": "jiop is the best", "body": "word" }', '{ "x":0, "y":0 }')
 ;
 
 INSERT INTO participants (session_id, client_key, sequence, name) VALUES

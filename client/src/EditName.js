@@ -25,7 +25,7 @@ function EditName(props) {
 
   return (
     <Dialog open={props.editNameOpen} onClose={closeEditName} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-host-password-dialog-title">Enter your name</DialogTitle>
+      <DialogTitle id="form-edit-participant-name-dialog-title">Enter your name</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Enter your name.
@@ -33,7 +33,7 @@ function EditName(props) {
         <TextField
           autoFocus
           margin="dense"
-          id="name"
+          id="participant-name"
           label="Your name"
           type="text"
           placeholder={props.participantNamePlaceholder}

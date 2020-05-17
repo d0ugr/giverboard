@@ -18,8 +18,8 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
 
-import HostLogin from "./HostLogin";
 import EditName from "./EditName";
+import HostLogin from "./HostLogin";
 
 
 
@@ -38,6 +38,10 @@ function MainMenu(props) {
   const [ editNameOpen, setEditNameOpen ] = useState(false);
   const openEditName  = () => setEditNameOpen(true);
   const closeEditName = () => setEditNameOpen(false);
+
+  const importJiraCsv = (_event) => {
+    document.querySelector("#import-jira-csv").click();
+  };
 
   return (
     <Fragment>
@@ -66,19 +70,19 @@ function MainMenu(props) {
             <ListItemIcon><OpenInNewIcon/></ListItemIcon>
             <ListItemText primary="New session"/>
           </ListItem>
+          <ListItem button onClick={props.onMenuItemClick}>
+            <ListItemIcon><AddBoxIcon/></ListItemIcon>
+            <ListItemText primary="Add card"/>
+          </ListItem>
+          <ListItem button onClick={importJiraCsv}>
+            <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
+            <ListItemText primary="Import Jira CSV file"/>
+          </ListItem>
           <ListItem button onClick={openHostLogin}>
             <ListItemIcon><LockOpenIcon/></ListItemIcon>
             <ListItemText primary={!props.showHostControls ? "Enter host password" : "Host logout"}/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={props.onMenuItemClick}>
-            <ListItemIcon><AddBoxIcon/></ListItemIcon>
-            <ListItemText primary="Add card"/>
-          </ListItem>
-          <ListItem button onClick={props.onMenuItemClick}>
-            <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
-            <ListItemText primary="Import Jira CSV"/>
-          </ListItem>
           <ListItem button onClick={props.onMenuItemClick}>
             <ListItemIcon><DeleteIcon/></ListItemIcon>
             <ListItemText primary="Clear board"/>

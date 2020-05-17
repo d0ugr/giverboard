@@ -7,6 +7,7 @@ import Typography from "@material-ui/core/Typography";
 
 import * as c from "./constants";
 import MainMenu from "./MainMenu";
+import ImportReader from "./ImportReader";
 
 
 
@@ -88,6 +89,13 @@ function AppHeader(props) {
         sessionStarted={props.sessionStarted}
         startSession={props.startSession}
         stopSession={props.stopSession}
+      />
+
+      <ImportReader
+        id="import-jira-csv"
+        skipHeader={true}
+        onFileLoaded={(_fileInfo, csvData) => props.addJiraCards(csvData)}
+        onError={() => alert("Error")}
       />
 
     </Fragment>

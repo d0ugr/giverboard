@@ -11,7 +11,6 @@ import AppHeader       from "./AppHeader";
 import SessionStatus   from "./SessionStatus";
 import SessionList     from "./sessions/SessionList";
 import ParticipantList from "./participants/ParticipantList";
-import ImportReader    from "./ImportReader";
 import SizeCues        from "./SizeCues";
 import SvgCanvas       from "./SvgCanvas";
 
@@ -344,6 +343,8 @@ function App(props) {
         participantNamePlaceholder={getParticipantName(null)}
         setParticipantName={setParticipantNameNotify}
 
+        addJiraCards={addJiraCardsNotify}
+
         showHostControls={showHostControls}
         hostLogin={hostLogin}
         hostLogout={hostLogout}
@@ -365,14 +366,6 @@ function App(props) {
               <button onClick={addCard}>Add card</button>&nbsp;
               <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
             </div>
-            <p>
-              <ImportReader
-                prompt="Import Jira CSV file..."
-                header={true}
-                onFileLoaded={(_fileInfo, csvData) => addJiraCardsNotify(csvData)}
-                onError={() => alert("Error")}
-              />
-            </p>
           </section>
           <section className="sessions">
             <hr/>

@@ -30,7 +30,7 @@ function ImportReader(props) {
           fileReader.result, {
             error:          props.onError,
             encoding:       fileEncoding,
-            header:         props.header,
+            header:         props.skipHeader,
             skipEmptyLines: true
           }
         );
@@ -43,12 +43,10 @@ function ImportReader(props) {
 
   return (
     <Fragment>
-      <span
-        className={props.className}
-        onClick={onClick}
-      >
-        {props.prompt}
-      </span>
+      {props.prompt &&
+        <div onClick={onClick}>
+          {props.prompt}
+        </div>}
       <input
         id={elementId}
         type="file"

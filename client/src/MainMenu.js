@@ -84,13 +84,10 @@ function MainMenu(props) {
           </ListItem>
           <Divider/>
           {props.showHostControls &&
-            <Fragment>
-              <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
-                <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>
-                <ListItemText primary={!props.sessionStarted ? "Start session" : "Stop session"}/>
-              </ListItem>
-              <Divider/>
-            </Fragment>}
+            <ListItem button onClick={!props.sessionStarted ? props.startSession : props.stopSession}>
+              <ListItemIcon>{!props.sessionStarted ? <PlayArrowIcon/> : <StopIcon/>}</ListItemIcon>
+              <ListItemText primary={!props.sessionStarted ? "Start session" : "Stop session"}/>
+            </ListItem>}
           <ListItem button onClick={!props.showHostControls ? openHostLogin : props.hostLogout}>
             <ListItemIcon><LockOpenIcon/></ListItemIcon>
             <ListItemText primary={!props.showHostControls ? "Enter host password" : "Host logout"}/>

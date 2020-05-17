@@ -4,24 +4,9 @@ import AppBar from "@material-ui/core/AppBar";
 // import Toolbar from "@material-ui/core/Toolbar";
 // import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import Popover from "@material-ui/core/Popover";
-// Icons
-import PersonIcon from "@material-ui/icons/Person";
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
-// Host icons
-import AddBoxIcon from "@material-ui/icons/AddBox";
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
-import NotesIcon from "@material-ui/icons/Notes";
-// List
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Divider from "@material-ui/core/Divider";
 
 import * as c from "./constants";
+import MainMenu from "./MainMenu";
 
 
 
@@ -53,22 +38,18 @@ const useAppBarStyles = makeStyles((theme) => ({
 function AppHeader(props) {
 
   const appBarClasses = useAppBarStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
 
-  const openMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const closeMenu = () => {
-    setAnchorEl(null);
-  };
-  const menuOpen = Boolean(anchorEl);
-
-  const onButtonClick = (event) => {
+  const [ menuAnchorEl, setMenuAnchorEl ] = React.useState(null);
+  const openMenu  = (event) => setMenuAnchorEl(event.currentTarget);
+  const closeMenu = () => setMenuAnchorEl(null);
+  const menuOpen  = Boolean(menuAnchorEl);
+  const onMenuItemClick = (event) => {
     console.log(event.target);
   };
 
   return (
     <Fragment>
+
       <AppBar
         className={appBarClasses.appBar}
         position="static"
@@ -90,53 +71,16 @@ function AppHeader(props) {
         </Typography>
       </AppBar>
 
-      <Popover
-        id="app-main-menu"
-        anchorEl={anchorEl}
+      <MainMenu
+        anchorEl={menuAnchorEl}
+        close={closeMenu}
         open={menuOpen}
-        onClose={closeMenu}
-        onClick={closeMenu}
-        anchorOrigin={{
-          vertical:   "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical:   "top",
-          horizontal: "center",
-        }}
-      >
-        <List aria-label="main menu">
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><PersonIcon/></ListItemIcon>
-            <ListItemText primary="Edit name"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><OpenInNewIcon/></ListItemIcon>
-            <ListItemText primary="New session"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><LockOpenIcon/></ListItemIcon>
-            <ListItemText primary="Enter host password"/>
-          </ListItem>
-          <Divider/>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><AddBoxIcon/></ListItemIcon>
-            <ListItemText primary="Add card"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
-            <ListItemText primary="Import Jira CSV"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><DeleteIcon/></ListItemIcon>
-            <ListItemText primary="Clear board"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><NotesIcon/></ListItemIcon>
-            <ListItemText primary="Edit notes"/>
-          </ListItem>
-        </List>
-      </Popover>
+        onMenuItemClick={onMenuItemClick}
+        showHostControls={props.showHostControls}
+        hostLogin={props.hostLogin}
+        hostLogout={props.hostLogout}
+      />
+
     </Fragment>
   );
 

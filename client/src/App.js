@@ -158,15 +158,18 @@ function App(props) {
     });
   };
 
-  const hostLogin = () => {
-    const hostPassword = document.querySelector("input[name='participant-host-password']").value;
-    socket.emit("host_login", hostPassword, (err, pwMatch) => {
-      if (err || !pwMatch) {
-        console.log("hostLogin: Login failed:", err, pwMatch)
+  const hostLogin = (password, callback) => {
+    socket.emit("host_login", password, (err, pwMatch) => {
+      callback(err, pwMatch);
+      if (pwMatch) {
+        setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
+        socket.emit("update_participant_sequence", Object.keys(session.participants));
       }
-      setParticipantNotify(props.clientId, { settings: { host: pwMatch } });
-      socket.emit("update_participant_sequence", Object.keys(session.participants));
     });
+  };
+
+  const hostLogout = () => {
+    setParticipantNotify(props.clientId, { settings: {} });
   };
 
   const startSession = () => {
@@ -300,7 +303,7 @@ function App(props) {
     });
   };
 
-  const updateNameNotify = (event) => {
+  const onChangeName = (event) => {
     // updateAppState(event.target);
     updateAppState({ [event.target.name]: event.target.value });
     let name = event.target.value.trim();
@@ -337,6 +340,9 @@ function App(props) {
       <AppHeader
         sessionName={session.name}
         connected={appState.connected}
+        showHostControls={showHostControls}
+        hostLogin={hostLogin}
+        hostLogout={hostLogout}
       />
 
       <div className="main-container">
@@ -359,9 +365,6 @@ function App(props) {
                 onError={() => alert("Error")}
               />
             </p>
-            {/* <svg>
-              <Card x={0} y={0} w={125} h={100} />
-            </svg> */}
           </section>
           <section className="sessions">
             <hr/>
@@ -405,22 +408,16 @@ function App(props) {
         <div className="sidebar">
           <section className="participants">
             <input
-              name={"participantName"}
+              name="participantName"
               placeholder="Enter your name"
               value={appState.participantName}
-              onChange={updateNameNotify}
+              onChange={onChangeName}
             />
             <ParticipantList
               clientId={props.clientId}
               participants={session.participants || {}}
               currentTurn={getCurrentTurn()}
             />
-            <input
-              name={"participant-host-password"}
-              type="password"
-              placeholder="Host password"
-            />
-            <button onClick={hostLogin}>Login</button><br/>
           </section>
           <section className={`host${showHostControls ? "" : " hidden"}`}>
             <hr/>

@@ -96,9 +96,9 @@ function SvgCanvas(props) {
   // Canvas mouse event handlers
 
   function onMouseDown(event) {
-    if (event.ctrlKey) {
+    // if (event.ctrlKey) {
       setClickObject(event, canvasState);
-    }
+    // }
   }
 
   function onMouseUp(_event) {
@@ -125,7 +125,8 @@ function SvgCanvas(props) {
         y: mousePos.y - prevPos.y
       }
       // Moving an element on the canvas:
-      if (!event.ctrlKey && clickState.object.id) {
+      // if (!event.ctrlKey && clickState.object.id) {
+      if (clickState.object.id) {
         props.setCardNotify(clickState.object.id, {
           x: clickState.object.x + mouseDelta.x,
           y: clickState.object.y + mouseDelta.y

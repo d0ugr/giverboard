@@ -82,6 +82,8 @@ function AppHeader(props) {
         participantNamePlaceholder={props.participantNamePlaceholder}
         setParticipantName={props.setParticipantName}
 
+        clearBoard={props.clearBoard}
+
         showHostControls={props.showHostControls}
         hostLogin={props.hostLogin}
         hostLogout={props.hostLogout}

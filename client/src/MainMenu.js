@@ -74,6 +74,10 @@ function MainMenu(props) {
             <ListItemIcon><AddBoxIcon/></ListItemIcon>
             <ListItemText primary="Add card"/>
           </ListItem>
+          <ListItem button onClick={props.clearBoard}>
+            <ListItemIcon><DeleteIcon/></ListItemIcon>
+            <ListItemText primary="Clear board"/>
+          </ListItem>
           <ListItem button onClick={importJiraCsv}>
             <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
             <ListItemText primary="Import Jira CSV file"/>
@@ -83,10 +87,6 @@ function MainMenu(props) {
             <ListItemText primary={!props.showHostControls ? "Enter host password" : "Host logout"}/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={props.onMenuItemClick}>
-            <ListItemIcon><DeleteIcon/></ListItemIcon>
-            <ListItemText primary="Clear board"/>
-          </ListItem>
           <ListItem button onClick={props.onMenuItemClick}>
             <ListItemIcon><NotesIcon/></ListItemIcon>
             <ListItemText primary="Edit notes"/>

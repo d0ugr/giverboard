@@ -343,6 +343,8 @@ function App(props) {
         participantNamePlaceholder={getParticipantName(null)}
         setParticipantName={setParticipantNameNotify}
 
+        clearBoard={() => setCardsNotify(null)}
+
         addJiraCards={addJiraCardsNotify}
 
         showHostControls={showHostControls}
@@ -364,7 +366,6 @@ function App(props) {
               <input name={"card-title"} placeholder="Card title" />
               <textarea name={"card-content"} placeholder="Card content" />
               <button onClick={addCard}>Add card</button>&nbsp;
-              <button onClick={(_event) => setCardsNotify(null)}>Clear board</button>
             </div>
           </section>
           <section className="sessions">

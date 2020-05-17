@@ -361,6 +361,7 @@ function App(props) {
       <div className="main-container">
 
         <main>
+          <div className="bg-image"></div>
           <SizeCues/>
           <SessionStatus
             participants={session.participants || {}}

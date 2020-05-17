@@ -190,6 +190,9 @@ function SvgCanvas(props) {
   // Return the <svg> element to render:
   return (
     <svg
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
       tabIndex="0"
       className={props.className}
       viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
@@ -200,7 +203,14 @@ function SvgCanvas(props) {
       // onKeyDown={onKeyDown}
       // onKeyUp={onKeyUp}
     >
-      <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse>
+      {/* <image
+        xlinkHref="./assets/images/rooster.png"
+        x="-50" y="-50"
+        width="100" height="100"
+      /> */}
+
+      {/* <ellipse cx={0} cy={0} rx={30} ry={20}></ellipse> */}
+
       {Object.keys(props.cards).map((id, index) =>
         props.cards[id].content && <Card
           key={index}

@@ -44,9 +44,6 @@ function AppHeader(props) {
   const openMenu  = (event) => setMenuAnchorEl(event.currentTarget);
   const closeMenu = () => setMenuAnchorEl(null);
   const menuOpen  = Boolean(menuAnchorEl);
-  const onMenuItemClick = (event) => {
-    console.log(event.target);
-  };
 
   return (
     <Fragment>
@@ -76,11 +73,12 @@ function AppHeader(props) {
         anchorEl={menuAnchorEl}
         close={closeMenu}
         open={menuOpen}
-        onMenuItemClick={onMenuItemClick}
 
         currentParticipantName={props.currentParticipantName}
         participantNamePlaceholder={props.participantNamePlaceholder}
         setParticipantName={props.setParticipantName}
+
+        newSession={props.newSession}
 
         clearBoard={props.clearBoard}
 

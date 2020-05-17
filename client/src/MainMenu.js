@@ -19,23 +19,28 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
 
 import EditName from "./EditName";
+import NewSession from "./NewSession";
 import HostLogin from "./HostLogin";
 
 
 
 function MainMenu(props) {
 
-  const [ hostLoginOpen, setHostLoginOpen ] = useState(false);
-  const openHostLogin  = () => setHostLoginOpen(true);
-  const closeHostLogin = () => setHostLoginOpen(false);
-
   const [ editNameOpen, setEditNameOpen ] = useState(false);
   const openEditName  = () => setEditNameOpen(true);
   const closeEditName = () => setEditNameOpen(false);
 
+  const [ newSessionOpen, setNewSessionOpen ] = useState(false);
+  const openNewSession  = () => setNewSessionOpen(true);
+  const closeNewSession = () => setNewSessionOpen(false);
+
   const importJiraCsv = (_event) => {
     document.querySelector("#import-jira-csv").click();
   };
+
+  const [ hostLoginOpen, setHostLoginOpen ] = useState(false);
+  const openHostLogin  = () => setHostLoginOpen(true);
+  const closeHostLogin = () => setHostLoginOpen(false);
 
   return (
     <Fragment>
@@ -60,12 +65,12 @@ function MainMenu(props) {
             <ListItemIcon><PersonIcon/></ListItemIcon>
             <ListItemText primary="Edit name"/>
           </ListItem>
-          <ListItem button onClick={props.onMenuItemClick}>
+          <ListItem button onClick={openNewSession}>
             <ListItemIcon><OpenInNewIcon/></ListItemIcon>
             <ListItemText primary="New session"/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={props.onMenuItemClick}>
+          <ListItem button onClick={(_dummyFunction) => true}>
             <ListItemIcon><AddBoxIcon/></ListItemIcon>
             <ListItemText primary="Add card"/>
           </ListItem>
@@ -78,7 +83,7 @@ function MainMenu(props) {
             <ListItemText primary="Clear board"/>
           </ListItem>
           <Divider/>
-          <ListItem button onClick={props.onMenuItemClick}>
+          <ListItem button onClick={(_dummyFunction) => true}>
             <ListItemIcon><NotesIcon/></ListItemIcon>
             <ListItemText primary="Edit notes"/>
           </ListItem>
@@ -95,18 +100,24 @@ function MainMenu(props) {
         </List>
       </Popover>
 
-      <HostLogin
-        hostLoginOpen={hostLoginOpen}
-        closeHostLogin={closeHostLogin}
-        hostLogin={props.hostLogin}
-      />
-
       <EditName
         editNameOpen={editNameOpen}
         closeEditName={closeEditName}
         participantNamePlaceholder={props.participantNamePlaceholder}
         currentParticipantName={props.currentParticipantName}
         setParticipantName={props.setParticipantName}
+      />
+
+      <NewSession
+        newSessionOpen={newSessionOpen}
+        closeNewSession={closeNewSession}
+        newSession={props.newSession}
+      />
+
+      <HostLogin
+        hostLoginOpen={hostLoginOpen}
+        closeHostLogin={closeHostLogin}
+        hostLogin={props.hostLogin}
       />
 
     </Fragment>

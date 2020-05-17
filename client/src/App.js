@@ -145,9 +145,7 @@ function App(props) {
     });
   };
 
-  const newSession = () => {
-    const name         = document.querySelector("input[name='session-name']").value;
-    const hostPassword = document.querySelector("input[name='session-host-password']").value;
+  const newSession = (name, hostPassword) => {
     socket.emit("new_session", name, hostPassword, (status, sessionKey) => {
       console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
@@ -343,6 +341,8 @@ function App(props) {
         participantNamePlaceholder={getParticipantName(null)}
         setParticipantName={setParticipantNameNotify}
 
+        newSession={newSession}
+
         clearBoard={() => setCardsNotify(null)}
 
         addJiraCards={addJiraCardsNotify}
@@ -374,16 +374,6 @@ function App(props) {
               sessionList={appState.sessionList}
               joinSession={joinSession}
             />
-            <input
-              name={"session-name"}
-              placeholder="Session name"
-            />
-            <input
-              name={"session-host-password"}
-              type="password"
-              placeholder="Host password"
-            />
-            <button onClick={newSession}>Create session</button>
             <p onClick={(_event) => console.log(session)}>Dump session to console</p>
             <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
           </section>

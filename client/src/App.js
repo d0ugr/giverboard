@@ -388,6 +388,7 @@ function App(props) {
             sessionStop={session.stop}
             currentTurn={getCurrentTurn()}
             setTurn={setTurn}
+            stopSession={stopSession}
           />
           <SvgCanvas
             viewBoxSize={300}

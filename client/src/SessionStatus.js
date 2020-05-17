@@ -21,9 +21,9 @@ function SessionStatus(props) {
 
   let status = "";
   if (!props.sessionStart) {
-    status = "Session not started"
+    status = ""; //"Session not started"
   } else if (props.sessionStart && props.sessionStop) {
-    status = "Session stopped"
+    status = "Session closed";
   } else if (props.participants) {
     const participantKeys = Object.keys(props.participants);
     const currentParticipant = participantKeys[props.currentTurn];
@@ -50,6 +50,15 @@ function SessionStatus(props) {
             className={classes.button}
             variant="outlined"
             size="small"
+            color="primary"
+            onClick={props.stopSession}
+          >
+            Stop session
+          </Button>
+          <Button
+            className={classes.button}
+            variant="outlined"
+            size="small"
             endIcon={<ChevronRightIcon/>}
             color="primary"
             onClick={(_event) => props.setTurn(1)}
@@ -58,7 +67,8 @@ function SessionStatus(props) {
           </Button>
         </Fragment>}
       </Fragment>
-    };
+    ;
+  };
 
   return (
     <div className="session-status">

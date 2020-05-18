@@ -10,7 +10,11 @@ module.exports = function(dbParams) {
       if (typeof callback === "function") {
         return pool.query(sql, params, (err, res) => {
           const duration = Date.now() - start;
-          console.log(`Executed query\n  ${sql}${params ? ` ${JSON.stringify(params)}` : ""}\n  ${duration}\n  rows: ${res.rowCount}`);
+          if (!err) {
+            console.log(`Executed query\n  ${sql}${params ? ` ${JSON.stringify(params)}` : ""}\n  ${duration}\n  rows: ${res.rowCount}`);
+          } else {
+            console.error(`Query failed\n  ${sql}${params ? ` ${JSON.stringify(params)}` : ""}\n  ${duration}\n  rows: ${res.rowCount}`);
+          }
           callback(err, res);
         });
       } else {
@@ -21,7 +25,7 @@ module.exports = function(dbParams) {
             return res;
           }).catch((err) => {
             const duration = Date.now() - start;
-            console.log(`Query failed\n  ${sql}${params ? ` ${JSON.stringify(params)}` : ""}\n  ${duration}\n  ERROR: ${err}`);
+            console.error(`Query failed\n  ${sql}${params ? ` ${JSON.stringify(params)}` : ""}\n  ${duration}\n  ERROR: ${err}`);
             return err;
           });
       }

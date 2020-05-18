@@ -26,11 +26,12 @@ if (!cookies.get(c.COOKIE_CLIENT_ID)) {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <App
       setCookie={setCookie}
-      clientId={cookies.get(c.COOKIE_CLIENT_ID)}/>
-  </React.StrictMode>,
+      clientId={cookies.get(c.COOKIE_CLIENT_ID)}
+    />,
+  // </React.StrictMode>,
   document.getElementById("root")
 );
 

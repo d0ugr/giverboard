@@ -24,6 +24,7 @@ CREATE TABLE sessions (
 CREATE TABLE cards (
   id         SERIAL    NOT NULL PRIMARY KEY,
   session_id INTEGER   NOT NULL REFERENCES sessions(id),
+  card_key   TEXT      NOT NULL UNIQUE DEFAULT '',
   content    JSONB     NOT NULL DEFAULT '{}',
   style      JSONB     NOT NULL DEFAULT '{}',
   position   JSONB     NOT NULL DEFAULT '{ "x": 0, "y": 0 }',
@@ -36,10 +37,11 @@ CREATE TABLE cards (
 CREATE TABLE participants (
   id         SERIAL    NOT NULL PRIMARY KEY,
   session_id INTEGER   NOT NULL REFERENCES sessions(id),
-  client_key TEXT      NOT NULL UNIQUE DEFAULT '',
+  client_key TEXT      NOT NULL DEFAULT '',
   sequence   INTEGER   NOT NULL DEFAULT -1,
   name       TEXT      NOT NULL DEFAULT '',
   settings   JSONB     NOT NULL DEFAULT '{}',
   created    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT unique_session_client UNIQUE (session_id, client_key)
 );

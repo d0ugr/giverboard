@@ -4,40 +4,28 @@ import AppBar from "@material-ui/core/AppBar";
 // import Toolbar from "@material-ui/core/Toolbar";
 // import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import Popover from "@material-ui/core/Popover";
-// Icons
-import PersonIcon from "@material-ui/icons/Person";
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
-// Host icons
-import AddBoxIcon from "@material-ui/icons/AddBox";
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
-import NotesIcon from "@material-ui/icons/Notes";
-// List
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Divider from "@material-ui/core/Divider";
 
 import * as c from "./constants";
+import MainMenu from "./MainMenu";
+import ImportReader from "./ImportReader";
 
 
 
-const useAppBarStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
+const useStyles = makeStyles((theme) => ({
   appBar: {
-    backgroundColor: "rebeccapurple",
+    // backgroundColor: "rebeccapurple",
+    background: "radial-gradient(circle, rgba(102,51,153,1) 0%, rgba(102,51,153,1) 32%, rgba(68,34,102,1) 100%)",
     textAlign: "center",
     cursor: "pointer",
   },
   title: {
+    padding: ".25em",
     flexGrow: 1,
-    fontSize: "150%",
+    fontSize: "200%",
     textShadow: "2px 2px 2px black, 2px 2px 2px black",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
   },
   sessionName: {
     color: "lightgoldenrodyellow",
@@ -52,25 +40,18 @@ const useAppBarStyles = makeStyles((theme) => ({
 
 function AppHeader(props) {
 
-  const appBarClasses = useAppBarStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const classes = useStyles();
 
-  const openMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const closeMenu = () => {
-    setAnchorEl(null);
-  };
-  const menuOpen = Boolean(anchorEl);
-
-  const onButtonClick = (event) => {
-    console.log(event.target);
-  };
+  const [ menuAnchorEl, setMenuAnchorEl ] = React.useState(null);
+  const openMenu  = (event) => setMenuAnchorEl(event.currentTarget);
+  const closeMenu = () => setMenuAnchorEl(null);
+  const menuOpen  = Boolean(menuAnchorEl);
 
   return (
     <Fragment>
+
       <AppBar
-        className={appBarClasses.appBar}
+        className={classes.appBar}
         position="static"
         aria-owns={menuOpen ? "app-toolbar" : undefined}
         aria-haspopup="true"
@@ -79,64 +60,48 @@ function AppHeader(props) {
         // onMouseLeave={closeMenu}
         aria-describedby={"app-toolbar"}
       >
-        <Typography variant="h6" className={appBarClasses.title}>
-          {c.APP_NAME}
+        <Typography variant="h6" className={classes.title}>
+          {c.APP_NAME}&nbsp;&bull;&nbsp;
+          <span className={classes.sessionName}>{props.participantName}{props.showHostControls && " (Host)"}</span>
           {props.sessionName
-            ? <Fragment>&nbsp;&bull;&nbsp;<span className={appBarClasses.sessionName}>{props.sessionName}</span></Fragment>
+            ? <Fragment><span className={classes.sessionName}> @ {props.sessionName}</span></Fragment>
             : ""}
           {props.connected
             ? ""
-            : <Fragment>&nbsp;&bull;&nbsp;<span className={appBarClasses.disconnected}>Disconnected</span></Fragment>}
+            : <Fragment>&nbsp;&bull;&nbsp;<span className={classes.disconnected}>Disconnected</span></Fragment>}
         </Typography>
       </AppBar>
 
-      <Popover
-        id="app-main-menu"
-        anchorEl={anchorEl}
+      <MainMenu
+        anchorEl={menuAnchorEl}
+        close={closeMenu}
         open={menuOpen}
-        onClose={closeMenu}
-        onClick={closeMenu}
-        anchorOrigin={{
-          vertical:   "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical:   "top",
-          horizontal: "center",
-        }}
-      >
-        <List aria-label="main menu">
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><PersonIcon/></ListItemIcon>
-            <ListItemText primary="Edit name"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><OpenInNewIcon/></ListItemIcon>
-            <ListItemText primary="New session"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><LockOpenIcon/></ListItemIcon>
-            <ListItemText primary="Enter host password"/>
-          </ListItem>
-          <Divider/>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><AddBoxIcon/></ListItemIcon>
-            <ListItemText primary="Add card"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><AddToPhotosIcon/></ListItemIcon>
-            <ListItemText primary="Import Jira CSV"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><DeleteIcon/></ListItemIcon>
-            <ListItemText primary="Clear board"/>
-          </ListItem>
-          <ListItem button onClick={onButtonClick}>
-            <ListItemIcon><NotesIcon/></ListItemIcon>
-            <ListItemText primary="Edit notes"/>
-          </ListItem>
-        </List>
-      </Popover>
+
+        currentParticipantName={props.currentParticipantName}
+        participantNamePlaceholder={props.participantNamePlaceholder}
+        setParticipantName={props.setParticipantName}
+
+        newSession={props.newSession}
+
+        showSidebar={props.showSidebar}
+        clearBoard={props.clearBoard}
+
+        showHostControls={props.showHostControls}
+        hostLogin={props.hostLogin}
+        hostLogout={props.hostLogout}
+
+        sessionStarted={props.sessionStarted}
+        startSession={props.startSession}
+        stopSession={props.stopSession}
+      />
+
+      <ImportReader
+        id="import-jira-csv"
+        skipHeader={true}
+        onFileLoaded={(_fileInfo, csvData) => props.addJiraCards(csvData)}
+        onError={() => alert("Error")}
+      />
+
     </Fragment>
   );
 

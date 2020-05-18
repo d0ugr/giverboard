@@ -27,7 +27,7 @@ function NewSession(props) {
   }
 
   return (
-    <Dialog open={props.newSessionOpen} onClose={closeNewSession} aria-labelledby="form-dialog-title">
+    <Dialog fullWidth open={props.newSessionOpen} onClose={closeNewSession} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-new-session-dialog-title">New session</DialogTitle>
       <DialogContent>
         <DialogContentText>

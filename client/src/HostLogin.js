@@ -33,7 +33,7 @@ function HostLogin(props) {
   }
 
   return (
-    <Dialog open={props.hostLoginOpen} onClose={closeHostLogin} aria-labelledby="form-dialog-title">
+    <Dialog fullWidth open={props.hostLoginOpen} onClose={closeHostLogin} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-host-password-dialog-title">Host access</DialogTitle>
       <DialogContent>
         <DialogContentText>

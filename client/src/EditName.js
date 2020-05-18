@@ -24,7 +24,7 @@ function EditName(props) {
   }
 
   return (
-    <Dialog open={props.editNameOpen} onClose={closeEditName} aria-labelledby="form-dialog-title">
+    <Dialog fullWidth open={props.editNameOpen} onClose={closeEditName} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-edit-participant-name-dialog-title">Enter your name</DialogTitle>
       <DialogContent>
         <DialogContentText>

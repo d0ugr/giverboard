@@ -217,7 +217,7 @@ app.io.on("connection", (socket) => {
         ...currentSession.cards[cardKey],
         ...card
       };
-      saveCard(app.sessions[socket.sessionKey].id, cardKey, card)
+      saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
         .catch((err) => console.log(err));
     } else {
       delete currentSession.cards[cardKey];
@@ -241,7 +241,7 @@ app.io.on("connection", (socket) => {
         ...cards
       };
       for (const cardKey in cards) {
-        saveCard(app.sessions[socket.sessionKey].id, cardKey, cards[cardKey])
+        saveCard(app.sessions[socket.sessionKey].id, cards[cardKey])
           .catch((err) => console.log(err));
       }
     } else {
@@ -372,12 +372,13 @@ const loadSession = (sessionKey, callback) => {
   }
 };
 
-const saveCard = (sessionId, cardKey, card) => {
+const saveCard = (sessionId, card) => {
+  console.log(card)
   return app.db.query("INSERT INTO cards " +
     "(card_key, session_id, content, style, position, size, notes) VALUES ($1, $2, $3, $4, $5, $6, $7) " +
     "ON CONFLICT (card_key) DO UPDATE " +
     "SET content = $3, style = $4, position = $5, size = $6, notes = $7", [
-      cardKey, sessionId,
+      card.cardKey, sessionId,
     card.content || {}, card.style || {}, card.position || {}, card.size || "", card.notes || ""
   ]);
 };

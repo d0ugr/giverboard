@@ -127,6 +127,7 @@ app.io.on("connection", (socket) => {
     console.log(`socket.join_session: ${sessionKey}, in ${JSON.stringify(socket.rooms)}`);
     if (app.sessions[sessionKey]) {
       socket.leaveAll();
+      socket.sessionId  = app.sessions[sessionKey].id;
       socket.sessionKey = sessionKey;
       socket.join(sessionKey, () => {
         console.log(`socket.join_session: ${socket.clientId} joined ${JSON.stringify(socket.rooms)}`);
@@ -139,11 +140,15 @@ app.io.on("connection", (socket) => {
     }
   });
 
-  // Save a participant's settings in the database
-  //    (e.g. on mouseup after panning the canvas):
+  // Update the current participants's viewbox in real-time:
   socket.on("update_canvas", (viewBox) => {
-    console.log(`socket.update_canvas: ${JSON.stringify(viewBox)}`);
-    app.sessions[socket.sessionKey].participants[socket.clientId].settings.viewBox = viewBox;
+    console.log(`socket.update_canvas: ${socket.sessionKey} ${socket.clientId} ${JSON.stringify(viewBox)}`);
+    const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
+    if (currentParticipant) {
+      currentParticipant.settings.viewBox = viewBox;
+    } else {
+      console.log("socket.update_canvas: Not a participant");
+    }
   });
 
   // Save a participant's settings in the database
@@ -152,8 +157,9 @@ app.io.on("connection", (socket) => {
     console.log(`socket.save_settings`);
     const currentSession = app.sessions[socket.sessionKey];
     if (currentSession.participants) {
-      app.db.query("UPDATE participants SET settings = $2 WHERE client_key = $1", [
-        socket.clientId, currentSession.participants[socket.clientId].settings
+      // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
+      app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
+        socket.sessionId, socket.clientId, currentSession.participants[socket.clientId].settings
       ]).catch((err) => console.log(err));
     }
   });
@@ -299,10 +305,11 @@ app.io.on("connection", (socket) => {
     // Update the database:
     app.db.query("INSERT INTO participants " +
       "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
-      "ON CONFLICT (client_key) DO UPDATE SET name = $3, settings = $4", [
+      "ON CONFLICT ON CONSTRAINT unique_session_client DO UPDATE SET name = $3, settings = $4", [
       socket.clientId, currentSession.id,
       participant.name || "", participant.settings || {}
-    ]).catch((err) => console.log(err));
+    ])
+      .catch((err) => console.log(err));
   });
 
   socket.on("update_current_turn", (currentTurn) => {

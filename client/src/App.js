@@ -116,11 +116,14 @@ function App(props) {
       viewBox: { ...viewBox }
     }));
     setSessionState((prevState) => {
-      if (prevState.participants && prevState.participants[props.clientId]) {
-        prevState.participants[props.clientId].settings.viewBox = { ...viewBox };
+      const currentParticipant = prevState.participants[props.clientId];
+      if (currentParticipant) {
+        currentParticipant.settings = {
+          ...currentParticipant.settings,
+          viewBox: { ...viewBox }
+        }
         return { ...prevState };
       } else {
-        // console.log("updateCanvasState: No participants");
         return prevState;
       }
     });
@@ -388,7 +391,6 @@ function App(props) {
         showSidebar={openSidebar}
         addJiraCards={addJiraCardsNotify}
 
-        showHostControls={showHostControls}
         sessionStarted={sessionState.start && !sessionState.stop}
         startSession={startSession}
         stopSession={stopSession}

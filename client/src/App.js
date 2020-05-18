@@ -91,12 +91,7 @@ function App(props) {
     // Initialize the canvas SVG viewbox origin and dimensions:
     //    The origin refers to the center of the viewbox
     //    and is translated later when actually setting its position.
-    viewBox: {
-      x: 0,
-      y: 0,
-      w: c.VIEWBOX_SIZE,
-      h: c.VIEWBOX_SIZE,
-    }
+    viewBox: { ...c.DEFAULT_VIEWBOX }
   });
 
   const [ sessionState, setSessionState ] = useState({});
@@ -114,6 +109,22 @@ function App(props) {
       ...object
     }));
   }, [ setSessionState ]);
+
+  const updateCanvasState = useCallback((viewBox) => {
+    setAppState((prevState) => ({
+      ...prevState,
+      viewBox: { ...viewBox }
+    }));
+    setSessionState((prevState) => {
+      prevState.participants[props.clientId].settings.viewBox = { ...viewBox };
+      return { ...prevState };
+    });
+    socket.emit("update_canvas", viewBox);
+  }, [ setAppState, setSessionState, props.clientId ]);
+
+  const saveCanvasStateNotify = () => {
+    socket.emit("save_settings");
+  };
 
   // Session functions
 
@@ -139,12 +150,21 @@ function App(props) {
         setSessionState(session);
         // Set the participant name to what was used in the session,
         //    or keep the current name if new to the session:
-        const currentSession = session.participants[props.clientId];
-        const participantName = ((currentSession && currentSession.name) || cookies.get(c.COOKIE_USER_NAME));
+        const currentParticipant = session.participants[props.clientId];
+        const participantName = ((currentParticipant && currentParticipant.name) || cookies.get(c.COOKIE_USER_NAME));
         if (participantName === appState.participantName) {
           setParticipantNameNotify(participantName);
         } else {
           updateAppState({ participantName });
+        }
+        // Set the viewbox to what was saved and sync it with appState,
+        //    or set the default viewbox for both:
+        if (currentParticipant && currentParticipant.settings.viewBox) {
+          updateAppState({
+            viewBox: util.mergeObjects(c.DEFAULT_VIEWBOX, (currentParticipant && currentParticipant.settings.viewBox))
+          });
+        } else {
+          updateCanvasState(c.DEFAULT_VIEWBOX);
         }
       } else if (sessionKey !== "default") {
         joinSession("default");
@@ -292,13 +312,13 @@ function App(props) {
 
   // Participant functions
 
-  const setParticipant = useCallback((id, participant) => {
+  const setParticipant = useCallback((clientKey, participant) => {
     setSessionState((prevState) => {
       if (participant) {
-        prevState.participants[id] =
-          util.mergeObjects(prevState.participants[id], participant);
+        prevState.participants[clientKey] =
+          util.mergeObjects(prevState.participants[clientKey], participant);
       } else {
-        delete prevState.participants[id];
+        delete prevState.participants[clientKey];
       }
       return { ...prevState };
     });
@@ -311,8 +331,8 @@ function App(props) {
 
   const setParticipantNameNotify = (name) => {
     name = (name ? name.trim() : "");
-    updateAppState({ participantName: name });
     props.setCookie(c.COOKIE_USER_NAME, name);
+    updateAppState({ participantName: name });
     setParticipantNotify({ name: getParticipantName(name) });
   };
 
@@ -392,7 +412,8 @@ function App(props) {
         />
         <SvgCanvas
           canvasState={appState.viewBox}
-          updateCanvasState={updateAppState}
+          updateCanvasState={updateCanvasState}
+          saveCanvasStateNotify={saveCanvasStateNotify}
           className={"whiteboard"}
           cards={sessionState.cards || {}}
           cardMoveAllowed={cardMoveAllowed}
@@ -410,7 +431,8 @@ function App(props) {
       </div>
 
       <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>Dump session to console</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>Dump appState</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>Dump sessionState</span>&nbsp;&bull;&nbsp;
         <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</span>
       </div>
 

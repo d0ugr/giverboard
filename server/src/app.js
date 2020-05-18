@@ -139,6 +139,22 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  // Save a participant's settings in the database
+  //    (e.g. on mouseup after panning the canvas):
+  socket.on("update_canvas", (viewBox) => {
+    console.log(`socket.update_canvas: ${JSON.stringify(viewBox)}`);
+    app.sessions[socket.sessionKey].participants[socket.clientId].settings.viewBox = viewBox;
+  });
+
+  // Save a participant's settings in the database
+  //    (e.g. on mouseup after panning the canvas):
+  socket.on("save_settings", () => {
+    console.log(`socket.save_settings`);
+    app.db.query("UPDATE participants SET settings = $2 WHERE client_key = $1", [
+      socket.clientId, app.sessions[socket.sessionKey].participants[socket.clientId].settings
+    ]).catch((err) => console.log(err));
+  });
+
   socket.on("host_login", (password, callback) => {
     app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
       [ socket.sessionKey ])

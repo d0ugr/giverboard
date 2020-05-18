@@ -39,15 +39,11 @@ function SvgCanvas(props) {
   }, []);
 
   const canvasState = props.canvasState;
-  const updateCanvasState = (data) => {
-    if (typeof data === "object") {
-      props.updateCanvasState({
-        viewBox: {
-          ...canvasState,
-          ...data
-        }
-      });
-    }
+  const updateCanvasState = (newState) => {
+    props.updateCanvasState({
+      ...canvasState,
+      ...newState
+    });
   };
 
   // clickState saves information at the time of a mouse click
@@ -81,8 +77,12 @@ function SvgCanvas(props) {
   }
 
   function onMouseUp(_event) {
-    if (clickState && clickState.object.cardKey) {
-      props.saveCardNotify(clickState.object.cardKey);
+    if (clickState) {
+      if (clickState.object.cardKey) {
+        props.saveCardNotify(clickState.object.cardKey);
+      } else {
+        props.saveCanvasStateNotify();
+      }
     }
     setClickState(null);
   }

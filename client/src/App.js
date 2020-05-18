@@ -378,52 +378,48 @@ function App(props) {
         addCard={addCardNotify}
       />
 
-      <div className="main-container">
+      <main>
+        <div className="bg-image"></div>
+        <SizeCues/>
+        <SessionStatus
+          participants={sessionState.participants || {}}
+          showHostControls={showHostControls}
+          sessionStart={sessionState.start}
+          sessionStop={sessionState.stop}
+          currentTurn={getCurrentTurn()}
+          setTurn={setTurn}
+          stopSession={stopSession}
+        />
+        <SvgCanvas
+          canvasState={appState.viewBox}
+          updateCanvasState={updateAppState}
+          className={"whiteboard"}
+          cards={sessionState.cards || {}}
+          cardMoveAllowed={cardMoveAllowed}
+          setCardNotify={setCardNotify}
+          saveCardNotify={saveCardNotify}
+          removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
+        />
+      </main>
 
-        <main>
-          <div className="bg-image"></div>
-          <SizeCues/>
-          <SessionStatus
-            participants={sessionState.participants || {}}
-            showHostControls={showHostControls}
-            sessionStart={sessionState.start}
-            sessionStop={sessionState.stop}
-            currentTurn={getCurrentTurn()}
-            setTurn={setTurn}
-            stopSession={stopSession}
-          />
-          <SvgCanvas
-            canvasState={appState.viewBox}
-            updateCanvasState={updateAppState}
-            className={"whiteboard"}
-            cards={sessionState.cards || {}}
-            cardMoveAllowed={cardMoveAllowed}
-            setCardNotify={setCardNotify}
-            saveCardNotify={saveCardNotify}
-            removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
-          />
-        </main>
+      <div style={{ zIndex: 666, position: "fixed", bottom: 0, left: 0, maxWidth: "17rem", padding: ".5em", fontSize: "150%" }}>
+        <SessionList
+          sessionList={appState.sessionList}
+          joinSession={joinSession}
+        />
+      </div>
 
-        <div className="sidebar">
-          {/* <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset pan</p>
-          <p style={{cursor: "pointer"}} onClick={(_event) => }>Reset zoom</p> */}
-          <section className="sessions">
-            <SessionList
-              sessionList={appState.sessionList}
-              joinSession={joinSession}
-            />
-            <p onClick={(_event) => console.log(sessionState)}>Dump session to console</p>
-            <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
-          </section>
-          <section className="participants">
-            <ParticipantList
-              clientId={props.clientId}
-              participants={sessionState.participants || {}}
-              currentTurn={getCurrentTurn()}
-            />
-          </section>
-        </div>
+      <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
+        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>Dump session to console</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</span>
+      </div>
 
+      <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
+        <ParticipantList
+          clientId={props.clientId}
+          participants={sessionState.participants || {}}
+          currentTurn={getCurrentTurn()}
+        />
       </div>
 
     </div>

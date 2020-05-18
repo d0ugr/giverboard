@@ -373,6 +373,7 @@ function App(props) {
 
       <AppHeader
         participantName={getParticipantName(appState.participantName)}
+        showHostControls={showHostControls}
         sessionName={sessionState.name}
         connected={appState.connected}
 

@@ -24,6 +24,7 @@ CREATE TABLE sessions (
 CREATE TABLE cards (
   id         SERIAL    NOT NULL PRIMARY KEY,
   session_id INTEGER   NOT NULL REFERENCES sessions(id),
+  card_key   TEXT      NOT NULL UNIQUE DEFAULT '',
   content    JSONB     NOT NULL DEFAULT '{}',
   style      JSONB     NOT NULL DEFAULT '{}',
   position   JSONB     NOT NULL DEFAULT '{ "x": 0, "y": 0 }',

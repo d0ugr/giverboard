@@ -1,9 +1,10 @@
 .session-status {
+  z-index: 10;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  padding: 1em;
+  padding: .5em;
   color: ghostwhite;
   text-align: center;
   font-size: 1.75rem;

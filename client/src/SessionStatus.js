@@ -1,15 +1,15 @@
 import React, { Fragment } from "react";
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+// import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+// import SkipNextIcon from '@material-ui/icons/SkipNext';
 
 import "./SessionStatus.scss";
 
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
-    backgroundColor: "rgba(1, 1, 1, .5)",
+    backgroundColor: "rgba(128, 128, 128, .5)",
   },
 }));
 
@@ -32,40 +32,41 @@ function SessionStatus(props) {
     status =
       <Fragment>
         <div className="current turn">{currentParticipant && props.participants[currentParticipant].name}</div>
-        {/* <div className="next turn">{nextParticipant && ` -> ${props.participants[nextParticipant].name}`}</div> */}
         <div className="next turn">{nextParticipant && props.participants[nextParticipant].name}</div><br/>
+        {/* <div className="next turn">{nextParticipant && ` -> ${props.participants[nextParticipant].name}`}</div> */}
         {props.showHostControls &&
-        <Fragment>
-          <Button
-            className={classes.button}
-            variant="outlined"
-            size="small"
-            startIcon={<ChevronLeftIcon/>}
-            color="primary"
-            onClick={(_event) => props.setTurn(-1)}
-          >
-            Previous turn
-          </Button>
-          <Button
-            className={classes.button}
-            variant="outlined"
-            size="small"
-            color="primary"
-            onClick={props.stopSession}
-          >
-            Stop session
-          </Button>
-          <Button
-            className={classes.button}
-            variant="outlined"
-            size="small"
-            endIcon={<ChevronRightIcon/>}
-            color="primary"
-            onClick={(_event) => props.setTurn(1)}
-          >
-            Next turn
-          </Button>
-        </Fragment>}
+          <Fragment>
+            <Button
+              className={classes.button}
+              variant="contained"
+              size="small"
+              color="primary"
+              // startIcon={<SkipPreviousIcon/>}
+              onClick={(_event) => props.setTurn(-1)}
+            >
+              Previous turn
+            </Button>
+            <Button
+              className={classes.button}
+              variant="contained"
+              size="small"
+              color="secondary"
+              onClick={props.stopSession}
+            >
+              Stop session
+            </Button>
+            <Button
+              className={classes.button}
+              variant="contained"
+              size="small"
+              color="primary"
+              // endIcon={<SkipNextIcon/>}
+              onClick={(_event) => props.setTurn(1)}
+            >
+              Next turn
+            </Button>
+          </Fragment>
+        }
       </Fragment>
     ;
   };

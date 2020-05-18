@@ -72,7 +72,7 @@ function NewSession(props) {
           color="primary"
           disabled={
             !name.trim() ||
-            (password.trim() && (password !== verifyPassword))}
+            !(!password.trim() || (password === verifyPassword))}
           onClick={newSession}
         >
           OK

@@ -60,9 +60,9 @@ function AppHeader(props) {
         aria-describedby={"app-toolbar"}
       >
         <Typography variant="h6" className={classes.title}>
-          {c.APP_NAME}
+          {c.APP_NAME}&nbsp;&bull;&nbsp;<span className={classes.sessionName}>{props.participantName}</span>
           {props.sessionName
-            ? <Fragment>&nbsp;&bull;&nbsp;<span className={classes.sessionName}>{props.sessionName}</span></Fragment>
+            ? <Fragment><span className={classes.sessionName}> @ {props.sessionName}</span></Fragment>
             : ""}
           {props.connected
             ? ""

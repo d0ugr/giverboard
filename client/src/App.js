@@ -347,6 +347,7 @@ function App(props) {
     <div className="App">
 
       <AppHeader
+        participantName={getParticipantName(appState.participantName)}
         sessionName={sessionState.name}
         connected={appState.connected}
 

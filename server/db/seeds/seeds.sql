@@ -15,11 +15,11 @@ INSERT INTO cards (card_key, session_id, content, position) VALUES
   ('card_key_1', 1, '{ "title": "Kitties!", "body": "MEOW!" }', '{ "x":-100, "y":-60 }'),
   ('card_key_2', 1, '{ "title": "Chickens!", "body": "CLUCK!" }', '{ "x":-50, "y":-10 }'),
   ('card_key_3', 1, '{ "title": "Kitties and Chickens!!!", "body": "MEUCK!!!" }', '{ "x":0, "y":40 }'),
-  ('card_key_4', 2, '{ "title": "123", "body": "How to count to 3" }', '{ "x":0, "y":0 }'),
-  ('card_key_5', 2, '{ "title": "123456", "body": "How to count to 6" }', '{ "x":0, "y":0 }'),
-  ('card_key_6', 2, '{ "title": "123456789", "body": "How to count to 9" }', '{ "x":0, "y":0 }'),
-  ('card_key_7', 2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "body": "Dr. Fewa Jiop" }', '{ "x":0, "y":0 }'),
-  ('card_key_8', 2, '{ "title": "jiop is the best", "body": "word" }', '{ "x":0, "y":0 }')
+  ('card_key_4', 2, '{ "title": "123", "body": "How to count to 3" }', '{ "x":50, "y":-100 }'),
+  ('card_key_5', 2, '{ "title": "123456", "body": "How to count to 6" }', '{ "x":65, "y":-25 }'),
+  ('card_key_6', 2, '{ "title": "123456789", "body": "How to count to 9" }', '{ "x":80, "y":70 }'),
+  ('card_key_7', 2, '{ "title": "fewafewafewafewafewafewafewafewafewa", "body": "Dr. Fewa Jiop" }', '{ "x":-150, "y":-80 }'),
+  ('card_key_8', 2, '{ "title": "jiop is the best", "body": "word" }', '{ "x":-130, "y":60 }')
 ;
 
 INSERT INTO participants (session_id, client_key, sequence, name) VALUES

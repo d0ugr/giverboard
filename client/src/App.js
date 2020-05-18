@@ -99,7 +99,7 @@ function App(props) {
     }
   });
 
-  const [ session, setSession ] = useState({});
+  const [ sessionState, setSessionState ] = useState({});
 
   const updateAppState = useCallback((data) => {
     setAppState((prevState) => ({
@@ -109,11 +109,11 @@ function App(props) {
   }, [ setAppState ]);
 
   const updateSession = useCallback((object) => {
-    setSession((prevState) => ({
+    setSessionState((prevState) => ({
       ...prevState,
       ...object
     }));
-  }, [ setSession ]);
+  }, [ setSessionState ]);
 
   // Session functions
 
@@ -134,9 +134,9 @@ function App(props) {
         document.title = `${c.APP_NAME} - ${session.name}`;
         const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
         if (window.location.href !== sessionUrl) {
-          window.history.pushState(null, "", sessionUrl)
+          window.history.replaceState(null, "", sessionUrl)
         }
-        setSession(session);
+        setSessionState(session);
         // Set the participant name to what was used in the session,
         //    or keep the current name if new to the session:
         const currentSession = session.participants[props.clientId];
@@ -146,7 +146,7 @@ function App(props) {
         } else {
           updateAppState({ participantName });
         }
-      } else {
+      } else if (sessionKey !== "default") {
         joinSession("default");
       }
     });
@@ -167,7 +167,7 @@ function App(props) {
       callback(err, pwMatch);
       if (pwMatch) {
         setParticipantNotify({ settings: { host: pwMatch } });
-        socket.emit("update_participant_sequence", Object.keys(session.participants));
+        socket.emit("update_participant_sequence", Object.keys(sessionState.participants));
       }
     });
   };
@@ -203,11 +203,11 @@ function App(props) {
     });
   };
 
-  const getCurrentTurn = () => (session.start && !session.stop ? session.currentTurn : -1);
+  const getCurrentTurn = () => (sessionState.start && !sessionState.stop ? sessionState.currentTurn : -1);
 
   const setTurn = (increment) => {
-    const turnMax = Object.keys(session.participants).length - 1;
-    let currentTurn = session.currentTurn + increment;
+    const turnMax = Object.keys(sessionState.participants).length - 1;
+    let currentTurn = sessionState.currentTurn + increment;
     if (currentTurn < 0) {
       currentTurn = turnMax;
     } else if (currentTurn > turnMax) {
@@ -220,7 +220,7 @@ function App(props) {
   // Card functions
 
   const setCard = useCallback((cardKey, card) => {
-    setSession((prevState) => {
+    setSessionState((prevState) => {
       if (card) {
         prevState.cards[cardKey] = util.mergeObjects(prevState.cards[cardKey], card);
       } else {
@@ -228,7 +228,7 @@ function App(props) {
       }
       return { ...prevState };
     });
-  }, [ setSession ]);
+  }, [ setSessionState ]);
 
   const setCardNotify = (cardKey, card) => {
     setCard(cardKey, card);
@@ -240,14 +240,14 @@ function App(props) {
   };
 
   const setCards = useCallback((cards) => {
-    setSession((prevState) => {
+    setSessionState((prevState) => {
       prevState.cards = (cards
         ? util.mergeObjects(prevState.cards, cards)
         : {}
       );
       return { ...prevState };
     });
-  }, [ setSession ]);
+  }, [ setSessionState ]);
 
   const setCardsNotify = useCallback((cards) => {
     setCards(cards);
@@ -271,9 +271,9 @@ function App(props) {
     let y = minY;
     const cards = {};
     for (const row of cardData) {
-      const cardId = util.uuidv4_compact();
-      cards[cardId] = {
-        id: cardId,
+      const cardKey = util.uuidv4_compact();
+      cards[cardKey] = {
+        cardKey,
         content: {
           category: row["Issue Type"].toLowerCase(),
           title:    row["Issue key"],
@@ -293,7 +293,7 @@ function App(props) {
   // Participant functions
 
   const setParticipant = useCallback((id, participant) => {
-    setSession((prevState) => {
+    setSessionState((prevState) => {
       if (participant) {
         prevState.participants[id] =
           util.mergeObjects(prevState.participants[id], participant);
@@ -302,7 +302,7 @@ function App(props) {
       }
       return { ...prevState };
     });
-  }, [ setSession ]);
+  }, [ setSessionState ]);
 
   const setParticipantNotify = (participant) => {
     setParticipant(props.clientId, participant);
@@ -327,17 +327,17 @@ function App(props) {
 
 
   const showHostControls =
-    (session.participants &&
-     session.participants[props.clientId] &&
-     session.participants[props.clientId].settings &&
-     session.participants[props.clientId].settings.host);
+    (sessionState.participants &&
+     sessionState.participants[props.clientId] &&
+     sessionState.participants[props.clientId].settings &&
+     sessionState.participants[props.clientId].settings.host);
   const cardMoveAllowed =
-    !session.participants ||
-    !session.participants[props.clientId] ||
-    !session.participants[props.clientId].settings ||
-    !session.start || session.stop ||
-    session.participants[props.clientId].settings.host ||
-    props.clientId === Object.keys(session.participants)[session.currentTurn];
+    !sessionState.participants ||
+    !sessionState.participants[props.clientId] ||
+    !sessionState.participants[props.clientId].settings ||
+    !sessionState.start || sessionState.stop ||
+    sessionState.participants[props.clientId].settings.host ||
+    props.clientId === Object.keys(sessionState.participants)[sessionState.currentTurn];
 
   const [ sidebarOpen, setSidebarOpen ] = React.useState(false);
   const openSidebar  = () => setSidebarOpen(true);
@@ -347,7 +347,7 @@ function App(props) {
     <div className="App">
 
       <AppHeader
-        sessionName={session.name}
+        sessionName={sessionState.name}
         connected={appState.connected}
 
         currentParticipantName={appState.participantName}
@@ -362,7 +362,7 @@ function App(props) {
         addJiraCards={addJiraCardsNotify}
 
         showHostControls={showHostControls}
-        sessionStarted={session.start && !session.stop}
+        sessionStarted={sessionState.start && !sessionState.stop}
         startSession={startSession}
         stopSession={stopSession}
 
@@ -383,10 +383,10 @@ function App(props) {
           <div className="bg-image"></div>
           <SizeCues/>
           <SessionStatus
-            participants={session.participants || {}}
+            participants={sessionState.participants || {}}
             showHostControls={showHostControls}
-            sessionStart={session.start}
-            sessionStop={session.stop}
+            sessionStart={sessionState.start}
+            sessionStop={sessionState.stop}
             currentTurn={getCurrentTurn()}
             setTurn={setTurn}
             stopSession={stopSession}
@@ -396,7 +396,7 @@ function App(props) {
             canvasState={appState.viewBox}
             updateCanvasState={updateAppState}
             className={"whiteboard"}
-            cards={session.cards || {}}
+            cards={sessionState.cards || {}}
             cardMoveAllowed={cardMoveAllowed}
             setCardNotify={setCardNotify}
             saveCardNotify={saveCardNotify}
@@ -412,13 +412,13 @@ function App(props) {
               sessionList={appState.sessionList}
               joinSession={joinSession}
             />
-            <p onClick={(_event) => console.log(session)}>Dump session to console</p>
+            <p onClick={(_event) => console.log(sessionState)}>Dump session to console</p>
             <p onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</p>
           </section>
           <section className="participants">
             <ParticipantList
               clientId={props.clientId}
-              participants={session.participants || {}}
+              participants={sessionState.participants || {}}
               currentTurn={getCurrentTurn()}
             />
           </section>

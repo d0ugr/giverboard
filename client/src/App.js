@@ -392,7 +392,6 @@ function App(props) {
             stopSession={stopSession}
           />
           <SvgCanvas
-            viewBoxSize={350}
             canvasState={appState.viewBox}
             updateCanvasState={updateAppState}
             className={"whiteboard"}

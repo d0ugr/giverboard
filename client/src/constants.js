@@ -5,7 +5,7 @@ export const COOKIE_CLIENT_ID  = `${APP_NAME.toLowerCase()}_client_id`;
 export const COOKIE_SESSION_ID = `${APP_NAME.toLowerCase()}_session_id`;
 export const COOKIE_USER_NAME  = `${APP_NAME.toLowerCase()}_user_name`;
 
-export const VIEWBOX_SIZE = 500;
+export const VIEWBOX_SIZE = 350;
 
 export const CARD_WIDTH  = 75;
 export const CARD_HEIGHT = 50;

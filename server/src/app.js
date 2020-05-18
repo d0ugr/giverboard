@@ -150,9 +150,12 @@ app.io.on("connection", (socket) => {
   //    (e.g. on mouseup after panning the canvas):
   socket.on("save_settings", () => {
     console.log(`socket.save_settings`);
-    app.db.query("UPDATE participants SET settings = $2 WHERE client_key = $1", [
-      socket.clientId, app.sessions[socket.sessionKey].participants[socket.clientId].settings
-    ]).catch((err) => console.log(err));
+    const currentSession = app.sessions[socket.sessionKey];
+    if (currentSession.participants) {
+      app.db.query("UPDATE participants SET settings = $2 WHERE client_key = $1", [
+        socket.clientId, currentSession.participants[socket.clientId].settings
+      ]).catch((err) => console.log(err));
+    }
   });
 
   socket.on("host_login", (password, callback) => {

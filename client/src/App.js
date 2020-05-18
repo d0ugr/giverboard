@@ -116,8 +116,13 @@ function App(props) {
       viewBox: { ...viewBox }
     }));
     setSessionState((prevState) => {
-      prevState.participants[props.clientId].settings.viewBox = { ...viewBox };
-      return { ...prevState };
+      if (prevState.participants && prevState.participants[props.clientId]) {
+        prevState.participants[props.clientId].settings.viewBox = { ...viewBox };
+        return { ...prevState };
+      } else {
+        // console.log("updateCanvasState: No participants");
+        return prevState;
+      }
     });
     socket.emit("update_canvas", viewBox);
   }, [ setAppState, setSessionState, props.clientId ]);

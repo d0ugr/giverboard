@@ -22,6 +22,9 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     fontSize: "200%",
     textShadow: "2px 2px 2px black, 2px 2px 2px black",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
   },
   sessionName: {
     color: "lightgoldenrodyellow",

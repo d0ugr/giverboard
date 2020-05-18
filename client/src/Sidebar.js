@@ -4,6 +4,7 @@ import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 // import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
+import Card from "@material-ui/core/Card";
 import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -34,25 +35,27 @@ const useStyles = makeStyles((theme) => ({
     ...theme.mixins.toolbar,
     justifyContent: "flex-end",
   },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginLeft: -drawerWidth,
-  },
-  contentShift: {
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    marginLeft: 0,
-  },
   addCard: {
+    margin:  theme.spacing(1),
     padding: theme.spacing(1),
+    backgroundColor: "khaki",
   },
+  // content: {
+  //   flexGrow: 1,
+  //   padding: theme.spacing(3),
+  //   transition: theme.transitions.create("margin", {
+  //     easing: theme.transitions.easing.sharp,
+  //     duration: theme.transitions.duration.leavingScreen,
+  //   }),
+  //   marginLeft: -drawerWidth,
+  // },
+  // contentShift: {
+  //   transition: theme.transitions.create("margin", {
+  //     easing: theme.transitions.easing.easeOut,
+  //     duration: theme.transitions.duration.enteringScreen,
+  //   }),
+  //   marginLeft: 0,
+  // },
 }));
 
 
@@ -63,14 +66,14 @@ function Sidebar(props) {
   const classes = useStyles();
 
   const [ cardTitle, setCardTitle ] = useState("");
-  const [ cardBody, setCardBody ] = useState("");
+  const [ cardBody,  setCardBody  ] = useState("");
 
   const addCard = () => {
     props.addCard({
       category: "",
       title:    cardTitle,
       body:     cardBody
-    })
+    });
   };
 
   return (
@@ -91,7 +94,8 @@ function Sidebar(props) {
           </IconButton>
         </div>
         <Divider/>
-        <div className={classes.addCard}>
+
+        <Card className={classes.addCard}>
           <TextField
             autoFocus
             margin="dense"
@@ -113,8 +117,17 @@ function Sidebar(props) {
             onChange={(event) => setCardBody(event.target.value)}
             fullWidth
           />
-          <Button onClick={addCard} color="primary">Add card</Button>
-        </div>
+          <div style={{ display: "flex", justifyContent: "right" }}>
+            <Button
+              color="primary"
+              disabled={cardTitle.trim() && cardBody.trim() ? false : true}
+              onClick={addCard}
+            >
+              Add card
+            </Button>
+          </div>
+        </Card>
+
       </Drawer>
     </div>
   );

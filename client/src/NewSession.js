@@ -58,7 +58,7 @@ function NewSession(props) {
           margin="dense"
           id="verify-host-password"
           label="Verify host password"
-          type="verify-password"
+          type="password"
           value={verifyPassword}
           onChange={(event) => setVerifyPassword(event.target.value)}
           fullWidth
@@ -68,7 +68,14 @@ function NewSession(props) {
         <Button onClick={props.closeNewSession} color="primary">
           Cancel
         </Button>
-        <Button onClick={validateInput} color="primary">
+        <Button
+          color="primary"
+          disabled={
+            name.trim() &&
+            password.trim() &&
+            password === verifyPassword ? false : true}
+          onClick={validateInput}
+        >
           OK
         </Button>
       </DialogActions>

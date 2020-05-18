@@ -54,7 +54,11 @@ function HostLogin(props) {
         <Button onClick={closeHostLogin} color="primary">
           Cancel
         </Button>
-        <Button onClick={hostLogin} color="primary">
+        <Button
+          color="primary"
+          disabled={password.trim() ? false : true}
+          onClick={hostLogin}
+        >
           Login
         </Button>
       </DialogActions>

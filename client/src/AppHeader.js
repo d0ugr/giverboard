@@ -13,7 +13,8 @@ import ImportReader from "./ImportReader";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
-    backgroundColor: "rebeccapurple",
+    // backgroundColor: "rebeccapurple",
+    background: "radial-gradient(circle, rgba(102,51,153,1) 0%, rgba(102,51,153,1) 32%, rgba(68,34,102,1) 100%)",
     textAlign: "center",
     cursor: "pointer",
   },

@@ -189,43 +189,49 @@ app.io.on("connection", (socket) => {
 
   // update_card updates a single card and is
   //    intended for real-time updates across clients:
-  socket.on("update_card", (id, card) => {
+  socket.on("update_card", (cardKey, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
     const currentSession = app.sessions[socket.sessionKey];
-    currentSession.cards[id] = {
-      ...currentSession.cards[id],
+    currentSession.cards[cardKey] = {
+      ...currentSession.cards[cardKey],
       ...card
     };
-    socket.broadcast.to(socket.sessionKey).emit("update_card", id, card);
+    saveCard(app.sessions[socket.sessionKey].id, cardKey, card)
+      .catch((err) => console.log(err));
+    socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
 
   // update_cards updates a batch of cards,
   //    or deletes all cards if cards is null, and is
   //    not intended for real-time updates across clients:
   socket.on("update_cards", (cards) => {
-    console.log(`socket.update_cards: ${cards ? "..." : cards}`);
-    // console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
+    // console.log(`socket.update_cards: ${cards ? "..." : cards}`);
+    console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
     const currentSession = app.sessions[socket.sessionKey];
     if (cards) {
       currentSession.cards = {
         ...currentSession.cards,
         ...cards
       };
+      for (const cardKey in cards) {
+        saveCard(app.sessions[socket.sessionKey].id, cardKey, cards[key])
+          .catch((err) => console.log(err));
+      }
     } else {
       currentSession.cards = {};
+      app.db.query("DELETE FROM cards WHERE session_id = $1", [
+        app.sessions[socket.sessionKey].id
+      ]).catch((err) => console.log(err));
     }
     socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
 
   // Save a card in the database (i.e. on mouseup):
-  socket.on("save_card", (id) => {
-    console.log(`socket.save_card: ${id}`);
+  socket.on("save_card_position", (cardKey) => {
+    console.log(`socket.save_card_position: ${cardKey}`);
     const currentSession = app.sessions[socket.sessionKey];
-    app.db.query("UPDATE cards SET position = $2 WHERE id = $1", [
-      id, {
-        x: currentSession.cards[id].x,
-        y: currentSession.cards[id].y
-      }
+    app.db.query("UPDATE cards SET position = $2 WHERE card_key = $1", [
+      cardKey, { ...currentSession.cards[cardKey].position }
     ]).catch((err) => console.log(err));
   });
 
@@ -246,9 +252,9 @@ app.io.on("connection", (socket) => {
     // Update the database:
     app.db.query("INSERT INTO participants " +
       "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
-      "ON CONFLICT (client_key) DO UPDATE SET name = $5, settings = $6", [
-      socket.clientId, currentSession.id, participant.name, participant.settings || {},
-      participant.name, participant.settings || {}
+      "ON CONFLICT (client_key) DO UPDATE SET name = $3, settings = $4", [
+      socket.clientId, currentSession.id,
+      participant.name || "", participant.settings || {}
     ]).catch((err) => console.log(err));
   });
 
@@ -310,15 +316,16 @@ const loadSession = (sessionKey, callback) => {
     if (session.cards && session.participants) {
       callback(session);
     } else {
-      app.db.query("SELECT * FROM cards WHERE session_id = $1",
+      app.db.query("SELECT * FROM cards WHERE session_id = $1 ORDER BY id",
         [ session.id ])
         .then((res) => {
           session.cards = {};
           for (const card of res.rows) {
-            session.cards[card.id] = {
-              ...card.position,
-              content: card.content
-            };
+            delete card.id;
+            delete card.session_id;
+            card.cardKey = card.card_key;
+            delete card.card_key;
+            session.cards[card.cardKey] = { ...card };
           }
           app.db.query("SELECT * FROM participants WHERE session_id = $1 ORDER BY sequence, name",
             [ session.id ])
@@ -340,6 +347,16 @@ const loadSession = (sessionKey, callback) => {
   } else {
     console.log(`loadSession: BUG: app.sessions[${sessionKey}] is`, session);
   }
+};
+
+const saveCard = (sessionId, cardKey, card) => {
+  return app.db.query("INSERT INTO cards " +
+    "(card_key, session_id, content, style, position, size, notes) VALUES ($1, $2, $3, $4, $5, $6, $7) " +
+    "ON CONFLICT (card_key) DO UPDATE " +
+    "SET content = $3, style = $4, position = $5, size = $6, notes = $7", [
+      cardKey, sessionId,
+    card.content || {}, card.style || {}, card.position || {}, card.size || "", card.notes || ""
+  ]);
 };
 
 

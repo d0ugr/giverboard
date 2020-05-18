@@ -87,8 +87,18 @@ function App(props) {
   const [ appState, setAppState ] = useState({
     connected:       false,
     participantName: cookies.get(c.COOKIE_USER_NAME),
-    sessionList:     []
+    sessionList:     [],
+    // Initialize the canvas SVG viewbox origin and dimensions:
+    //    The origin refers to the center of the viewbox
+    //    and is translated later when actually setting its position.
+    viewBox: {
+      x: 0,
+      y: 0,
+      w: c.VIEWBOX_SIZE,
+      h: c.VIEWBOX_SIZE,
+    }
   });
+
   const [ session, setSession ] = useState({});
 
   const updateAppState = useCallback((data) => {
@@ -119,7 +129,7 @@ function App(props) {
       sessionKey = new URL(window.location).pathname.substring(1);
     }
     socket.emit("join_session", sessionKey, (status, session) => {
-      // console.log("socket.join_session:", status, session)
+      console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
         const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
@@ -209,24 +219,24 @@ function App(props) {
 
   // Card functions
 
-  const setCard = useCallback((id, card) => {
+  const setCard = useCallback((cardKey, card) => {
     setSession((prevState) => {
       if (card) {
-        prevState.cards[id] = util.mergeObjects(prevState.cards[id], card);
+        prevState.cards[cardKey] = util.mergeObjects(prevState.cards[cardKey], card);
       } else {
-        delete prevState.cards[id];
+        delete prevState.cards[cardKey];
       }
       return { ...prevState };
     });
   }, [ setSession ]);
 
-  const setCardNotify = (id, card) => {
-    setCard(id, card);
-    socket.emit("update_card", id, card);
+  const setCardNotify = (cardKey, card) => {
+    setCard(cardKey, card);
+    socket.emit("update_card", cardKey, card);
   };
 
-  const saveCardNotify = (id) => {
-    socket.emit("save_card", id);
+  const saveCardNotify = (cardKey) => {
+    socket.emit("save_card_position", cardKey);
   };
 
   const setCards = useCallback((cards) => {
@@ -246,28 +256,36 @@ function App(props) {
 
   const addCardNotify = (content) => {
     setCardNotify(util.uuidv4_compact(), {
-      x: Math.floor(Math.random() * 200) - 100,
-      y: Math.floor(Math.random() * 200) - 100,
-      content
+      content,
+      position: {
+        x: Math.floor(Math.random() * 200) - 100,
+        y: Math.floor(Math.random() * 200) - 100,
+      }
     });
   };
 
   const addJiraCardsNotify = (cardData) => {
-    let x = -200;
-    let y = -200;
+    const minY = appState.viewBox.y - (appState.viewBox.h / 2 - 10);
+    const maxY = minY + 200;
+    let x = appState.viewBox.x - (appState.viewBox.w / 2 - 10);
+    let y = minY;
     const cards = {};
     for (const row of cardData) {
       const cardId = util.uuidv4_compact();
       cards[cardId] = {
         id: cardId,
-        x, y,
         content: {
           category: row["Issue Type"].toLowerCase(),
           title:    row["Issue key"],
           body:     row["Summary"]
-        }
+        },
+        position: { x, y }
       };
       y += 20;
+      if (y >= maxY) {
+        x += c.CARD_WIDTH + 10;
+        y = minY;
+      }
     }
     setCardsNotify(cards);
   };
@@ -355,7 +373,7 @@ function App(props) {
         sidebarOpen={sidebarOpen}
         openSidebar={openSidebar}
         closeSidebar={closeSidebar}
-        addCardNotify={addCardNotify}
+        addCard={addCardNotify}
       />
 
       <div className="main-container">
@@ -373,7 +391,9 @@ function App(props) {
             stopSession={stopSession}
           />
           <SvgCanvas
-            viewBoxSize={300}
+            viewBoxSize={350}
+            canvasState={appState.viewBox}
+            updateCanvasState={updateAppState}
             className={"whiteboard"}
             cards={session.cards || {}}
             cardMoveAllowed={cardMoveAllowed}

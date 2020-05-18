@@ -7,12 +7,14 @@ import CardContent from "@material-ui/core/CardContent";
 // import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 
-// import "./SizingCard.scss";
+import * as c from "./constants";
+
+
 
 const useStyles = makeStyles({
   root: {
-    width:           "75px",
-    height:          "50px",
+    width:           `${c.CARD_WIDTH}px`,
+    height:          `${c.CARD_HEIGHT}px`,
     cursor:          "move",
     overflow:        "visible",
   },
@@ -55,23 +57,20 @@ const useStyles = makeStyles({
 
 });
 
-// const CARD_WIDTH  = 75;
-// const CARD_HEIGHT = 50;
-
 
 
 function SizingCard(props) {
 
   const classes = useStyles();
-  const bull = <span className={classes.bullet}>•</span>;
+  // const bull = <span className={classes.bullet}>•</span>;
 
   return (
     // foreignObject cannot be styled much,
     //    so a container div is necessary:
     <foreignObject
       className={classes.root}
-      x={props.card.x || 0}
-      y={props.card.y || 0}
+      x={props.card.position.x || 0}
+      y={props.card.position.y || 0}
       // width={props.card.w || CARD_WIDTH}
       // height={props.card.h || CARD_HEIGHT}
       onMouseDown={props.setClickObject}

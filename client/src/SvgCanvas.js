@@ -105,18 +105,19 @@ function SvgCanvas(props) {
       }
       // Moving an element on the canvas:
       // if (!event.ctrlKey && clickState.object.id) {
-      if (clickState.object.cardKey) {
-        props.setCardNotify(clickState.object.cardKey, {
+      const object = clickState.object;
+      if (object.cardKey) {
+        props.setCardNotify(object.cardKey, {
           position: {
-            x: clickState.object.position.x + mouseDelta.x,
-            y: clickState.object.position.y + mouseDelta.y
+            x: object.position.x + mouseDelta.x,
+            y: object.position.y + mouseDelta.y
           }
         });
       // Panning the canvas:
       } else {
         updateCanvasState({
-          x: clickState.object.x - mouseDelta.x,
-          y: clickState.object.y - mouseDelta.y
+          x: object.x - mouseDelta.x,
+          y: object.y - mouseDelta.y
         });
 
         // Attempt to limit panning distance:

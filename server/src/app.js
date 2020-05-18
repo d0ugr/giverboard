@@ -73,7 +73,7 @@ app.db.query("SELECT id, session_key, name, description, settings, start, stop F
       delete app.sessions[session.session_key].session_key;
     }
   })
-  .catch((err) => console.log(err));
+  .catch((err) => console.error(err));
 
 app.exp = express();
 app.srv = http.Server(app.exp);
@@ -147,7 +147,7 @@ app.io.on("connection", (socket) => {
     if (currentParticipant) {
       currentParticipant.settings.viewBox = viewBox;
     } else {
-      console.log("socket.update_canvas: Not a participant");
+      console.warn("socket.update_canvas: Not a participant");
     }
   });
 
@@ -160,7 +160,7 @@ app.io.on("connection", (socket) => {
       // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
       app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
         socket.sessionId, socket.clientId, currentSession.participants[socket.clientId].settings
-      ]).catch((err) => console.log(err));
+      ]).catch((err) => console.error(err));
     }
   });
 
@@ -184,9 +184,7 @@ app.io.on("connection", (socket) => {
     for (const index in participantKeys) {
       app.db.query("UPDATE participants SET sequence = $3 WHERE session_id = $1 AND client_key = $2",
         [ sessionId, participantKeys[index], index ])
-        .then((res) => {
-          console.log(res.rows);
-        })
+        .then((res) => console.log(res.rows))
         .catch((err) => console.error(err, null));
     }
   });
@@ -225,7 +223,7 @@ app.io.on("connection", (socket) => {
         });
     } else {
       callback("Session has not been started");
-      console.log("socket.stop_session: Session has not been started")
+      console.warn("socket.stop_session: Session has not been started")
     }
   });
 
@@ -242,13 +240,13 @@ app.io.on("connection", (socket) => {
         ...currentSession.cards[cardKey],
         ...card
       };
-      saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
-        .catch((err) => console.log(err));
+      // saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
+      //   .catch((err) => console.error(err));
     } else {
       delete currentSession.cards[cardKey];
-      app.db.query("DELETE FROM cards WHERE card_key = $1", [
-        cardKey
-      ]).catch((err) => console.log(err));
+      // app.db.query("DELETE FROM cards WHERE card_key = $1", [
+      //   cardKey
+      // ]).catch((err) => console.error(err));
     }
     socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
@@ -258,7 +256,7 @@ app.io.on("connection", (socket) => {
   //    not intended for real-time updates across clients:
   socket.on("update_cards", (cards) => {
     // console.log(`socket.update_cards: ${cards ? "..." : cards}`);
-    console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
+    // console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
     const currentSession = app.sessions[socket.sessionKey];
     if (cards) {
       currentSession.cards = {
@@ -267,13 +265,13 @@ app.io.on("connection", (socket) => {
       };
       for (const cardKey in cards) {
         saveCard(app.sessions[socket.sessionKey].id, cards[cardKey])
-          .catch((err) => console.log(err));
+          .catch((err) => console.error(err));
       }
     } else {
       currentSession.cards = {};
       app.db.query("DELETE FROM cards WHERE session_id = $1", [
         app.sessions[socket.sessionKey].id
-      ]).catch((err) => console.log(err));
+      ]).catch((err) => console.error(err));
     }
     socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
@@ -284,7 +282,7 @@ app.io.on("connection", (socket) => {
     const currentSession = app.sessions[socket.sessionKey];
     app.db.query("UPDATE cards SET position = $2 WHERE card_key = $1", [
       cardKey, { ...currentSession.cards[cardKey].position }
-    ]).catch((err) => console.log(err));
+    ]).catch((err) => console.error(err));
   });
 
   // Participant events
@@ -309,7 +307,7 @@ app.io.on("connection", (socket) => {
       socket.clientId, currentSession.id,
       participant.name || "", participant.settings || {}
     ])
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   });
 
   socket.on("update_current_turn", (currentTurn) => {
@@ -318,7 +316,7 @@ app.io.on("connection", (socket) => {
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
     app.db.query("UPDATE sessions SET settings = jsonb_set(settings, '{currentTurn}', $2) WHERE session_key = $1", [
       socket.sessionKey, currentTurn
-    ]).catch((err) => console.log(err));
+    ]).catch((err) => console.error(err));
   });
 
   // Debug events
@@ -355,7 +353,7 @@ const newSession = (name, hostPassword, callback) => {
         };
         callback(null, sessionKey);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   })
 };
 
@@ -389,17 +387,17 @@ const loadSession = (sessionKey, callback) => {
               }
               callback(session);
             })
-            .catch((err) => console.log(err));
+            .catch((err) => console.error(err));
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.error(err));
     }
   } else {
-    console.log(`loadSession: BUG: app.sessions[${sessionKey}] is`, session);
+    console.error(`loadSession: BUG: app.sessions[${sessionKey}] is`, session);
   }
 };
 
 const saveCard = (sessionId, card) => {
-  console.log(card)
+  // console.log("saveCard:", card)
   return app.db.query("INSERT INTO cards " +
     "(card_key, session_id, content, style, position, size, notes) VALUES ($1, $2, $3, $4, $5, $6, $7) " +
     "ON CONFLICT (card_key) DO UPDATE " +

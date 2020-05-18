@@ -15,19 +15,19 @@ function NewSession(props) {
   const [ password, setPassword ] = useState("");
   const [ verifyPassword, setVerifyPassword ] = useState("");
 
-  const validateInput = (_event) => {
-    if (!name.trim()) {
-      return;
-    } else if (password !== verifyPassword) {
-      return;
-    } else {
-      props.newSession(name, password);
-      props.closeNewSession();
-    }
+  const newSession = () => {
+    props.newSession(name, password);
+    closeNewSession();
   };
 
+  const closeNewSession = () => {
+    setPassword("");
+    setVerifyPassword("");
+    props.closeNewSession();
+  }
+
   return (
-    <Dialog open={props.newSessionOpen} onClose={props.closeNewSession} aria-labelledby="form-dialog-title">
+    <Dialog open={props.newSessionOpen} onClose={closeNewSession} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-new-session-dialog-title">New session</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -65,16 +65,15 @@ function NewSession(props) {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={props.closeNewSession} color="primary">
+        <Button onClick={closeNewSession} color="primary">
           Cancel
         </Button>
         <Button
           color="primary"
           disabled={
-            name.trim() &&
-            password.trim() &&
-            password === verifyPassword ? false : true}
-          onClick={validateInput}
+            !name.trim() ||
+            (password.trim() && (password !== verifyPassword))}
+          onClick={newSession}
         >
           OK
         </Button>

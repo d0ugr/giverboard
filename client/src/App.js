@@ -129,7 +129,7 @@ function App(props) {
       sessionKey = new URL(window.location).pathname.substring(1);
     }
     socket.emit("join_session", sessionKey, (status, session) => {
-      console.log("socket.join_session:", status, session)
+      // console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
         const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
@@ -335,6 +335,7 @@ function App(props) {
     !session.participants ||
     !session.participants[props.clientId] ||
     !session.participants[props.clientId].settings ||
+    !session.start || session.stop ||
     session.participants[props.clientId].settings.host ||
     props.clientId === Object.keys(session.participants)[session.currentTurn];
 
@@ -399,6 +400,7 @@ function App(props) {
             cardMoveAllowed={cardMoveAllowed}
             setCardNotify={setCardNotify}
             saveCardNotify={saveCardNotify}
+            removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
           />
         </main>
 

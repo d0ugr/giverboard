@@ -18,6 +18,20 @@ JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
 
 const SALT_ROUNDS = 10;
 
+const DEFAULT_CARD = {
+  content:  {},
+  style:    {},
+  position: { x: 0, y: 0 },
+  size:     "",
+  notes:    ""
+};
+
+const DEFAULT_PARTICIPANT = {
+  sequence: -1,
+  name:     "",
+  settings: {}
+};
+
 
 
 const app = {};
@@ -51,6 +65,8 @@ app.db.query("SELECT id, session_key, name, description, settings, start, stop F
       app.sessions[session.session_key] = {
         ...session,
         currentTurn:  (session.settings.currentTurn || 0),
+        // The absence of cards and participants here
+        //    indicates the session needs to be loaded.
         // cards:        {},
         // participants: {}
       };
@@ -132,7 +148,10 @@ app.io.on("connection", (socket) => {
           callback(err, pwMatch);
         });
       })
-      .catch((err) => console.error(err, null));
+      .catch((err) => {
+        callback(err);
+        console.error(err)
+      });
   });
 
   socket.on("update_participant_sequence", (participantKeys) => {
@@ -192,12 +211,20 @@ app.io.on("connection", (socket) => {
   socket.on("update_card", (cardKey, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
     const currentSession = app.sessions[socket.sessionKey];
-    currentSession.cards[cardKey] = {
-      ...currentSession.cards[cardKey],
-      ...card
-    };
-    saveCard(app.sessions[socket.sessionKey].id, cardKey, card)
-      .catch((err) => console.log(err));
+    if (card) {
+      currentSession.cards[cardKey] = {
+        ...DEFAULT_CARD,
+        ...currentSession.cards[cardKey],
+        ...card
+      };
+      saveCard(app.sessions[socket.sessionKey].id, cardKey, card)
+        .catch((err) => console.log(err));
+    } else {
+      delete currentSession.cards[cardKey];
+      app.db.query("DELETE FROM cards WHERE card_key = $1", [
+        cardKey
+      ]).catch((err) => console.log(err));
+    }
     socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
 
@@ -214,7 +241,7 @@ app.io.on("connection", (socket) => {
         ...cards
       };
       for (const cardKey in cards) {
-        saveCard(app.sessions[socket.sessionKey].id, cardKey, cards[key])
+        saveCard(app.sessions[socket.sessionKey].id, cardKey, cards[cardKey])
           .catch((err) => console.log(err));
       }
     } else {
@@ -243,6 +270,7 @@ app.io.on("connection", (socket) => {
     const currentSession       = app.sessions[socket.sessionKey];
     const existingParticipants = currentSession.participants;
     participant = {
+      ...DEFAULT_PARTICIPANT,
       ...existingParticipants[socket.clientId],
       ...participant
     };
@@ -290,10 +318,11 @@ const newSession = (name, hostPassword, callback) => {
       return;
     }
     const sessionKey = util.newUuid();
-    app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3)",
+    app.db.query("INSERT INTO sessions (session_key, name, host_password) VALUES ($1, $2, $3) RETURNING id",
       [ sessionKey, name, (hostPassword ? hashedPassword : "") ])
-      .then((_res) => {
+      .then((res) => {
         app.sessions[sessionKey] = {
+          id:           res.rows[0].id,
           name,
           cards:        {},
           participants: {}
@@ -303,12 +332,6 @@ const newSession = (name, hostPassword, callback) => {
       .catch((err) => console.log(err));
   })
 };
-
-// const deleteSession = (sessionKey) => {
-//   delete app.sessions[sessionKey];
-// };
-
-
 
 const loadSession = (sessionKey, callback) => {
   const session = app.sessions[sessionKey];

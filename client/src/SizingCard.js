@@ -2,9 +2,11 @@ import React from "react";
 import classNames from "classnames";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
-// import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-// import Button from "@material-ui/core/Button";
+// import CardActions from "@material-ui/core/CardActions";
+// import Toolbar from "@material-ui/core/Toolbar";
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 
 import * as c from "./constants";
@@ -22,6 +24,16 @@ const useStyles = makeStyles({
     height:          "100%",
     // border:          ".5px solid white",
     boxShadow:       "0 1px 1px rgba(0, 0, 0, .2), 0 -1px 1px rgba(0, 0, 0, .2), 1px 0 1px rgba(0, 0, 0, .2), -1px 0 1px rgba(0, 0, 0, .2)",
+  },
+  // toolbar: {
+  //   margin: 0,
+  //   padding: 0,
+  // },
+  closeButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    maxWidth: "20px",
   },
   cardContent: {
     height:          "100%",
@@ -77,9 +89,20 @@ function SizingCard(props) {
     >
       <Card className={classes.card}>
         <CardContent className={classNames(classes.cardContent, classes[props.card.content.category])}>
-          <Typography className={classes.title}>
-            {props.card.content.title}
-          </Typography>
+          {/* <Toolbar disableGutters> */}
+            <Typography className={classes.title}>
+              {props.card.content.title}
+            </Typography>
+            <IconButton
+              className={classes.closeButton}
+              color="inherit"
+              aria-label="close"
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={props.removeCardNotify}
+            >
+              <CloseIcon/>
+            </IconButton>
+          {/* </Toolbar> */}
           <Typography className={classes.body}>
             {/* be{bull}nev{bull}o{bull}lent */}
             {props.card.content.body}

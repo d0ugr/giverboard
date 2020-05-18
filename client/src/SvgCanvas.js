@@ -27,13 +27,13 @@ function SvgCanvas(props) {
 
     // document.addEventListener("mousemove", onMouseMove);
 
-    // Show the move mouse cursor while holding Ctrl:
-    document.addEventListener("keydown", (event) => {
-      svg.style.cursor = (event.keyCode === c.KEY_CTRL ? "move" : "default");
-    });
-    document.addEventListener("keyup", (event) => {
-      svg.style.cursor = (event.keyCode === c.KEY_CTRL ? "default" : "move");
-    });
+    // // Show the move mouse cursor while holding Ctrl:
+    // document.addEventListener("keydown", (event) => {
+    //   svg.style.cursor = (event.keyCode === c.KEY_CTRL ? "move" : "default");
+    // });
+    // document.addEventListener("keyup", (event) => {
+    //   svg.style.cursor = (event.keyCode === c.KEY_CTRL ? "default" : "move");
+    // });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -47,10 +47,6 @@ function SvgCanvas(props) {
           ...data
         }
       });
-    //   setCanvasState((prevState) => ({
-    //     ...prevState,
-    //     ...data
-    //   }));
     }
   };
 
@@ -68,18 +64,10 @@ function SvgCanvas(props) {
     event.stopPropagation();
     if (!object.cardKey || props.cardMoveAllowed) {
       setClickState({
-        mouse:  ui.elementPoint(svg, event),
+        mouse: ui.elementPoint(svg, event),
         object
         // // Ctrl overrides any object that was clicked and pans the canvas:
-        // object: (event.ctrlKey
-        //   ? canvasState
-        //   : (object.cardKey
-        //     ? {
-        //         cardKey:  object.cardKey,
-        //         position: { ...props.cards[object.cardKey].position }
-        //       }
-        //     : object)
-        // )
+        // object: (event.ctrlKey ? canvasState : object)
       });
     }
   }
@@ -210,6 +198,7 @@ function SvgCanvas(props) {
           key={index}
           card={props.cards[cardKey]}
           setClickObject={(event) => setClickObject(event, props.cards[cardKey])}
+          removeCardNotify={(_event) => props.removeCardNotify(cardKey)}
         />
       )}
     </svg>

@@ -30,11 +30,12 @@ main {
     width: 100%;
     height: 100%;
     // background: center / cover no-repeat black url('./assets/images/bg.png');
-    background: center / cover no-repeat black url('./assets/images/mountain.gif');
+    // background: center / cover no-repeat black url('./assets/images/mountain.gif');
     // background: center / cover no-repeat black url('./assets/images/waterfall.gif');
+    background: center / cover no-repeat black url('./assets/images/shooting-stars.gif');
     // background: center / cover no-repeat black url('./assets/images/overcast-forest.png');
     // background: center / contain no-repeat black url('./assets/images/bg.png'), 100% url('./assets/images/rooster.png');
-    opacity: .25;
+    // opacity: .25;
   }
 
   svg {

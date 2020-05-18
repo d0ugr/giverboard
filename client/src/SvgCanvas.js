@@ -186,8 +186,8 @@ function SvgCanvas(props) {
       // onKeyDown={onKeyDown}
       // onKeyUp={onKeyUp}
     >
-      <line x1="0" y1="-9999" x2="0" y2="9999" stroke="rgba(255, 255, 255, .2)"/>
-      <line x1="-9999" y1="0" x2="9999" y2="0" stroke="rgba(255, 255, 255, .2)"/>
+      {/* <line x1="0" y1="-9999" x2="0" y2="9999" stroke="rgba(255, 255, 255, .2)"/>
+      <line x1="-9999" y1="0" x2="9999" y2="0" stroke="rgba(255, 255, 255, .2)"/> */}
 
       {/* <image
         xlinkHref="./assets/images/rooster.png"

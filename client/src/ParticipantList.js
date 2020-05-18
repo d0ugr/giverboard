@@ -14,6 +14,8 @@ import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 
 const useStyles = makeStyles((theme) => ({
   list: {
+    maxHeight: "25em",
+    overflowY: "auto",
     backgroundColor: "ghostwhite",
     color: "black",
   },

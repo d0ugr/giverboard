@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // app.js
 //
 // Main entry point of the app server.
@@ -12,9 +14,16 @@ const express = require("express");
 const bcrypt  = require("bcrypt");
 
 const util = require("./util");
-const pg   = require("./pg");
 
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
+
+const DB_PARAMS = {
+  host:     process.env.DB_HOSTNAME,
+  port:     process.env.DB_PORT,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+};
 
 const SALT_ROUNDS = 10;
 
@@ -50,13 +59,20 @@ const app = {};
 //   }
 // };
 
-app.db = pg({
-  host:     process.env.DB_HOSTNAME,
-  port:     process.env.DB_PORT,
-  user:     process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-});
+const dbParamsLogged = { ...DB_PARAMS };
+dbParamsLogged.password = undefined;
+
+if (process.env.NODE_ENV === "production") {
+  console.log(`${process.env.APP_NAME} running in ${process.env.NODE_ENV} environment on port ${process.env.APP_PORT}`);
+  console.oldLog = console.log;
+  console.log = () => null;
+  const { Pool } = require("pg");
+  app.db = new Pool(DB_PARAMS);
+} else {
+  console.log(`\n----- ${process.env.APP_NAME} running in ${process.env.NODE_ENV} environment -----\n`);
+  console.log("DB_PARAMS:", dbParamsLogged);
+  app.db = require("./pg-dev")(DB_PARAMS);
+}
 
 app.sessions = {};
 app.db.query("SELECT id, session_key, name, description, settings, start, stop FROM sessions ORDER BY id")
@@ -98,6 +114,15 @@ app.io.on("connection", (socket) => {
   });
 
   // Session events
+
+  const sessionLoaded = () => (
+    socket.sessionKey &&
+    socket.sessionId &&
+    app.sessions &&
+    app.sessions[socket.sessionKey] &&
+    app.sessions[socket.sessionKey].cards &&
+    app.sessions[socket.sessionKey].participants
+  );
 
   socket.on("get_sessions", (callback) => {
     console.log("socket.get_sessions");
@@ -142,12 +167,14 @@ app.io.on("connection", (socket) => {
 
   // Update the current participants's viewbox in real-time:
   socket.on("update_canvas", (viewBox) => {
-    console.log(`socket.update_canvas: ${socket.sessionKey} ${socket.clientId} ${JSON.stringify(viewBox)}`);
-    const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
-    if (currentParticipant) {
-      currentParticipant.settings.viewBox = viewBox;
-    } else {
-      console.warn("socket.update_canvas: Not a participant");
+    // console.log(`socket.update_canvas: ${socket.sessionKey} ${socket.clientId} ${JSON.stringify(viewBox)}`);
+    if (sessionLoaded()) {
+      const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
+      if (currentParticipant) {
+        currentParticipant.settings.viewBox = viewBox;
+      } else {
+        console.warn("socket.update_canvas: Not a participant");
+      }
     }
   });
 
@@ -155,12 +182,14 @@ app.io.on("connection", (socket) => {
   //    (e.g. on mouseup after panning the canvas):
   socket.on("save_settings", () => {
     console.log(`socket.save_settings`);
-    const currentSession = app.sessions[socket.sessionKey];
-    if (currentSession.participants) {
-      // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
-      app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
-        socket.sessionId, socket.clientId, currentSession.participants[socket.clientId].settings
-      ]).catch((err) => console.error(err));
+    if (sessionLoaded()) {
+      const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
+      if (currentParticipant) {
+        // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
+        app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
+          socket.sessionId, socket.clientId, currentParticipant.settings
+        ]).catch((err) => console.error(err));
+      }
     }
   });
 
@@ -314,7 +343,7 @@ app.io.on("connection", (socket) => {
     console.log(`socket.update_current_turn: ${currentTurn}`)
     app.sessions[socket.sessionKey].currentTurn = currentTurn;
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
-    app.db.query("UPDATE sessions SET settings = jsonb_set(settings, '{currentTurn}', $2) WHERE session_key = $1", [
+    app.db.query("UPDATE sessions SET settings = JSONB_SET(settings, '{currentTurn}', $2) WHERE session_key = $1", [
       socket.sessionKey, currentTurn
     ]).catch((err) => console.error(err));
   });

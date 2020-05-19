@@ -156,7 +156,7 @@ app.io.on("connection", (socket) => {
   socket.on("save_settings", () => {
     console.log(`socket.save_settings`);
     const currentSession = app.sessions[socket.sessionKey];
-    if (currentSession.participants) {
+    if (currentSession.participants && currentSession.participants[socket.clientId]) {
       // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
       app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
         socket.sessionId, socket.clientId, currentSession.participants[socket.clientId].settings

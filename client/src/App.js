@@ -153,8 +153,9 @@ function App(props) {
       // console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
-        if (window.location.href !== sessionUrl(sessionKey)) {
-          window.history.replaceState(null, "", sessionUrl);
+        const url = sessionUrl(sessionKey);
+        if (window.location.href !== url) {
+          window.history.replaceState(null, "", url);
         }
         setSessionState(session);
         // Set the participant name to what was used in the session,

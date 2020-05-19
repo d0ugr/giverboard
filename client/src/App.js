@@ -136,6 +136,8 @@ function App(props) {
 
   // Session functions
 
+  const sessionUrl = (sessionKey) => `${new URL(window.location).origin}/${sessionKey}`;
+
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
       // console.log("socket.get_sessions:", sessions)
@@ -151,9 +153,8 @@ function App(props) {
       // console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
-        const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
-        if (window.location.href !== sessionUrl) {
-          window.history.replaceState(null, "", sessionUrl)
+        if (window.location.href !== sessionUrl(sessionKey)) {
+          window.history.replaceState(null, "", sessionUrl);
         }
         setSessionState(session);
         // Set the participant name to what was used in the session,
@@ -182,8 +183,9 @@ function App(props) {
 
   const newSession = (name, hostPassword) => {
     socket.emit("new_session", name, hostPassword, (status, sessionKey) => {
-      console.log("socket.new_session:", status, sessionKey)
+      // console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
+        window.history.pushState(null, "", sessionUrl(sessionKey));
         joinSession(sessionKey);
         getSessions();
       }

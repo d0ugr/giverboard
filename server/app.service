@@ -9,7 +9,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=/var/www/node/estimatron/server/src/app.js
+ExecStart=/var/www/node/estimatron/estimatron
 WorkingDirectory=/var/www/node/estimatron
 User=estimatron
 Group=estimatron

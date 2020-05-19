@@ -1,0 +1,24 @@
+#!/bin/bash
+
+WEBSERVER=root@webserver
+WEBSERVERDEST=/var/www/node
+
+exec 5>&1
+
+APPNAME=estimatron
+APPPATH=$WEBSERVERDEST/$APPNAME
+USERNAME=$APPNAME
+GROUPNAME=$APPNAME
+SERVICEFILENAME=$APPNAME.service
+SERVICEFILESPEC=/root/$SERVICEFILENAME
+SERVICEFILENAMESRC=app.service
+SERVICEFILESPECSRC=$WEBSERVERDEST/$APPNAME/$SERVICEFILENAMESRC
+
+ssh -p 2222 $WEBSERVER "{ mkdir -v $WEBSERVERDEST/$APPNAME; }"
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after --include-from="deploy.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
+if [ -z "${RSYNCOUT##*$SERVICEFILENAMESRC*}" ]; then
+   # Copy the service file to part of the filesystem accessible when systemd parses unit files, which is before mounts are executed:
+   ssh -p 2222 $WEBSERVER "{ cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+else
+   ssh -p 2222 $WEBSERVER "{ systemctl restart $APPNAME && systemctl status $APPNAME; }"
+fi

@@ -227,6 +227,23 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  socket.on("clear_session", (callback) => {
+    console.log(`socket.clear_session`);
+    app.db.query("UPDATE sessions SET start = NULL, stop = NULL WHERE session_key = $1",
+      [ socket.sessionKey ])
+      .then((_res) => {
+        app.sessions[socket.sessionKey].start       = null;
+        app.sessions[socket.sessionKey].stop        = null;
+        app.sessions[socket.sessionKey].currentTurn = 0;
+        callback(null);
+        socket.broadcast.to(socket.sessionKey).emit("clear_session");
+      })
+      .catch((err) => {
+        callback(err);
+        console.error(err)
+      });
+  });
+
   // Card events
 
   // update_card updates a single card:

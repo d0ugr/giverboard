@@ -75,8 +75,9 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
-    socket.on("start_session",       (timestamp) => updateSession({ start: timestamp, stop: null }));
-    socket.on("stop_session",        (timestamp) => updateSession({ stop: timestamp }));
+    socket.on("start_session",       (timestamp)   => updateSession({ start: timestamp, stop: null }));
+    socket.on("stop_session",        (timestamp)   => updateSession({ stop: timestamp }));
+    socket.on("clear_session",       ()            => updateSession({ start: null, stop: null, currentTurn: 0 }));
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,6 +231,20 @@ function App(props) {
         });
       } else {
         console.log("startSession: Error stopping session:", err)
+      }
+    });
+  };
+
+  const clearSession = () => {
+    socket.emit("clear_session", (err, timestamp) => {
+      if (!err) {
+        updateSession({
+          start:       null,
+          stop:        null,
+          currentTurn: 0
+        });
+      } else {
+        console.log("startSession: Error clearing session:", err)
       }
     });
   };
@@ -449,9 +464,10 @@ function App(props) {
       </div>
 
       <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>Dump appState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>Dump sessionState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</span>
+        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>appState</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>sessionState</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>app.sessions</span>&nbsp;&bull;&nbsp;
+        <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>
       </div>
 
       <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>

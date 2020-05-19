@@ -33,7 +33,8 @@ const useStyles = makeStyles({
     position: "absolute",
     top: 0,
     right: 0,
-    maxWidth: "20px",
+    maxWidth: "10px",
+    maxHeight: "10px",
   },
   cardContent: {
     height:          "100%",
@@ -53,7 +54,7 @@ const useStyles = makeStyles({
     // borderBottom:    "1px solid black",
     boxShadow:       "0 .5px .5px olive",
     padding:         ".25em .5em",
-    backgroundColor: "olive",
+    backgroundColor: "rebeccapurple",
     color:           "ghostwhite",
     fontSize:        "40%",
     fontWeight:      "bold",
@@ -100,7 +101,9 @@ function SizingCard(props) {
               onMouseDown={(event) => event.stopPropagation()}
               onClick={props.removeCardNotify}
             >
-              <CloseIcon/>
+              <CloseIcon
+                className={classes.closeButton}
+              />
             </IconButton>
           {/* </Toolbar> */}
           <Typography className={classes.body}>

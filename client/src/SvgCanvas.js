@@ -107,7 +107,7 @@ function SvgCanvas(props) {
       // if (!event.ctrlKey && clickState.object.id) {
       const object = clickState.object;
       if (object.cardKey) {
-        props.setCardNotify(object.cardKey, {
+        props.updateCardPosNotify(object.cardKey, {
           position: {
             x: object.position.x + mouseDelta.x,
             y: object.position.y + mouseDelta.y

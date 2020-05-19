@@ -263,6 +263,11 @@ function App(props) {
     socket.emit("update_card", cardKey, card);
   };
 
+  const updateCardPosNotify = (cardKey, card) => {
+    setCard(cardKey, card);
+    socket.emit("update_card_position", cardKey, card);
+  };
+
   const saveCardNotify = (cardKey) => {
     socket.emit("save_card_position", cardKey);
   };
@@ -427,7 +432,7 @@ function App(props) {
           className={"whiteboard"}
           cards={sessionState.cards || {}}
           cardMoveAllowed={cardMoveAllowed}
-          setCardNotify={setCardNotify}
+          updateCardPosNotify={updateCardPosNotify}
           saveCardNotify={saveCardNotify}
           removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
         />

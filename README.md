@@ -1,6 +1,6 @@
 # Estimatron2020
 
-Estimatron2020 is whiteboard designed for distributed Agile development teams to perform Affinity Sizing estimation remotely.  While originating from a niche market, it has more general-purpose uses including personal organization and children's homework planning.
+Estimatron2020 is a whiteboard designed for distributed Agile development teams to perform Affinity Sizing estimation remotely.  While originating from a niche market, it has more general-purpose uses including personal organization and children's homework planning.
 
 ## **Support setup**
 
@@ -34,11 +34,23 @@ DB_DATABASE=estimatron2020_development
 
 ## **Database Setup**
 
-Execute the file `estimatron2020/server/db/create_development_database.sql` with psql.  For example:
+To create and initialize the database (create role, database, and tables):
 
 ```sh
-cd estimatron2020/server/db
-sudo -u postgres psql -f create_development_database.sql
+cd estimatron2020/server
+npm run resetdb development create
+```
+
+Run without `create` to reset the database after it has been created:
+
+```sh
+npm run resetdb development
+```
+
+If you ever need to manually run SQL scripts, you might find this useful in Debian-based systems:
+
+```sh
+sudo -u postgres psql -f fun_stuff_to_do.sql
 ```
 
 **Or** run the commands manually:
@@ -72,4 +84,11 @@ Run the client:
 ```sh
 cd estimatron2020/client
 npm start
+```
+
+**Deploy production**
+
+```sh
+groupadd -g 997 estimatron
+useradd -g 997 -u 997 -M -p <PASSWORD> estimatron
 ```

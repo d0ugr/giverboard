@@ -432,7 +432,9 @@ function App(props) {
       />
 
       <main>
-        <div className="bg-image"></div>
+        <div className="bg-image">
+          <div className="help"></div>
+        </div>
         <SizeCues/>
         <SessionStatus
           participants={sessionState.participants || {}}
@@ -470,6 +472,7 @@ function App(props) {
         <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>
       </div>
 
+      {showHostControls || (sessionState.start && !sessionState.stop) ?
       <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
         <ParticipantList
           clientId={props.clientId}
@@ -477,6 +480,7 @@ function App(props) {
           currentTurn={getCurrentTurn()}
         />
       </div>
+      : ""}
 
     </div>
   );

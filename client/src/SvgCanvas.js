@@ -58,7 +58,7 @@ function SvgCanvas(props) {
   function setClickObject(event, object) {
     event.preventDefault();
     event.stopPropagation();
-    if (!object.cardKey || props.cardMoveAllowed) {
+    if (event.buttons === c.LEFT_BUTTON && (!object.cardKey || props.cardMoveAllowed)) {
       setClickState({
         mouse: ui.elementPoint(svg, event),
         object
@@ -199,6 +199,7 @@ function SvgCanvas(props) {
         <SizingCard
           key={index}
           card={props.cards[cardKey]}
+          cardMoveAllowed={props.cardMoveAllowed}
           setClickObject={(event) => setClickObject(event, props.cards[cardKey])}
           removeCardNotify={(_event) => props.removeCardNotify(cardKey)}
         />

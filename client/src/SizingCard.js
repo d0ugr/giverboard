@@ -17,7 +17,6 @@ const useStyles = makeStyles({
   root: {
     width:           `${c.CARD_WIDTH}px`,
     height:          `${c.CARD_HEIGHT}px`,
-    cursor:          "move",
     overflow:        "visible",
   },
   card: {
@@ -82,6 +81,10 @@ function SizingCard(props) {
     //    so a container div is necessary:
     <foreignObject
       className={classes.root}
+      style={{
+        cursor:        (props.cardMoveAllowed ? "move" : "default"),
+        pointerEvents: (props.cardMoveAllowed ? "auto" : "none")
+      }}
       x={props.card.position.x || 0}
       y={props.card.position.y || 0}
       // width={props.card.w || CARD_WIDTH}

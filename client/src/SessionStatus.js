@@ -8,6 +8,7 @@ import "./SessionStatus.scss";
 
 const useStyles = makeStyles((theme) => ({
   button: {
+    pointerEvents: "auto",
     margin: theme.spacing(1),
     backgroundColor: "rgba(128, 128, 128, .5)",
   },

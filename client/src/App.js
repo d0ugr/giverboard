@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Fragment } from "react";
 import io      from "socket.io-client";
 import cookies from "js-cookie";
 
@@ -92,7 +92,8 @@ function App(props) {
     // Initialize the canvas SVG viewbox origin and dimensions:
     //    The origin refers to the center of the viewbox
     //    and is translated later when actually setting its position.
-    viewBox: { ...c.DEFAULT_VIEWBOX }
+    viewBox: { ...c.DEFAULT_VIEWBOX },
+    debugEnabled: false
   });
 
   const [ sessionState, setSessionState ] = useState({});
@@ -318,8 +319,8 @@ function App(props) {
   };
 
   const addJiraCardsNotify = (cardData) => {
-    const minY = appState.viewBox.y - (appState.viewBox.h / 2 - 10);
-    const maxY = minY + 200;
+    const minY = appState.viewBox.y - (appState.viewBox.h / 2 - 60);
+    const maxY = minY + 240;
     let x = appState.viewBox.x - (appState.viewBox.w / 2 - 10);
     let y = minY;
     const cards = {};
@@ -375,6 +376,10 @@ function App(props) {
         ? ` ${props.clientId.toUpperCase().substring(0, 4)}`
         : ""
       }`);
+  };
+
+  const toggleDebugControls = () => {
+    updateAppState({ debugEnabled: !appState.debugEnabled });
   };
 
 
@@ -433,7 +438,7 @@ function App(props) {
 
       <main>
         <div className="bg-image">
-          <div className="help"></div>
+          {/* <div className="help"></div> */}
         </div>
         <SizeCues/>
         <SessionStatus
@@ -455,32 +460,39 @@ function App(props) {
           updateCardPosNotify={updateCardPosNotify}
           saveCardNotify={saveCardNotify}
           removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
+          toggleDebugControls={toggleDebugControls}
         />
       </main>
 
-      <div style={{ zIndex: 666, position: "fixed", bottom: 0, left: 0, maxWidth: "17rem", padding: ".5em", fontSize: "150%" }}>
-        <SessionList
-          sessionList={appState.sessionList}
-          joinSession={joinSession}
-        />
-      </div>
+      {appState.debugEnabled &&
+        <Fragment>
 
-      <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>appState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>sessionState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>app.sessions</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>
-      </div>
+          <div style={{ zIndex: 666, position: "fixed", bottom: 0, left: 0, maxWidth: "17rem", padding: ".5em", fontSize: "150%" }}>
+            <SessionList
+              sessionList={appState.sessionList}
+              joinSession={joinSession}
+            />
+          </div>
 
-      {showHostControls || (sessionState.start && !sessionState.stop) ?
-      <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
-        <ParticipantList
-          clientId={props.clientId}
-          participants={sessionState.participants || {}}
-          currentTurn={getCurrentTurn()}
-        />
-      </div>
-      : ""}
+          <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
+            <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>appState</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>sessionState</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>app.sessions</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>
+          </div>
+
+        </Fragment>
+      }
+
+      {showHostControls || (sessionState.start && !sessionState.stop) &&
+        <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
+          <ParticipantList
+            clientId={props.clientId}
+            participants={sessionState.participants || {}}
+            currentTurn={getCurrentTurn()}
+          />
+        </div>
+      }
 
     </div>
   );

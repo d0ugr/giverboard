@@ -23,7 +23,7 @@ CREATE TABLE sessions (
 
 CREATE TABLE cards (
   id         SERIAL    NOT NULL PRIMARY KEY,
-  session_id INTEGER   NOT NULL REFERENCES sessions(id),
+  session_id INTEGER   NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   card_key   TEXT      NOT NULL UNIQUE DEFAULT '',
   content    JSONB     NOT NULL DEFAULT '{}',
   style      JSONB     NOT NULL DEFAULT '{}',
@@ -36,7 +36,7 @@ CREATE TABLE cards (
 
 CREATE TABLE participants (
   id         SERIAL    NOT NULL PRIMARY KEY,
-  session_id INTEGER   NOT NULL REFERENCES sessions(id),
+  session_id INTEGER   NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   client_key TEXT      NOT NULL DEFAULT '',
   sequence   INTEGER   NOT NULL DEFAULT -1,
   name       TEXT      NOT NULL DEFAULT '',

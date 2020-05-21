@@ -36,7 +36,7 @@ const app = {};
 //   }
 // };
 
-const dbParamsLogged = { ...DB_PARAMS };
+const dbParamsLogged = { ...c.DB_PARAMS };
 dbParamsLogged.password = undefined;
 
 if (process.env.NODE_ENV === "production") {
@@ -44,11 +44,11 @@ if (process.env.NODE_ENV === "production") {
   console.oldLog = console.log;
   console.log = () => null;
   const { Pool } = require("pg");
-  app.db = new Pool(DB_PARAMS);
+  app.db = new Pool(c.DB_PARAMS);
 } else {
   console.log(`\n----- ${process.env.APP_NAME} running in ${process.env.NODE_ENV} environment -----\n`);
   console.log("DB_PARAMS:", dbParamsLogged);
-  app.db = require("./pg-dev")(DB_PARAMS);
+  app.db = require("./pg-dev")(c.DB_PARAMS);
 }
 
 app.sessions = {};
@@ -57,7 +57,7 @@ app.db.query("SELECT id, session_key, name, description, settings, start, stop F
     for (const session of res.rows) {
       app.sessions[session.session_key] = {
         ...session,
-        currentTurn:  (session.settings.currentTurn || 0),
+        currentTurn: (session.settings.currentTurn || 0),
         // The absence of cards and participants here
         //    indicates the session needs to be loaded.
         // cards:        {},

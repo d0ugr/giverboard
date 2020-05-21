@@ -9,6 +9,7 @@
 
 
 require("dotenv").config();
+const path    = require("path");
 const http    = require("http");
 const express = require("express");
 const bcrypt  = require("bcrypt");
@@ -59,6 +60,8 @@ if (process.env.NODE_ENV === "production") {
   app.db = require("./pg-dev")(DB_PARAMS);
 }
 
+console.log(`__dirname: ${__dirname}\n`);
+
 app.sessions = {};
 app.db.query("SELECT id, session_key, name, description, settings, start, stop FROM sessions ORDER BY id")
   .then((res) => {
@@ -75,15 +78,36 @@ app.db.query("SELECT id, session_key, name, description, settings, start, stop F
     }
   })
   .catch((err) => console.error(err));
+if (!app.sessions[c.DEFAULT_SESSION]) {
+  app.sessions[c.DEFAULT_SESSION] = {
+    name:         "Sandbox",
+    description:  "Playground where nothing is saved.",
+    settings:     {},
+    cards:        {},
+    participants: {},
+  };
+}
 
 app.exp = express();
-app.srv = http.Server(app.exp);
+app.srv = http.createServer(app.exp);
 // eslint-disable-next-line camelcase
 app.exp.server_name = "";
 app.exp.set("trust proxy", "loopback");
 app.exp.set("x-powered-by", false);
+app.exp.use((_req, res, next) => {
+  res.set("Server", process.env.APP_NAME);
+  next();
+})
+app.exp.use(express.static(path.join(__dirname, "../../client"), {
+  dotfiles:   "ignore",
+  etag:       false,
+  extensions: [ "html" ],
+  index:      [ "index.html" ],
+  maxAge:     "1d",
+  redirect:   false,
+}));
 
-app.io = require("socket.io")(app.srv);
+app.io = require("socket.io").listen(app.srv);
 
 app.io.on("connection", (socket) => {
   console.log(`io.connection: ${socket.id}`);

@@ -57,7 +57,8 @@ function App(props) {
     // Socket event handlers
 
     // Connect to the server:
-    socket = io(`ws://${new URL(window.location).hostname}:3001`);
+    const location = new URL(window.location);
+    socket = io(`${location.origin.replace("http", "ws").replace(":3000", ":3001")}`);
 
     socket.on("connect", () => {
       updateAppState({ connected: true });

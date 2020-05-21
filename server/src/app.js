@@ -97,7 +97,7 @@ app.exp.set("x-powered-by", false);
 app.exp.use((_req, res, next) => {
   res.set("Server", process.env.APP_NAME);
   next();
-})
+});
 app.exp.use(express.static(path.join(__dirname, "../../client"), {
   dotfiles:   "ignore",
   etag:       false,
@@ -106,6 +106,8 @@ app.exp.use(express.static(path.join(__dirname, "../../client"), {
   maxAge:     "1d",
   redirect:   false,
 }));
+
+
 
 app.io = require("socket.io").listen(app.srv);
 

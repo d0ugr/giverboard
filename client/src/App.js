@@ -57,7 +57,8 @@ function App(props) {
     // Socket event handlers
 
     // Connect to the server:
-    const location = new URL(window.location);
+    const location  = new URL(window.location);
+    // console.log(location);
     socket = io(`${location.origin.replace("http", "ws").replace(":3000", ":3001")}`);
 
     socket.on("connect", () => {
@@ -145,7 +146,8 @@ function App(props) {
 
   // Session functions
 
-  const sessionUrl = (sessionKey) => `${new URL(window.location).origin}/${sessionKey}`;
+  // const sessionUrl = (sessionKey) => `${new URL(window.location).origin}/${sessionKey}`;
+  const sessionUrl = (sessionKey) => `${new URL(window.location).origin}/?s=${sessionKey}`;
 
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
@@ -156,7 +158,8 @@ function App(props) {
 
   const joinSession = (sessionKey) => {
     if (!sessionKey) {
-      sessionKey = new URL(window.location).pathname.substring(1);
+      // sessionKey = new URL(window.location).pathname.substring(1);
+      sessionKey = (new URLSearchParams(window.location.search).get("s")) || c.DEFAULT_SESSION;
     }
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)

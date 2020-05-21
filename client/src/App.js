@@ -78,6 +78,12 @@ function App(props) {
     socket.on("start_session",       (timestamp)   => updateSession({ start: timestamp, stop: null }));
     socket.on("stop_session",        (timestamp)   => updateSession({ stop: timestamp }));
     socket.on("clear_session",       ()            => updateSession({ start: null, stop: null, currentTurn: 0 }));
+    socket.on("delete_session",      (sessionKey)  => {
+      if (sessionKey === sessionState.sessionKey) {
+        joinSession(c.DEFAULT_SESSION);
+        getSessions();
+      }
+    });
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,8 +184,8 @@ function App(props) {
         } else {
           updateCanvasState(c.DEFAULT_VIEWBOX);
         }
-      } else if (sessionKey !== "default") {
-        joinSession("default");
+      } else if (sessionKey !== c.DEFAULT_SESSION) {
+        joinSession(c.DEFAULT_SESSION);
       }
     });
   };
@@ -191,6 +197,18 @@ function App(props) {
         window.history.pushState(null, "", sessionUrl(sessionKey));
         joinSession(sessionKey);
         getSessions();
+      }
+    });
+  };
+
+  const deleteSession = (sessionKey) => {
+    // console.log("deleteSession: ", sessionKey);
+    socket.emit("delete_session", sessionKey, (err, newSessionKey) => {
+      if (!err) {
+        joinSession(newSessionKey || c.DEFAULT_SESSION);
+        getSessions();
+      } else {
+        console.log("deleteSession: Error deleting session:", err)
       }
     });
   };
@@ -231,13 +249,13 @@ function App(props) {
           stop: timestamp
         });
       } else {
-        console.log("startSession: Error stopping session:", err)
+        console.log("stopSession: Error stopping session:", err)
       }
     });
   };
 
   const clearSession = () => {
-    socket.emit("clear_session", (err, timestamp) => {
+    socket.emit("clear_session", (err) => {
       if (!err) {
         updateSession({
           start:       null,
@@ -245,7 +263,7 @@ function App(props) {
           currentTurn: 0
         });
       } else {
-        console.log("startSession: Error clearing session:", err)
+        console.log("clearSession: Error clearing session:", err)
       }
     });
   };
@@ -475,16 +493,18 @@ function App(props) {
           </div>
 
           <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
+            &nbsp;&bull;&nbsp;
             <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>appState</span>&nbsp;&bull;&nbsp;
             <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>sessionState</span>&nbsp;&bull;&nbsp;
             <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>app.sessions</span>&nbsp;&bull;&nbsp;
-            <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>
+            <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => deleteSession()}>delete session</span>&nbsp;&bull;&nbsp;
           </div>
 
         </Fragment>
       }
 
-      {showHostControls || (sessionState.start && !sessionState.stop) &&
+      {(appState.debugEnabled || showHostControls || (sessionState.start && !sessionState.stop)) &&
         <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
           <ParticipantList
             clientId={props.clientId}

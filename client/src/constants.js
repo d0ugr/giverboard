@@ -16,6 +16,7 @@ export const DEFAULT_VIEWBOX = {
 export const CARD_WIDTH  = 75;
 export const CARD_HEIGHT = 50;
 
+export const DEFAULT_SESSION = "sandbox";
 
 
 export const LEFT_BUTTON = 1;

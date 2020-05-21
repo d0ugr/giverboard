@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme) => ({
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
     justifyContent: "flex-end",
+    backgroundColor: "lightgray",
   },
   addCard: {
     margin:  theme.spacing(1),

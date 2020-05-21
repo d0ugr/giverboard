@@ -83,7 +83,7 @@ function SizingCard(props) {
       className={classes.root}
       style={{
         cursor:        (props.cardMoveAllowed ? "move" : "default"),
-        pointerEvents: (props.cardMoveAllowed ? "auto" : "none")
+        // pointerEvents: (props.cardMoveAllowed ? "auto" : "none")
       }}
       x={props.card.position.x || 0}
       y={props.card.position.y || 0}

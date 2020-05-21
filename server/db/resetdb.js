@@ -8,9 +8,10 @@ const path   = require("path");
 const Client = require("pg-native");
 const client = new Client();
 
-const args           = process.argv.slice(2);
-const environment    = (args[0] || "").toLowerCase();
-const createDatabase = (args[1] || "").toLowerCase() === "create";
+const args           = process.argv.slice(2).map((arg) => arg.toLowerCase());
+const environment    = (args[0] || "");
+const createDatabase = (args.indexOf("create")  !== -1 || "");
+const noSeeds        = (args.indexOf("noseeds") !== -1 || "");
 
 if (!environment) {
   console.error(`Specify an environment (i.e. "development", "testing", or "production".\n`);
@@ -62,7 +63,11 @@ try {
   }
   console.log(`Loading schema "${path.join(schemaPath, schemaFile)}"`);
   runSqlFile(schemaPath, schemaFile);
-  console.log(`Loading seeds from "./${seedsPath}"`);
+  if (!noSeeds) {
+    console.log(`Loading seeds from "./${seedsPath}"`);
+  } else {
+    console.log(`Skipping seeds`);
+  }
   runSqlFiles(seedsPath);
   client.end();
 } catch (err) {

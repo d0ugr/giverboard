@@ -18,6 +18,14 @@ const util = require("./util");
 
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
 
+const DB_PARAMS = {
+  host:     process.env.DB_HOSTNAME,
+  port:     process.env.DB_PORT,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+};
+
 
 
 const app = {};
@@ -36,7 +44,7 @@ const app = {};
 //   }
 // };
 
-const dbParamsLogged = { ...c.DB_PARAMS };
+const dbParamsLogged = { ...DB_PARAMS };
 dbParamsLogged.password = undefined;
 
 if (process.env.NODE_ENV === "production") {
@@ -44,11 +52,11 @@ if (process.env.NODE_ENV === "production") {
   console.oldLog = console.log;
   console.log = () => null;
   const { Pool } = require("pg");
-  app.db = new Pool(c.DB_PARAMS);
+  app.db = new Pool(DB_PARAMS);
 } else {
   console.log(`\n----- ${process.env.APP_NAME} running in ${process.env.NODE_ENV} environment -----\n`);
   console.log("DB_PARAMS:", dbParamsLogged);
-  app.db = require("./pg-dev")(c.DB_PARAMS);
+  app.db = require("./pg-dev")(DB_PARAMS);
 }
 
 app.sessions = {};

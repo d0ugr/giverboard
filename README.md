@@ -2,6 +2,8 @@
 
 Estimatron2020 is a whiteboard designed for distributed Agile development teams to perform Affinity Sizing estimation remotely.  While originating from a niche market, it has more general-purpose uses including personal organization and children's homework planning.
 
+Check out a demo online at [estimatron.ml](https://estimatron.ml).
+
 ## **Support setup**
 
 Estimatron2020 requires [Node.js](https://nodejs.org) and [Postgres](https://www.postgresql.org/).  Node.js 14.2.0 and Postgres 12.3 were used during development.  Your mileage may vary with previous versions.
@@ -87,6 +89,8 @@ npm start
 ```
 
 **Deploy production**
+
+_INCOMPLETE_
 
 ```sh
 groupadd -g 997 estimatron

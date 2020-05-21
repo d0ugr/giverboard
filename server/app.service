@@ -9,8 +9,8 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=/var/www/node/estimatron/estimatron
-WorkingDirectory=/var/www/node/estimatron
+ExecStart=/var/www/node/estimatron/server/estimatron
+WorkingDirectory=/var/www/node/server/estimatron
 User=estimatron
 Group=estimatron
 Environment=PATH=/usr/bin:/usr/local/bin

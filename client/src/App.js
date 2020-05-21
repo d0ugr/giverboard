@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Fragment } from "react";
 import io      from "socket.io-client";
 import cookies from "js-cookie";
 
@@ -75,8 +75,15 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
-    socket.on("start_session",       (timestamp) => updateSession({ start: timestamp, stop: null }));
-    socket.on("stop_session",        (timestamp) => updateSession({ stop: timestamp }));
+    socket.on("start_session",       (timestamp)   => updateSession({ start: timestamp, stop: null }));
+    socket.on("stop_session",        (timestamp)   => updateSession({ stop: timestamp }));
+    socket.on("clear_session",       ()            => updateSession({ start: null, stop: null, currentTurn: 0 }));
+    socket.on("delete_session",      (sessionKey)  => {
+      if (sessionKey === sessionState.sessionKey) {
+        joinSession(c.DEFAULT_SESSION);
+        getSessions();
+      }
+    });
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +98,8 @@ function App(props) {
     // Initialize the canvas SVG viewbox origin and dimensions:
     //    The origin refers to the center of the viewbox
     //    and is translated later when actually setting its position.
-    viewBox: { ...c.DEFAULT_VIEWBOX }
+    viewBox: { ...c.DEFAULT_VIEWBOX },
+    debugEnabled: false
   });
 
   const [ sessionState, setSessionState ] = useState({});
@@ -136,6 +144,8 @@ function App(props) {
 
   // Session functions
 
+  const sessionUrl = (sessionKey) => `${new URL(window.location).origin}/${sessionKey}`;
+
   const getSessions = () => {
     socket.emit("get_sessions", (sessions) => {
       // console.log("socket.get_sessions:", sessions)
@@ -151,9 +161,9 @@ function App(props) {
       // console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
         document.title = `${c.APP_NAME} - ${session.name}`;
-        const sessionUrl = `${new URL(window.location).origin}/${sessionKey}`;
-        if (window.location.href !== sessionUrl) {
-          window.history.replaceState(null, "", sessionUrl)
+        const url = sessionUrl(sessionKey);
+        if (window.location.href !== url) {
+          window.history.replaceState(null, "", url);
         }
         setSessionState(session);
         // Set the participant name to what was used in the session,
@@ -174,18 +184,31 @@ function App(props) {
         } else {
           updateCanvasState(c.DEFAULT_VIEWBOX);
         }
-      } else if (sessionKey !== "default") {
-        joinSession("default");
+      } else if (sessionKey !== c.DEFAULT_SESSION) {
+        joinSession(c.DEFAULT_SESSION);
       }
     });
   };
 
   const newSession = (name, hostPassword) => {
     socket.emit("new_session", name, hostPassword, (status, sessionKey) => {
-      console.log("socket.new_session:", status, sessionKey)
+      // console.log("socket.new_session:", status, sessionKey)
       if (status === "session_created") {
+        window.history.pushState(null, "", sessionUrl(sessionKey));
         joinSession(sessionKey);
         getSessions();
+      }
+    });
+  };
+
+  const deleteSession = (sessionKey) => {
+    // console.log("deleteSession: ", sessionKey);
+    socket.emit("delete_session", sessionKey, (err, newSessionKey) => {
+      if (!err) {
+        joinSession(newSessionKey || c.DEFAULT_SESSION);
+        getSessions();
+      } else {
+        console.log("deleteSession: Error deleting session:", err)
       }
     });
   };
@@ -226,7 +249,21 @@ function App(props) {
           stop: timestamp
         });
       } else {
-        console.log("startSession: Error stopping session:", err)
+        console.log("stopSession: Error stopping session:", err)
+      }
+    });
+  };
+
+  const clearSession = () => {
+    socket.emit("clear_session", (err) => {
+      if (!err) {
+        updateSession({
+          start:       null,
+          stop:        null,
+          currentTurn: 0
+        });
+      } else {
+        console.log("clearSession: Error clearing session:", err)
       }
     });
   };
@@ -263,6 +300,11 @@ function App(props) {
     socket.emit("update_card", cardKey, card);
   };
 
+  const updateCardPosNotify = (cardKey, card) => {
+    setCard(cardKey, card);
+    socket.emit("update_card_position", cardKey, card);
+  };
+
   const saveCardNotify = (cardKey) => {
     socket.emit("save_card_position", cardKey);
   };
@@ -283,7 +325,9 @@ function App(props) {
   }, [ setCards ]);
 
   const addCardNotify = (content) => {
-    setCardNotify(util.uuidv4_compact(), {
+    const cardKey = util.uuidv4_compact();
+    setCardNotify(cardKey, {
+      cardKey,
       content,
       position: {
         x: Math.floor(Math.random() * 200) - 100,
@@ -293,8 +337,8 @@ function App(props) {
   };
 
   const addJiraCardsNotify = (cardData) => {
-    const minY = appState.viewBox.y - (appState.viewBox.h / 2 - 10);
-    const maxY = minY + 200;
+    const minY = appState.viewBox.y - (appState.viewBox.h / 2 - 60);
+    const maxY = minY + 240;
     let x = appState.viewBox.x - (appState.viewBox.w / 2 - 10);
     let y = minY;
     const cards = {};
@@ -352,6 +396,10 @@ function App(props) {
       }`);
   };
 
+  const toggleDebugControls = () => {
+    updateAppState({ debugEnabled: !appState.debugEnabled });
+  };
+
 
 
   const showHostControls =
@@ -407,7 +455,9 @@ function App(props) {
       />
 
       <main>
-        <div className="bg-image"></div>
+        <div className="bg-image">
+          {/* <div className="help"></div> */}
+        </div>
         <SizeCues/>
         <SessionStatus
           participants={sessionState.participants || {}}
@@ -425,32 +475,44 @@ function App(props) {
           className={"whiteboard"}
           cards={sessionState.cards || {}}
           cardMoveAllowed={cardMoveAllowed}
-          setCardNotify={setCardNotify}
+          updateCardPosNotify={updateCardPosNotify}
           saveCardNotify={saveCardNotify}
           removeCardNotify={(cardKey) => setCardNotify(cardKey, null)}
+          toggleDebugControls={toggleDebugControls}
         />
       </main>
 
-      <div style={{ zIndex: 666, position: "fixed", bottom: 0, left: 0, maxWidth: "17rem", padding: ".5em", fontSize: "150%" }}>
-        <SessionList
-          sessionList={appState.sessionList}
-          joinSession={joinSession}
-        />
-      </div>
+      {appState.debugEnabled &&
+        <Fragment>
 
-      <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>Dump appState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>Dump sessionState</span>&nbsp;&bull;&nbsp;
-        <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>Dump server sessions</span>
-      </div>
+          <div style={{ zIndex: 666, position: "fixed", bottom: 0, left: 0, maxWidth: "17rem", padding: ".5em", fontSize: "150%" }}>
+            <SessionList
+              sessionList={appState.sessionList}
+              joinSession={joinSession}
+            />
+          </div>
 
-      <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
-        <ParticipantList
-          clientId={props.clientId}
-          participants={sessionState.participants || {}}
-          currentTurn={getCurrentTurn()}
-        />
-      </div>
+          <div style={{ zIndex: 420, position: "fixed", bottom: 0, left: 0, right: 0, padding: ".5em", color: "ghostwhite", fontSize: "150%", textAlign: "center" }}>
+            &nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(appState)}>appState</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => console.log(sessionState)}>sessionState</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => socket.emit("debug_sessions")}>app.sessions</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => clearSession()}>clear session</span>&nbsp;&bull;&nbsp;
+            <span style={{ cursor: "pointer" }} onClick={(_event) => deleteSession()}>delete session</span>&nbsp;&bull;&nbsp;
+          </div>
+
+        </Fragment>
+      }
+
+      {(appState.debugEnabled || showHostControls || (sessionState.start && !sessionState.stop)) &&
+        <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
+          <ParticipantList
+            clientId={props.clientId}
+            participants={sessionState.participants || {}}
+            currentTurn={getCurrentTurn()}
+          />
+        </div>
+      }
 
     </div>
   );

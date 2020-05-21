@@ -17,7 +17,6 @@ const useStyles = makeStyles({
   root: {
     width:           `${c.CARD_WIDTH}px`,
     height:          `${c.CARD_HEIGHT}px`,
-    cursor:          "move",
     overflow:        "visible",
   },
   card: {
@@ -33,7 +32,8 @@ const useStyles = makeStyles({
     position: "absolute",
     top: 0,
     right: 0,
-    maxWidth: "20px",
+    maxWidth: "10px",
+    maxHeight: "10px",
   },
   cardContent: {
     height:          "100%",
@@ -53,7 +53,7 @@ const useStyles = makeStyles({
     // borderBottom:    "1px solid black",
     boxShadow:       "0 .5px .5px olive",
     padding:         ".25em .5em",
-    backgroundColor: "olive",
+    backgroundColor: "rebeccapurple",
     color:           "ghostwhite",
     fontSize:        "40%",
     fontWeight:      "bold",
@@ -81,6 +81,10 @@ function SizingCard(props) {
     //    so a container div is necessary:
     <foreignObject
       className={classes.root}
+      style={{
+        cursor:        (props.cardMoveAllowed ? "move" : "default"),
+        // pointerEvents: (props.cardMoveAllowed ? "auto" : "none")
+      }}
       x={props.card.position.x || 0}
       y={props.card.position.y || 0}
       // width={props.card.w || CARD_WIDTH}
@@ -100,7 +104,9 @@ function SizingCard(props) {
               onMouseDown={(event) => event.stopPropagation()}
               onClick={props.removeCardNotify}
             >
-              <CloseIcon/>
+              <CloseIcon
+                className={classes.closeButton}
+              />
             </IconButton>
           {/* </Toolbar> */}
           <Typography className={classes.body}>

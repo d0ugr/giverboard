@@ -58,7 +58,9 @@ function SvgCanvas(props) {
   function setClickObject(event, object) {
     event.preventDefault();
     event.stopPropagation();
-    if (!object.cardKey || props.cardMoveAllowed) {
+    if (event.ctrlKey && event.shiftKey) {
+      props.toggleDebugControls();
+    } else if (event.buttons === c.LEFT_BUTTON && (!object.cardKey || props.cardMoveAllowed)) {
       setClickState({
         mouse: ui.elementPoint(svg, event),
         object
@@ -71,13 +73,11 @@ function SvgCanvas(props) {
   // Canvas mouse event handlers
 
   function onMouseDown(event) {
-    // if (event.ctrlKey) {
-      setClickObject(event, canvasState);
-    // }
+    setClickObject(event, canvasState);
   }
 
-  function onMouseUp(_event) {
-    if (clickState) {
+  function onMouseUp(event) {
+    if (!event.ctrlKey && !event.shiftKey && clickState) {
       if (clickState.object.cardKey) {
         props.saveCardNotify(clickState.object.cardKey);
       } else {
@@ -96,7 +96,7 @@ function SvgCanvas(props) {
 
     // Only move stuff if the left mouse button is being held
     //    and something that can be moved was clicked:
-    if (event.buttons === c.LEFT_BUTTON && clickState) {
+    if (!event.ctrlKey && !event.shiftKey && event.buttons === c.LEFT_BUTTON && clickState) {
       const prevPos  = ui.screenToSvg(svg, clickState.mouse);
       const mousePos = ui.screenToSvg(svg, ui.elementPoint(svg, event));
       const mouseDelta = {
@@ -107,7 +107,7 @@ function SvgCanvas(props) {
       // if (!event.ctrlKey && clickState.object.id) {
       const object = clickState.object;
       if (object.cardKey) {
-        props.setCardNotify(object.cardKey, {
+        props.updateCardPosNotify(object.cardKey, {
           position: {
             x: object.position.x + mouseDelta.x,
             y: object.position.y + mouseDelta.y
@@ -199,6 +199,7 @@ function SvgCanvas(props) {
         <SizingCard
           key={index}
           card={props.cards[cardKey]}
+          cardMoveAllowed={props.cardMoveAllowed}
           setClickObject={(event) => setClickObject(event, props.cards[cardKey])}
           removeCardNotify={(_event) => props.removeCardNotify(cardKey)}
         />

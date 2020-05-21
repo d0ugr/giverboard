@@ -13,33 +13,10 @@ const http    = require("http");
 const express = require("express");
 const bcrypt  = require("bcrypt");
 
+const c    = require("./constants");
 const util = require("./util");
 
 JSON.stringifyPretty = (object) => JSON.stringify(object, null, 2);
-
-const DB_PARAMS = {
-  host:     process.env.DB_HOSTNAME,
-  port:     process.env.DB_PORT,
-  user:     process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-};
-
-const SALT_ROUNDS = 10;
-
-const DEFAULT_CARD = {
-  content:  {},
-  style:    {},
-  position: { x: 0, y: 0 },
-  size:     "",
-  notes:    ""
-};
-
-const DEFAULT_PARTICIPANT = {
-  sequence: -1,
-  name:     "",
-  settings: {}
-};
 
 
 
@@ -182,31 +159,36 @@ app.io.on("connection", (socket) => {
   //    (e.g. on mouseup after panning the canvas):
   socket.on("save_settings", () => {
     console.log(`socket.save_settings`);
-    if (sessionLoaded()) {
-      const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
-      if (currentParticipant) {
-        // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
-        app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
-          socket.sessionId, socket.clientId, currentParticipant.settings
-        ]).catch((err) => console.error(err));
-      }
+    const currentParticipant = getCurrentParticipant(socket);
+    if (currentParticipant) {
+      // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
+      app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
+        socket.sessionId, socket.clientId, currentParticipant.settings
+      ]).catch((err) => console.error(err));
+    } else {
+      console.warn("socket.save_settings: Not a participant");
     }
   });
 
   socket.on("host_login", (password, callback) => {
-    app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
-      [ socket.sessionKey ])
-      .then((res) => {
-        bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-          app.sessions[socket.sessionKey].participants[socket.clientId].settings.host = pwMatch;
-          callback(err, pwMatch);
+    const currentParticipant = getCurrentParticipant(socket);
+    if (currentParticipant) {
+      app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
+        [ socket.sessionKey ])
+        .then((res) => {
+          bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
+            currentParticipant.settings.host = pwMatch;
+            callback(err, pwMatch);
+          });
+        })
+        .catch((err) => {
+          callback(err);
+          console.error(err)
         });
-      })
-      .catch((err) => {
-        callback(err);
-        console.error(err)
-      });
-  });
+      } else {
+        console.warn("socket.host_login: Not a participant");
+      }
+    });
 
   socket.on("update_participant_sequence", (participantKeys) => {
     const sessionId = app.sessions[socket.sessionKey].id;
@@ -256,26 +238,62 @@ app.io.on("connection", (socket) => {
     }
   });
 
+  socket.on("clear_session", (callback) => {
+    console.log(`socket.clear_session`);
+    app.db.query("UPDATE sessions SET start = NULL, stop = NULL WHERE session_key = $1",
+      [ socket.sessionKey ])
+      .then((_res) => {
+        app.sessions[socket.sessionKey].start       = null;
+        app.sessions[socket.sessionKey].stop        = null;
+        app.sessions[socket.sessionKey].currentTurn = 0;
+        callback(null);
+        socket.broadcast.to(socket.sessionKey).emit("clear_session");
+      })
+      .catch((err) => {
+        callback(err);
+        console.error(err)
+      });
+  });
+
+  socket.on("delete_session", (sessionKey, callback) => {
+    console.log(`socket.delete_session`);
+    if (!sessionKey) {
+      sessionKey = socket.sessionKey;
+    }
+    app.db.query("DELETE FROM sessions WHERE session_key = $1",
+      [ sessionKey ])
+      .then((_res) => {
+        delete app.sessions[sessionKey];
+        callback(null, (sessionKey === socket.sessionKey ? c.DEFAULT_SESSION : null));
+        socket.broadcast.to(sessionKey).emit("delete_session", sessionKey);
+      })
+      .catch((err) => {
+        callback(err);
+        console.error(err)
+      });
+  });
+
   // Card events
 
-  // update_card updates a single card and is
-  //    intended for real-time updates across clients:
+  // update_card updates a single card:
+  //    Not intended for real-time updates across clients
+  //    (use update_card_position and save_card_position afterwards instead).
   socket.on("update_card", (cardKey, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
     const currentSession = app.sessions[socket.sessionKey];
     if (card) {
       currentSession.cards[cardKey] = {
-        ...DEFAULT_CARD,
+        ...c.DEFAULT_CARD,
         ...currentSession.cards[cardKey],
         ...card
       };
-      // saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
-      //   .catch((err) => console.error(err));
+      saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
+        .catch((err) => console.error(err));
     } else {
       delete currentSession.cards[cardKey];
-      // app.db.query("DELETE FROM cards WHERE card_key = $1", [
-      //   cardKey
-      // ]).catch((err) => console.error(err));
+      app.db.query("DELETE FROM cards WHERE card_key = $1", [
+        cardKey
+      ]).catch((err) => console.error(err));
     }
     socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
@@ -305,10 +323,26 @@ app.io.on("connection", (socket) => {
     socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
 
+  // update_card_position updates a single card and is
+  //    intended for real-time updates across clients:
+  socket.on("update_card_position", (cardKey, card) => {
+    // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
+    const currentSession = app.sessions[socket.sessionKey];
+    if (card) {
+      currentSession.cards[cardKey] = {
+        ...c.DEFAULT_CARD,
+        ...currentSession.cards[cardKey],
+        ...card
+      };
+    }
+    socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
+  });
+
   // Save a card in the database (i.e. on mouseup):
   socket.on("save_card_position", (cardKey) => {
     console.log(`socket.save_card_position: ${cardKey}`);
-    const currentSession = app.sessions[socket.sessionKey];
+    const currentSession = getCurrentSession(socket);
+
     app.db.query("UPDATE cards SET position = $2 WHERE card_key = $1", [
       cardKey, { ...currentSession.cards[cardKey].position }
     ]).catch((err) => console.error(err));
@@ -322,7 +356,7 @@ app.io.on("connection", (socket) => {
     const currentSession       = app.sessions[socket.sessionKey];
     const existingParticipants = currentSession.participants;
     participant = {
-      ...DEFAULT_PARTICIPANT,
+      ...c.DEFAULT_PARTICIPANT,
       ...existingParticipants[socket.clientId],
       ...participant
     };
@@ -341,7 +375,7 @@ app.io.on("connection", (socket) => {
 
   socket.on("update_current_turn", (currentTurn) => {
     console.log(`socket.update_current_turn: ${currentTurn}`)
-    app.sessions[socket.sessionKey].currentTurn = currentTurn;
+    getCurrentSession(socket).currentTurn = currentTurn;
     socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
     app.db.query("UPDATE sessions SET settings = JSONB_SET(settings, '{currentTurn}', $2) WHERE session_key = $1", [
       socket.sessionKey, currentTurn
@@ -364,7 +398,7 @@ const newSession = (name, hostPassword, callback) => {
   // Hash the password even if it's blank (indicating no host)
   //    and check for that when updating the database
   //    to avoid multiple callback chains:
-  bcrypt.hash(hostPassword, SALT_ROUNDS, (err, hashedPassword) => {
+  bcrypt.hash(hostPassword, c.SALT_ROUNDS, (err, hashedPassword) => {
     if (err) {
       console.error(err);
       callback(err, null);
@@ -435,6 +469,14 @@ const saveCard = (sessionId, card) => {
     card.content || {}, card.style || {}, card.position || {}, card.size || "", card.notes || ""
   ]);
 };
+
+const getCurrentSession = (socket) =>
+  app.sessions[socket.sessionKey];
+
+const getCurrentParticipant = (socket) =>
+  app.sessions[socket.sessionKey] &&
+  app.sessions[socket.sessionKey].participants &&
+  app.sessions[socket.sessionKey].participants[socket.clientId];
 
 
 

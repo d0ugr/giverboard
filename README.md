@@ -4,6 +4,10 @@ Estimatron2020 is a whiteboard designed for distributed Agile development teams 
 
 Check out a demo online at [estimatron.ml](https://estimatron.ml).
 
+This was my final project for the Lighthouse Labs Web Development Bootcamp.  Aside from a few fixes to be able to use it, this repository represents the state of the project at the completion of the course.  **It is not the latest version** and has been forked into [Give'rBoard](https://github.com/d0ugr/giverboard) for further development.
+
+Please don't judge the code too harshly.  Normal teams for this project were three people, while we were two people, and then my partner fell ill and I had to continue on my own.  There are many things I wish I had time to do, like better documentation, code comments, refactoring, testing, and the list goes on.  Please check out Give'rBoard for the current state of this project.
+
 ## **Support setup**
 
 Estimatron2020 requires [Node.js](https://nodejs.org) and [Postgres](https://www.postgresql.org/).  Node.js 14.2.0 and Postgres 12.3 were used during development.  Your mileage may vary with previous versions.

@@ -56,7 +56,8 @@ if (process.env.NODE_ENV === "production") {
   app.db = new Pool(DB_PARAMS);
 } else {
   console.log(`\n----- ${process.env.APP_NAME} running in ${process.env.NODE_ENV} environment -----\n`);
-  console.log("DB_PARAMS:", dbParamsLogged);
+  console.log(`New UUID just for the fun of it: ${util.newUuid()}\n`);
+  console.log(`DB_PARAMS: ${JSON.stringifyPretty(dbParamsLogged)}`);
   app.db = require("./pg-dev")(DB_PARAMS);
 }
 

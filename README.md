@@ -6,6 +6,26 @@ Check it out online at [giverboard.ml](https://giverboard.ml).
 
 This was originally my final project for the Lighthouse Labs Web Development Bootcamp.  This repository is the current active development, but for the original project see [Estimatron2020](https://github.com/d0ugr/estimatron2020).
 
+## **Directory structure**
+
+```
+client          Client-side React app
+client/public   Public assets (e.g. index.html, manifest.json)
+client/src      Client-side source code
+server          Server-side Node.js app
+server/src      Server source code
+server/db       Database files (resetdb.js, schema, seeds)
+test            Files used for testing (CSV files)
+docs            Project documentation
+backup          Old stuff that may or may not be useful
+
+Do not push to repo:
+
+client/build          Production build of the client-side React app
+client/node_modules   Node.js packages
+server/node_modules   Node.js packages
+```
+
 ## **Support setup**
 
 Give'rBoard requires [Node.js](https://nodejs.org) and [Postgres](https://www.postgresql.org/).  Node.js 14.2.0 and Postgres 12.3 were used during development.  Your mileage may vary with previous versions.
@@ -21,9 +41,7 @@ cd giverboard/client
 npm install
 ```
 
-Create a `.env` file for the server to connect to the database.
-
-`.env.development` can be used as-is if you like.  For example:
+Create a `.env` file for the server to connect to the database.  `.env.development` can be used as-is if you like.  For example:
 
 ```
 APP_NAME=giverboard
@@ -38,38 +56,26 @@ DB_DATABASE=giverboard_development
 
 ## **Database Setup**
 
-To create and initialize the database (create role, database, and tables):
+To create the database (create role, database, and tables), you can run `giverboard/server/db/schema/create_development_database.sql`.  To do this in Debian for example:
 
 ```sh
-cd giverboard/server
-npm run resetdb development create
+cd giverboard/server/db/schema
+sudo -u postgres psql -f create_development_database.sql
 ```
 
-Run without `create` to reset the database after it has been created:
+**Or** run the commands manually from psql:
 
-```sh
-npm run resetdb development
-```
-
-If you ever need to manually run SQL scripts, you might find this useful in Debian-based systems:
-
-```sh
-sudo -u postgres psql -f fun_stuff_to_do.sql
-```
-
-**Or** run the commands manually:
-
-```postgres
+```sql
 CREATE USER giverboard_development WITH NOSUPERUSER PASSWORD 'giverboard_development';
 CREATE DATABASE giverboard_development OWNER giverboard_development;
 GRANT ALL ON DATABASE giverboard_development TO giverboard_development;
 ```
 
-Create tables and seed them (this will require `.env`):
+To create tables and optionally seed them with mock data, run the following script.  You can also use this to reset the database to a known state during development.  It drops tables and recreates them, so ignore any errors about relations that don't exist if this is the first time running it.
 
 ```sh
 cd giverboard/server
-npm run resetdb
+npm run resetdb development [noseeds]
 ```
 
 ## **Run server**

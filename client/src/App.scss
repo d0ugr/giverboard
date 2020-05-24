@@ -29,13 +29,21 @@ main {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: center / cover no-repeat black url('./assets/images/bg.png');
+    // background: center / 50% repeat black url('./assets/textures/clean-gray-paper.png');
+    // background: center repeat black url('./assets/textures/dark-wood.png');
+    // background: center / 30% repeat black url('./assets/textures/little-pluses.png');
+    // background: center / 30% repeat #222233 url('./assets/textures/low-contrast-linen.png');
+    // background: center / 30% repeat black url('./assets/textures/retina-wood.png');
+    background: center / 30% repeat darkslateblue url('./assets/textures/textured-paper.png');
+
+    // background: center / cover no-repeat black url('./assets/images/bg.png');
+    // background: center / cover no-repeat black url('./assets/images/beach.gif');
     // background: center / cover no-repeat black url('./assets/images/mountain.gif');
     // background: center / cover no-repeat black url('./assets/images/waterfall.gif');
     // background: center / cover no-repeat black url('./assets/images/shooting-stars.gif');
     // background: center / cover no-repeat black url('./assets/images/overcast-forest.png');
     // background: center / contain no-repeat black url('./assets/images/bg.png'), 100% url('./assets/images/rooster.png');
-    opacity: .25;
+    opacity: .35;
   }
 
   svg {

@@ -87,12 +87,3 @@ Run the client:
 cd estimatron2020/client
 npm start
 ```
-
-**Deploy production**
-
-_INCOMPLETE_
-
-```sh
-groupadd -g 997 estimatron
-useradd -g 997 -u 997 -M -p <PASSWORD> estimatron
-```

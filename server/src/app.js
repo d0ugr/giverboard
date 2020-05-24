@@ -66,7 +66,10 @@ app.sessions = {};
 app.db.query("SELECT id, session_key, name, description, settings, start, stop FROM sessions ORDER BY id")
   .then((res) => {
     for (const session of res.rows) {
-      app.sessions[session.session_key] = {
+      const sessionKey = session.session_key;
+      delete session.session_key;
+      app.sessions[sessionKey] = {
+        sessionKey,
         ...session,
         currentTurn: (session.settings.currentTurn || 0),
         // The absence of cards and participants here
@@ -74,7 +77,6 @@ app.db.query("SELECT id, session_key, name, description, settings, start, stop F
         // cards:        {},
         // participants: {}
       };
-      delete app.sessions[session.session_key].session_key;
     }
   })
   .catch((err) => console.error(err));
@@ -148,8 +150,9 @@ app.io.on("connection", (socket) => {
     if (name && typeof name === "string") {
       newSession(name, hostPassword, (err, sessionKey) => {
         if (!err) {
-          socket.sessionKey = sessionKey;
           callback("session_created", sessionKey);
+          socket.broadcast.emit("new_session", sessionKey);
+          socket.sessionKey = sessionKey;
         } else {
           callback("error", err);
         }
@@ -165,21 +168,45 @@ app.io.on("connection", (socket) => {
       socket.leaveAll();
       socket.sessionId  = app.sessions[sessionKey].id;
       socket.sessionKey = sessionKey;
-      socket.join(sessionKey, () => {
-        console.log(`socket.join_session: ${socket.clientId} joined ${JSON.stringify(socket.rooms)}`);
-        loadSession(sessionKey, (session) => {
-          callback("session_joined", session);
+      if (sessionKey === c.DEFAULT_SESSION) {
+        callback("session_joined", app.sessions[sessionKey]);
+      } else {
+        socket.join(sessionKey, () => {
+          console.log(`socket.join_session: ${socket.clientId} joined ${JSON.stringify(socket.rooms)}`);
+          loadSession(sessionKey, (session) => {
+            callback("session_joined", session);
+          });
         });
-      });
+      }
     } else {
       callback("error", `Session "${sessionKey}" not found`);
+    }
+  });
+
+  socket.on("delete_session", (sessionKey, callback) => {
+    if (!sessionKey) {
+      sessionKey = socket.sessionKey;
+    }
+    console.log(`socket.delete_session: ${sessionKey}`);
+    if (sessionKey !== c.DEFAULT_SESSION) {
+      app.db.query("DELETE FROM sessions WHERE session_key = $1",
+        [ sessionKey ])
+        .then((_res) => {
+          delete app.sessions[sessionKey];
+          callback(null, (sessionKey === socket.sessionKey ? c.DEFAULT_SESSION : null));
+          socket.broadcast.emit("delete_session", sessionKey);
+        })
+        .catch((err) => {
+          callback(err);
+          console.error(err)
+        });
     }
   });
 
   // Update the current participants's viewbox in real-time:
   socket.on("update_canvas", (viewBox) => {
     // console.log(`socket.update_canvas: ${socket.sessionKey} ${socket.clientId} ${JSON.stringify(viewBox)}`);
-    if (sessionLoaded()) {
+    if (socket.sessionKey !== c.DEFAULT_SESSION && sessionLoaded()) {
       const currentParticipant = app.sessions[socket.sessionKey].participants[socket.clientId];
       if (currentParticipant) {
         currentParticipant.settings.viewBox = viewBox;
@@ -193,118 +220,112 @@ app.io.on("connection", (socket) => {
   //    (e.g. on mouseup after panning the canvas):
   socket.on("save_settings", () => {
     console.log(`socket.save_settings`);
-    const currentParticipant = getCurrentParticipant(socket);
-    if (currentParticipant) {
-      // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
-      app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
-        socket.sessionId, socket.clientId, currentParticipant.settings
-      ]).catch((err) => console.error(err));
-    } else {
-      console.warn("socket.save_settings: Not a participant");
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentParticipant = getCurrentParticipant(socket);
+      if (currentParticipant) {
+        // console.log(`socket.save_settings: ${socket.sessionId} ${socket.clientId}`);
+        app.db.query("UPDATE participants SET settings = $3 WHERE session_id = $1 AND client_key = $2", [
+          socket.sessionId, socket.clientId, currentParticipant.settings
+        ]).catch((err) => console.error(err));
+      } else {
+        console.warn("socket.save_settings: Not a participant");
+      }
     }
   });
 
   socket.on("host_login", (password, callback) => {
-    const currentParticipant = getCurrentParticipant(socket);
-    if (currentParticipant) {
-      app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
-        [ socket.sessionKey ])
-        .then((res) => {
-          bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
-            currentParticipant.settings.host = pwMatch;
-            callback(err, pwMatch);
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentParticipant = getCurrentParticipant(socket);
+      if (currentParticipant) {
+        app.db.query("SELECT host_password AS hostpassword FROM sessions WHERE session_key = $1",
+          [ socket.sessionKey ])
+          .then((res) => {
+            bcrypt.compare(password, res.rows[0].hostpassword, (err, pwMatch) => {
+              currentParticipant.settings.host = pwMatch;
+              callback(err, pwMatch);
+            });
+          })
+          .catch((err) => {
+            callback(err);
+            console.error(err)
           });
-        })
-        .catch((err) => {
-          callback(err);
-          console.error(err)
-        });
-      } else {
-        console.warn("socket.host_login: Not a participant");
+        } else {
+          console.warn("socket.host_login: Not a participant");
+        }
       }
     });
 
   socket.on("update_participant_sequence", (participantKeys) => {
-    const sessionId = app.sessions[socket.sessionKey].id;
-    for (const index in participantKeys) {
-      app.db.query("UPDATE participants SET sequence = $3 WHERE session_id = $1 AND client_key = $2",
-        [ sessionId, participantKeys[index], index ])
-        .then((res) => console.log(res.rows))
-        .catch((err) => console.error(err, null));
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const sessionId = app.sessions[socket.sessionKey].id;
+      for (const index in participantKeys) {
+        app.db.query("UPDATE participants SET sequence = $3 WHERE session_id = $1 AND client_key = $2",
+          [ sessionId, participantKeys[index], index ])
+          .then((res) => console.log(res.rows))
+          .catch((err) => console.error(err, null));
+      }
     }
   });
 
   socket.on("start_session", (callback) => {
     console.log(`socket.start_session`);
-    const timestamp = new Date();
-    app.db.query("UPDATE sessions SET start = $2, stop = NULL WHERE session_key = $1",
-      [ socket.sessionKey, timestamp ])
-      .then((_res) => {
-        app.sessions[socket.sessionKey].start = timestamp;
-        app.sessions[socket.sessionKey].stop  = null;
-        callback(null, timestamp);
-        socket.broadcast.to(socket.sessionKey).emit("start_session", timestamp);
-      })
-      .catch((err) => {
-        callback(err);
-        console.error(err)
-      });
-  });
-
-  socket.on("stop_session", (callback) => {
-    console.log(`socket.start_session`);
-    if (app.sessions[socket.sessionKey].start) {
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
       const timestamp = new Date();
-      app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1",
+      app.db.query("UPDATE sessions SET start = $2, stop = NULL WHERE session_key = $1",
         [ socket.sessionKey, timestamp ])
         .then((_res) => {
-          app.sessions[socket.sessionKey].stop = timestamp;
+          app.sessions[socket.sessionKey].start = timestamp;
+          app.sessions[socket.sessionKey].stop  = null;
           callback(null, timestamp);
-          socket.broadcast.to(socket.sessionKey).emit("stop_session", timestamp);
+          socket.broadcast.to(socket.sessionKey).emit("start_session", timestamp);
         })
         .catch((err) => {
           callback(err);
           console.error(err)
         });
-    } else {
-      callback("Session has not been started");
-      console.warn("socket.stop_session: Session has not been started")
+    }
+  });
+
+  socket.on("stop_session", (callback) => {
+    console.log(`socket.start_session`);
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      if (app.sessions[socket.sessionKey].start) {
+        const timestamp = new Date();
+        app.db.query("UPDATE sessions SET stop = $2 WHERE session_key = $1",
+          [ socket.sessionKey, timestamp ])
+          .then((_res) => {
+            app.sessions[socket.sessionKey].stop = timestamp;
+            callback(null, timestamp);
+            socket.broadcast.to(socket.sessionKey).emit("stop_session", timestamp);
+          })
+          .catch((err) => {
+            callback(err);
+            console.error(err)
+          });
+      } else {
+        callback("Session has not been started");
+        console.warn("socket.stop_session: Session has not been started")
+      }
     }
   });
 
   socket.on("clear_session", (callback) => {
     console.log(`socket.clear_session`);
-    app.db.query("UPDATE sessions SET start = NULL, stop = NULL WHERE session_key = $1",
-      [ socket.sessionKey ])
-      .then((_res) => {
-        app.sessions[socket.sessionKey].start       = null;
-        app.sessions[socket.sessionKey].stop        = null;
-        app.sessions[socket.sessionKey].currentTurn = 0;
-        callback(null);
-        socket.broadcast.to(socket.sessionKey).emit("clear_session");
-      })
-      .catch((err) => {
-        callback(err);
-        console.error(err)
-      });
-  });
-
-  socket.on("delete_session", (sessionKey, callback) => {
-    console.log(`socket.delete_session`);
-    if (!sessionKey) {
-      sessionKey = socket.sessionKey;
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      app.db.query("UPDATE sessions SET start = NULL, stop = NULL WHERE session_key = $1",
+        [ socket.sessionKey ])
+        .then((_res) => {
+          app.sessions[socket.sessionKey].start       = null;
+          app.sessions[socket.sessionKey].stop        = null;
+          app.sessions[socket.sessionKey].currentTurn = 0;
+          callback(null);
+          socket.broadcast.to(socket.sessionKey).emit("clear_session");
+        })
+        .catch((err) => {
+          callback(err);
+          console.error(err)
+        });
     }
-    app.db.query("DELETE FROM sessions WHERE session_key = $1",
-      [ sessionKey ])
-      .then((_res) => {
-        delete app.sessions[sessionKey];
-        callback(null, (sessionKey === socket.sessionKey ? c.DEFAULT_SESSION : null));
-        socket.broadcast.to(sessionKey).emit("delete_session", sessionKey);
-      })
-      .catch((err) => {
-        callback(err);
-        console.error(err)
-      });
   });
 
   // Card events
@@ -313,23 +334,25 @@ app.io.on("connection", (socket) => {
   //    Not intended for real-time updates across clients
   //    (use update_card_position and save_card_position afterwards instead).
   socket.on("update_card", (cardKey, card) => {
-    // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
-    const currentSession = app.sessions[socket.sessionKey];
-    if (card) {
-      currentSession.cards[cardKey] = {
-        ...c.DEFAULT_CARD,
-        ...currentSession.cards[cardKey],
-        ...card
-      };
-      saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
-        .catch((err) => console.error(err));
-    } else {
-      delete currentSession.cards[cardKey];
-      app.db.query("DELETE FROM cards WHERE card_key = $1", [
-        cardKey
-      ]).catch((err) => console.error(err));
+    console.log(`socket.update_card: ${cardKey}: ${JSON.stringifyPretty(card)}`);
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentSession = app.sessions[socket.sessionKey];
+      if (card) {
+        currentSession.cards[cardKey] = {
+          ...c.DEFAULT_CARD,
+          ...currentSession.cards[cardKey],
+          ...card
+        };
+        saveCard(app.sessions[socket.sessionKey].id, currentSession.cards[cardKey])
+          .catch((err) => console.error(err));
+      } else {
+        delete currentSession.cards[cardKey];
+        app.db.query("DELETE FROM cards WHERE card_key = $1", [
+          cardKey
+        ]).catch((err) => console.error(err));
+      }
+      socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
     }
-    socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
 
   // update_cards updates a batch of cards,
@@ -338,87 +361,97 @@ app.io.on("connection", (socket) => {
   socket.on("update_cards", (cards) => {
     // console.log(`socket.update_cards: ${cards ? "..." : cards}`);
     // console.log(`socket.update_cards: ${JSON.stringifyPretty(cards)}`);
-    const currentSession = app.sessions[socket.sessionKey];
-    if (cards) {
-      currentSession.cards = {
-        ...currentSession.cards,
-        ...cards
-      };
-      for (const cardKey in cards) {
-        saveCard(app.sessions[socket.sessionKey].id, cards[cardKey])
-          .catch((err) => console.error(err));
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentSession = app.sessions[socket.sessionKey];
+      if (cards) {
+        currentSession.cards = {
+          ...currentSession.cards,
+          ...cards
+        };
+        for (const cardKey in cards) {
+          saveCard(app.sessions[socket.sessionKey].id, cards[cardKey])
+            .catch((err) => console.error(err));
+        }
+      } else {
+        currentSession.cards = {};
+        app.db.query("DELETE FROM cards WHERE session_id = $1", [
+          app.sessions[socket.sessionKey].id
+        ]).catch((err) => console.error(err));
       }
-    } else {
-      currentSession.cards = {};
-      app.db.query("DELETE FROM cards WHERE session_id = $1", [
-        app.sessions[socket.sessionKey].id
-      ]).catch((err) => console.error(err));
+      socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
     }
-    socket.broadcast.to(socket.sessionKey).emit("update_cards", cards);
   });
 
   // update_card_position updates a single card and is
   //    intended for real-time updates across clients:
   socket.on("update_card_position", (cardKey, card) => {
     // console.log(`socket.update_card: ${id}: ${JSON.stringifyPretty(card)}`);
-    const currentSession = app.sessions[socket.sessionKey];
-    if (card) {
-      currentSession.cards[cardKey] = {
-        ...c.DEFAULT_CARD,
-        ...currentSession.cards[cardKey],
-        ...card
-      };
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentSession = app.sessions[socket.sessionKey];
+      if (card) {
+        currentSession.cards[cardKey] = {
+          ...c.DEFAULT_CARD,
+          ...currentSession.cards[cardKey],
+          ...card
+        };
+      }
+      socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
     }
-    socket.broadcast.to(socket.sessionKey).emit("update_card", cardKey, card);
   });
 
   // Save a card in the database (i.e. on mouseup):
   socket.on("save_card_position", (cardKey) => {
     console.log(`socket.save_card_position: ${cardKey}`);
-    const currentSession = getCurrentSession(socket);
-
-    app.db.query("UPDATE cards SET position = $2 WHERE card_key = $1", [
-      cardKey, { ...currentSession.cards[cardKey].position }
-    ]).catch((err) => console.error(err));
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      const currentSession = getCurrentSession(socket);
+      app.db.query("UPDATE cards SET position = $2 WHERE card_key = $1", [
+        cardKey, { ...currentSession.cards[cardKey].position }
+      ]).catch((err) => console.error(err));
+    }
   });
 
   // Participant events
 
   socket.on("update_participant", (participant) => {
     console.log(`socket.update_participant: ${JSON.stringify(participant)}`);
-    // Merge the change into the existing participant data:
-    const currentSession       = app.sessions[socket.sessionKey];
-    const existingParticipants = currentSession.participants;
-    participant = {
-      ...c.DEFAULT_PARTICIPANT,
-      ...existingParticipants[socket.clientId],
-      ...participant
-    };
-    existingParticipants[socket.clientId] = participant;
-    // Notify other clients in the session about the change:
-    socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
-    // Update the database:
-    app.db.query("INSERT INTO participants " +
-      "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
-      "ON CONFLICT ON CONSTRAINT unique_session_client DO UPDATE SET name = $3, settings = $4", [
-      socket.clientId, currentSession.id,
-      participant.name || "", participant.settings || {}
-    ])
-      .catch((err) => console.error(err));
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      // Merge the change into the existing participant data:
+      const currentSession       = app.sessions[socket.sessionKey];
+      const existingParticipants = currentSession.participants;
+      participant = {
+        ...c.DEFAULT_PARTICIPANT,
+        ...existingParticipants[socket.clientId],
+        ...participant
+      };
+      existingParticipants[socket.clientId] = participant;
+      // Notify other clients in the session about the change:
+      socket.broadcast.to(socket.sessionKey).emit("update_participant", socket.clientId, participant);
+      // Update the database:
+      app.db.query("INSERT INTO participants " +
+        "(client_key, session_id, name, settings) VALUES ($1, $2, $3, $4) " +
+        "ON CONFLICT ON CONSTRAINT unique_session_client DO UPDATE SET name = $3, settings = $4", [
+        socket.clientId, currentSession.id,
+        participant.name || "", participant.settings || {}
+      ])
+        .catch((err) => console.error(err));
+    }
   });
 
   socket.on("update_current_turn", (currentTurn) => {
     console.log(`socket.update_current_turn: ${currentTurn}`)
-    getCurrentSession(socket).currentTurn = currentTurn;
-    socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
-    app.db.query("UPDATE sessions SET settings = JSONB_SET(settings, '{currentTurn}', $2) WHERE session_key = $1", [
-      socket.sessionKey, currentTurn
-    ]).catch((err) => console.error(err));
+    if (socket.sessionKey !== c.DEFAULT_SESSION) {
+      getCurrentSession(socket).currentTurn = currentTurn;
+      socket.broadcast.to(socket.sessionKey).emit("update_current_turn", currentTurn);
+      app.db.query("UPDATE sessions SET settings = JSONB_SET(settings, '{currentTurn}', $2) WHERE session_key = $1", [
+        socket.sessionKey, currentTurn
+      ]).catch((err) => console.error(err));
+    }
   });
 
   // Debug events
 
   socket.on("debug_sessions", () => {
+    console.log("socket.sessionKey:", socket.sessionKey);
     console.log("socket.debug_sessions:", JSON.stringifyPretty(app.sessions));
   });
 
@@ -444,6 +477,7 @@ const newSession = (name, hostPassword, callback) => {
       .then((res) => {
         app.sessions[sessionKey] = {
           id:           res.rows[0].id,
+          sessionKey,
           name,
           cards:        {},
           participants: {}

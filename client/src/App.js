@@ -77,16 +77,23 @@ function App(props) {
 
     socket.on("update_participant",  setParticipant);
 
+    socket.on("new_session",         (_sessionKey) => getSessions());
     socket.on("start_session",       (timestamp)   => updateSession({ start: timestamp, stop: null }));
     socket.on("stop_session",        (timestamp)   => updateSession({ stop: timestamp }));
     socket.on("clear_session",       ()            => updateSession({ start: null, stop: null, currentTurn: 0 }));
     socket.on("delete_session",      (sessionKey)  => {
       if (sessionKey === sessionState.sessionKey) {
         joinSession(c.DEFAULT_SESSION);
-        getSessions();
       }
+      getSessions();
     });
     socket.on("update_current_turn", (currentTurn) => updateSession({ currentTurn }));
+
+    socket.emitSession = function() {
+      if (socket.sessionKey && socket.sessionKey !== c.DEFAULT_SESSION) {
+        socket.emit(...arguments);
+      }
+    };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -101,7 +108,7 @@ function App(props) {
     //    The origin refers to the center of the viewbox
     //    and is translated later when actually setting its position.
     viewBox: { ...c.DEFAULT_VIEWBOX },
-    debugEnabled: false
+    debugEnabled: cookies.get(c.COOKIE_DEBUG_ENABLED)
   });
 
   const [ sessionState, setSessionState ] = useState({});
@@ -137,11 +144,11 @@ function App(props) {
         return prevState;
       }
     });
-    socket.emit("update_canvas", viewBox);
+    socket.emitSession("update_canvas", viewBox);
   }, [ setAppState, setSessionState, props.clientId ]);
 
   const saveCanvasStateNotify = () => {
-    socket.emit("save_settings");
+    socket.emitSession("save_settings");
   };
 
   // Session functions
@@ -169,6 +176,7 @@ function App(props) {
         if (window.location.href !== url) {
           window.history.replaceState(null, "", url);
         }
+        socket.sessionKey = sessionKey;
         setSessionState(session);
         // Set the participant name to what was used in the session,
         //    or keep the current name if new to the session:
@@ -218,7 +226,7 @@ function App(props) {
   };
 
   const hostLogin = (password, callback) => {
-    socket.emit("host_login", password, (err, pwMatch) => {
+    socket.emitSession("host_login", password, (err, pwMatch) => {
       callback(err, pwMatch);
       if (pwMatch) {
         setParticipantNotify({ settings: { host: pwMatch } });
@@ -232,7 +240,7 @@ function App(props) {
   };
 
   const startSession = () => {
-    socket.emit("start_session", (err, timestamp) => {
+    socket.emitSession("start_session", (err, timestamp) => {
       if (!err) {
         updateSession({
           start:       timestamp,
@@ -247,7 +255,7 @@ function App(props) {
   };
 
   const stopSession = () => {
-    socket.emit("stop_session", (err, timestamp) => {
+    socket.emitSession("stop_session", (err, timestamp) => {
       if (!err) {
         updateSession({
           stop: timestamp
@@ -259,7 +267,7 @@ function App(props) {
   };
 
   const clearSession = () => {
-    socket.emit("clear_session", (err) => {
+    socket.emitSession("clear_session", (err) => {
       if (!err) {
         updateSession({
           start:       null,
@@ -282,7 +290,7 @@ function App(props) {
     } else if (currentTurn > turnMax) {
       currentTurn = 0;
     }
-    socket.emit("update_current_turn", currentTurn);
+    socket.emitSession("update_current_turn", currentTurn);
     updateSession({ currentTurn });
   };
 
@@ -301,16 +309,16 @@ function App(props) {
 
   const setCardNotify = (cardKey, card) => {
     setCard(cardKey, card);
-    socket.emit("update_card", cardKey, card);
+    socket.emitSession("update_card", cardKey, card);
   };
 
   const updateCardPosNotify = (cardKey, card) => {
     setCard(cardKey, card);
-    socket.emit("update_card_position", cardKey, card);
+    socket.emitSession("update_card_position", cardKey, card);
   };
 
   const saveCardNotify = (cardKey) => {
-    socket.emit("save_card_position", cardKey);
+    socket.emitSession("save_card_position", cardKey);
   };
 
   const setCards = useCallback((cards) => {
@@ -325,7 +333,7 @@ function App(props) {
 
   const setCardsNotify = useCallback((cards) => {
     setCards(cards);
-    socket.emit("update_cards", cards);
+    socket.emitSession("update_cards", cards);
   }, [ setCards ]);
 
   const addCardNotify = (content) => {
@@ -382,7 +390,7 @@ function App(props) {
 
   const setParticipantNotify = (participant) => {
     setParticipant(props.clientId, participant);
-    socket.emit("update_participant", participant);
+    socket.emitSession("update_participant", participant);
   };
 
   const setParticipantNameNotify = (name) => {
@@ -400,7 +408,10 @@ function App(props) {
       }`);
   };
 
+
+
   const toggleDebugControls = () => {
+    props.setCookie(c.COOKIE_DEBUG_ENABLED, !appState.debugEnabled);
     updateAppState({ debugEnabled: !appState.debugEnabled });
   };
 
@@ -411,6 +422,9 @@ function App(props) {
      sessionState.participants[props.clientId] &&
      sessionState.participants[props.clientId].settings &&
      sessionState.participants[props.clientId].settings.host);
+
+  const sessionStarted = sessionState.start && !sessionState.stop;
+
   const cardMoveAllowed =
     !sessionState.participants ||
     !sessionState.participants[props.clientId] ||
@@ -443,7 +457,7 @@ function App(props) {
         showSidebar={openSidebar}
         addJiraCards={addJiraCardsNotify}
 
-        sessionStarted={sessionState.start && !sessionState.stop}
+        sessionStarted={sessionStarted}
         startSession={startSession}
         stopSession={stopSession}
 
@@ -459,9 +473,7 @@ function App(props) {
       />
 
       <main>
-        <div className="bg-image">
-          {/* <div className="help"></div> */}
-        </div>
+        <div className="bg-image"></div>
         <SizeCues/>
         <SessionStatus
           participants={sessionState.participants || {}}
@@ -473,10 +485,10 @@ function App(props) {
           stopSession={stopSession}
         />
         <SvgCanvas
+          className="whiteboard"
           canvasState={appState.viewBox}
           updateCanvasState={updateCanvasState}
           saveCanvasStateNotify={saveCanvasStateNotify}
-          className={"whiteboard"}
           cards={sessionState.cards || {}}
           cardMoveAllowed={cardMoveAllowed}
           updateCardPosNotify={updateCardPosNotify}
@@ -508,7 +520,7 @@ function App(props) {
         </Fragment>
       }
 
-      {(appState.debugEnabled || showHostControls || (sessionState.start && !sessionState.stop)) &&
+      {(appState.debugEnabled || showHostControls || sessionStarted) &&
         <div style={{ zIndex: 669, position: "fixed", bottom: 0, right: 0, maxWidth: "17rem", opacity: .6 }}>
           <ParticipantList
             clientId={props.clientId}

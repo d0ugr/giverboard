@@ -13,7 +13,8 @@ function EditName(props) {
 
   const [ name, setName ] = useState(props.currentParticipantName);
 
-  const setParticipantName = () => {
+  const setParticipantName = (event) => {
+    event.preventDefault();
     props.setParticipantName(name)
     props.closeEditName();
   };
@@ -26,30 +27,33 @@ function EditName(props) {
   return (
     <Dialog fullWidth open={props.editNameOpen} onClose={closeEditName} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-edit-participant-name-dialog-title">Enter your name</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Enter your name.
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="participant-name"
-          label="Your name"
-          type="text"
-          placeholder={props.participantNamePlaceholder}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          fullWidth
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={closeEditName} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={setParticipantName} color="primary">
-          OK
-        </Button>
-      </DialogActions>
+      <form onSubmit={setParticipantName}>
+        <DialogContent>
+          <DialogContentText>
+            Enter your name.
+          </DialogContentText>
+          <TextField
+            fullWidth
+            margin="dense"
+            id="participant-name"
+            label="Your name"
+            type="text"
+            placeholder={props.participantNamePlaceholder}
+            value={name}
+            autoFocus
+            onFocus={(event) => event.target.select()}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeEditName} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={setParticipantName} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 

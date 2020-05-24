@@ -13,9 +13,10 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 function HostLogin(props) {
 
   const [ dialogText, setDialogText ] = useState("Enter the host password to unlock host controls.");
-  const [ password, setPassword ] = useState("");
+  const [ password,   setPassword   ] = useState("");
 
-  const hostLogin = (_event) => {
+  const hostLogin = (event) => {
+    event.preventDefault();
     props.hostLogin(password, (err, pwMatch) => {
       if (err) {
         setDialogText(err);
@@ -35,33 +36,36 @@ function HostLogin(props) {
   return (
     <Dialog fullWidth open={props.hostLoginOpen} onClose={closeHostLogin} aria-labelledby="form-dialog-title">
       <DialogTitle id="form-host-password-dialog-title">Host access</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {dialogText}
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="name"
-          label="Host password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          fullWidth
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={closeHostLogin} color="primary">
-          Cancel
-        </Button>
-        <Button
-          color="primary"
-          disabled={password.trim() ? false : true}
-          onClick={hostLogin}
-        >
-          Login
-        </Button>
-      </DialogActions>
+      <form onSubmit={hostLogin}>
+        <DialogContent>
+          <DialogContentText>
+            {dialogText}
+          </DialogContentText>
+          <TextField
+            fullWidth
+            margin="dense"
+            id="name"
+            label="Host password"
+            type="password"
+            value={password}
+            autoFocus
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeHostLogin} color="primary">
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            color="primary"
+            disabled={password.trim() ? false : true}
+            onClick={hostLogin}
+          >
+            Login
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 

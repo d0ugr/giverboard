@@ -1,5 +1,5 @@
 [Unit]
-Description=Estimatron2020
+Description=Give'rBoard
 Requires=local-fs.target
 After=network.target
 Wants=network-online.target
@@ -9,10 +9,10 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=/var/www/node/estimatron/server/estimatron
-WorkingDirectory=/var/www/node/server/estimatron
-User=estimatron
-Group=estimatron
+ExecStart=/var/www/node/giverboard/server/giverboard
+WorkingDirectory=/var/www/node/server/giverboard
+User=giverboard
+Group=giverboard
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
 Restart=always

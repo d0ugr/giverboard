@@ -1,3 +1,3 @@
-CREATE USER estimatron2020_development WITH NOSUPERUSER PASSWORD 'estimatron2020_development';
-CREATE DATABASE estimatron2020_development OWNER estimatron2020_development;
-GRANT ALL ON DATABASE estimatron2020_development TO estimatron2020_development;
+CREATE USER giverboard_development WITH NOSUPERUSER PASSWORD 'giverboard_development';
+CREATE DATABASE giverboard_development OWNER giverboard_development;
+GRANT ALL ON DATABASE giverboard_development TO giverboard_development;

@@ -6,6 +6,6 @@
 + server/db**
 + server/src**
 + server/app.service
-+ server/estimatron
++ server/giverboard
 + server/package.json
 - *

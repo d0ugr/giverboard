@@ -1,3 +1,4 @@
++ .env.production
 + server
 - server/db/schema/create_development_database.sql
 - server/db/schema/create_testing_database.sql

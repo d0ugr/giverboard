@@ -14,16 +14,22 @@ SERVICEFILESPEC=/root/$SERVICEFILENAME
 SERVICEFILENAMESRC=app.service
 SERVICEFILESPECSRC=$WEBSERVERDEST/$APPNAME/server/$SERVICEFILENAMESRC
 
-ssh -p 2222 $WEBSERVER "{ mkdir -v $WEBSERVERDEST/$APPNAME; }"
-RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after --include-from="deploy.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
-#RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME -E --delete-after --include-from="deploy.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
-if [ $1 = "install" ]; then
-  ssh -p 2222 $WEBSERVER "{ cd $APPPATH/server && npm install --only=production; cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+# Create the app directory if it doesn't exist
+#   and make sure it has permissions for resetdb:
+ssh -p 2222 $WEBSERVER "{ if [ -d $WEBSERVERDEST/$APPNAME ]; then mkdir -v $WEBSERVERDEST/$APPNAME; chmod -v 701 $WEBSERVERDEST/$APPNAME; fi }"
+# Sync db:
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dg=,Do=x,Fg=,Fo=r -E --delete-after --include-from="deploy-db.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
+# Sync server:
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after --include-from="deploy-server.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
+# Sync client:
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after -e="ssh -p 2222" ./client/build/ $WEBSERVER:$APPPATH/client/ | tee >(cat - >&5))"
+# Set up systemd service and npm install everything if the install parameter was given:
+if [ $1 == "install" ]; then
 #if [ -z "${RSYNCOUT##*$SERVICEFILENAMESRC*}" ]; then
-#  # Copy the service file to part of the filesystem accessible when systemd parses unit files, which is before mounts are executed:
+  # Copy the service file to part of the filesystem accessible when systemd parses unit files, which is before mounts are executed:
 #  ssh -p 2222 $WEBSERVER "{ cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+  ssh -p 2222 $WEBSERVER "{ cd $APPPATH/db && npm install && cd $APPPATH/server && npm install --only=production && cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod -v 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+# Otherwise just restart the service:
 else
   ssh -p 2222 $WEBSERVER "{ systemctl restart $APPNAME && systemctl status $APPNAME; }"
 fi
-RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after -e="ssh -p 2222" ./client/build/ $WEBSERVER:$APPPATH/client/ | tee >(cat - >&5))"
-ssh -p 2222 $WEBSERVER "{ cd $WEBSERVERDEST; chmod o+x giverboard giverboard/server giverboard/server/db giverboard/server/db/schema; chmod o+r giverboard/server/db/schema/*; }"

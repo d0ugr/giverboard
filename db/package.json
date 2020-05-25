@@ -1,0 +1,22 @@
+{
+  "name": "giverboard-resetdb",
+  "version": "1.0.0",
+  "description": "Give'rBoard database setup",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/d0ugr/giverboard.git",
+    "directory": "db"
+  },
+  "main": "resetdb.js",
+  "scripts": {
+    "resetdb": "node resetdb.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Doug Ross",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "pg-native": "^3.0.0"
+  }
+}

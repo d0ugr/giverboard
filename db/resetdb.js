@@ -1,8 +1,7 @@
 
 
 
-require("dotenv").config();
-
+require("dotenv").config({ path: "../.env" });
 const fs     = require("fs");
 const path   = require("path");
 const Client = require("pg-native");
@@ -28,7 +27,7 @@ if (!environment) {
 }
 
 const connectionString = process.env.DB_URL ||
-  `postgresql://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOSTNAME}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`;
+  `postgresql://${process.env.DB_USERNAME}:<PASSWORD>@${process.env.DB_HOSTNAME}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`;
 
 
 
@@ -50,22 +49,32 @@ const runSqlFiles = (pathSpec) => {
 
 
 try {
-  console.log(`\nConnecting to Postgres using ${connectionString}`);
-  client.connectSync(connectionString);
-  const schemaPath = "db/schema";
+  console.log(`\nConnecting to ${connectionString}`);
+  client.connectSync(connectionString.replace("<PASSWORD>", process.env.DB_PASSWORD));
+} catch (err) {
+  console.error(`\nError connecting to Postgres: ${err}\n\nDid you forget to set up ".env"?\n`);
+  process.exit();
+}
+try {
+  const schemaPath = "schema";
   const schemaFile = "create_tables.sql";
-  const seedsPath  = path.join("db", environment);
-  console.log(`Loading schema "${path.join(schemaPath, schemaFile)}"`);
+  console.log(`Loading schema "./${path.join(schemaPath, schemaFile)}"`);
   runSqlFile(schemaPath, schemaFile);
+} catch (err) {
+  console.error(`\nError creating tables: ${err}`);
+  client.end();
+  process.exit();
+}
+try {
   if (!noSeeds) {
+    const seedsPath = environment;
     console.log(`Loading seeds from "./${seedsPath}"`);
+    runSqlFiles(seedsPath);
   } else {
     console.log(`Skipping seeds`);
   }
-  runSqlFiles(seedsPath);
-  client.end();
 } catch (err) {
-  console.error(`\nError: ${err}\n\nDid you forget to set up ".env"?`);
-  client.end();
+  console.error(`\nSkipping seeds: ${err}`);
 }
+client.end();
 console.log();

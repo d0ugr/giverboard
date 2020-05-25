@@ -56,6 +56,12 @@ DB_DATABASE=giverboard_development
 
 ## **Database Setup**
 
+You need to install PostgreSQL client libraries and tools to setup resetdb.  See [https://www.npmjs.com/package/pg-native] for details.  On Debian-based systems with APT, use:
+
+```sh
+apt install libpq-dev g++ make
+```
+
 To create the database (create role, database, and tables), you can run `giverboard/server/db/schema/create_development_database.sql`.  To do this in Debian for example:
 
 ```sh

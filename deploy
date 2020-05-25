@@ -12,15 +12,18 @@ GROUPNAME=$APPNAME
 SERVICEFILENAME=$APPNAME.service
 SERVICEFILESPEC=/root/$SERVICEFILENAME
 SERVICEFILENAMESRC=app.service
-SERVICEFILESPECSRC=$WEBSERVERDEST/$APPNAME/$SERVICEFILENAMESRC
+SERVICEFILESPECSRC=$WEBSERVERDEST/$APPNAME/server/$SERVICEFILENAMESRC
 
 ssh -p 2222 $WEBSERVER "{ mkdir -v $WEBSERVERDEST/$APPNAME; }"
-#RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after --include-from="deploy-server.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
-RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME -E --delete-after --include-from="deploy-server.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
-if [ -z "${RSYNCOUT##*$SERVICEFILENAMESRC*}" ]; then
-   # Copy the service file to part of the filesystem accessible when systemd parses unit files, which is before mounts are executed:
-   ssh -p 2222 $WEBSERVER "{ cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after --include-from="deploy.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
+#RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME -E --delete-after --include-from="deploy.list" -e="ssh -p 2222" . $WEBSERVER:$APPPATH | tee >(cat - >&5))"
+if [ $1 = "install" ]; then
+  ssh -p 2222 $WEBSERVER "{ cd $APPPATH/server && npm install --only=production; cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
+#if [ -z "${RSYNCOUT##*$SERVICEFILENAMESRC*}" ]; then
+#  # Copy the service file to part of the filesystem accessible when systemd parses unit files, which is before mounts are executed:
+#  ssh -p 2222 $WEBSERVER "{ cp -v $SERVICEFILESPECSRC $SERVICEFILESPEC && chmod 400 $SERVICEFILESPEC && systemctl enable $SERVICEFILESPEC && systemctl daemon-reload && systemctl restart $APPNAME && systemctl status $APPNAME; }"
 else
-   ssh -p 2222 $WEBSERVER "{ systemctl restart $APPNAME && systemctl status $APPNAME; }"
+  ssh -p 2222 $WEBSERVER "{ systemctl restart $APPNAME && systemctl status $APPNAME; }"
 fi
-RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME -E --delete-after -e="ssh -p 2222" ./client/build/ $WEBSERVER:$APPPATH/client/ | tee >(cat - >&5))"
+RSYNCOUT="$(rsync -aiv --chown=$USERNAME:$GROUPNAME --chmod=Dgo=,Fu-w,Fgo= -E --delete-after -e="ssh -p 2222" ./client/build/ $WEBSERVER:$APPPATH/client/ | tee >(cat - >&5))"
+ssh -p 2222 $WEBSERVER "{ cd $WEBSERVERDEST; chmod o+x giverboard giverboard/server giverboard/server/db giverboard/server/db/schema; chmod o+r giverboard/server/db/schema/*; }"

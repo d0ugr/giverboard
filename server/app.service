@@ -10,7 +10,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 ExecStart=/var/www/node/giverboard/server/giverboard
-WorkingDirectory=/var/www/node/server/giverboard
+WorkingDirectory=/var/www/node/giverboard/server
 User=giverboard
 Group=giverboard
 Environment=PATH=/usr/bin:/usr/local/bin

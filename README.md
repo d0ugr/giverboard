@@ -14,7 +14,7 @@ client/public   Public assets (e.g. index.html, manifest.json)
 client/src      Client-side source code
 server          Server-side Node.js app
 server/src      Server source code
-server/db       Database files (resetdb.js, schema, seeds)
+db              Database files (resetdb.js, schema, seeds)
 test            Files used for testing (CSV files)
 docs            Project documentation
 backup          Old stuff that may or may not be useful

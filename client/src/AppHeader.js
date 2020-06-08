@@ -61,7 +61,7 @@ function AppHeader(props) {
         aria-describedby={"app-toolbar"}
       >
         <Typography variant="h6" className={classes.title}>
-          {c.APP_NAME}&nbsp;&bull;&nbsp;
+          {process.env.REACT_APP_NAME}&nbsp;&bull;&nbsp;
           <span className={classes.sessionName}>{props.participantName}{props.showHostControls && " (Host)"}</span>
           {props.sessionName
             ? <Fragment><span className={classes.sessionName}> @ {props.sessionName}</span></Fragment>

@@ -1,10 +1,7 @@
-
-export const APP_NAME  = "Give'rBoard";
-
-export const COOKIE_CLIENT_ID     = `${APP_NAME.toLowerCase()}_client_id`;
-export const COOKIE_SESSION_ID    = `${APP_NAME.toLowerCase()}_session_id`;
-export const COOKIE_USER_NAME     = `${APP_NAME.toLowerCase()}_user_name`;
-export const COOKIE_DEBUG_ENABLED = `${APP_NAME.toLowerCase()}_debug_enabled`;
+export const COOKIE_CLIENT_ID     = `${process.env.REACT_APP_NAME.toLowerCase()}_client_id`;
+export const COOKIE_SESSION_ID    = `${process.env.REACT_APP_NAME.toLowerCase()}_session_id`;
+export const COOKIE_USER_NAME     = `${process.env.REACT_APP_NAME.toLowerCase()}_user_name`;
+export const COOKIE_DEBUG_ENABLED = `${process.env.REACT_APP_NAME.toLowerCase()}_debug_enabled`;
 
 export const VIEWBOX_SIZE = 350;
 export const DEFAULT_VIEWBOX = {

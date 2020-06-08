@@ -50,6 +50,8 @@ function App(props) {
   // Set up stuff on page load:
   useEffect(() => {
 
+    document.title = process.env.REACT_APP_NAME;
+
     // Window event handlers
 
     window.addEventListener("popstate", (_event) => joinSession());
@@ -171,7 +173,7 @@ function App(props) {
     socket.emit("join_session", sessionKey, (status, session) => {
       // console.log("socket.join_session:", status, session)
       if (status === "session_joined") {
-        document.title = `${c.APP_NAME} - ${session.name}`;
+        document.title = `${process.env.REACT_APP_NAME} - ${session.name}`;
         const url = sessionUrl(sessionKey);
         if (window.location.href !== url) {
           window.history.replaceState(null, "", url);
